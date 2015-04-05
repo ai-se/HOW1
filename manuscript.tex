@@ -55,7 +55,10 @@
   \end{IEEEkeywords}
   
 \section{Introduction}
+\section{Motivating Example}
 \section{Background}
+\section{Contrast Set Learning using WHAT}
+\subsection{Overview}
 \subsection{The Planning Algorithm}
 The planning scheme makes use of WHERE to recursively split the data into smaller clusters. Following this, a nearest neighbour scheme is applied to identify pairs of nearby clusters. A projective plane is constructed with these clusters at the vertices to characterize the cluster pairs.
 
@@ -63,12 +66,24 @@ The mutation policy works by projecting the test instance onto the projective pl
 \section{Experimental Design}
 The following section describes the experiments used to measure the performance of WHAT on 10 defect data sets and 6 performance prediction data sets.
 \subsection{Data sets}
-The defect data was obtained from the PROMISE repository. We investigated 32 releases from 11 open source Java projects defined by the metrics highlighted in: \textit{Ant} (1.5-1.7) 
-\section{Experimental Results}
-\section{Discussion}
-\section{Threats to validity}
-\section{Conclusion}
-\section*{Acknowledgements}
+The data was obtained from the PROMISE repository. For the defect data we investigated 32 releases from 11 open source Java projects defined by the metrics highlighted in \ref{}: \keyword{Apache Ant} (1.5 -- 1.7), \keyword{Apache Camel} (1.2 -- 1.6), \keyword{Apache Ivy} (1.1 -- 2.0), \keyword{JEdit} (4.1 -- 4.3), \keyword{Apache Log4j} (1.0 -- 1.2), \keyword{Apache Lucene} (2.0 -- 2.2), \keyword{PBeans} (1.0 and 2.0), \keyword{Apache POI} (2.0 -- 3.0), \keyword{Apache Synapse} (1.0 -- 1.2), \keyword{Apache Velocity} (1.4 -- 1.6), and \keyword{Apache Xalan-Java} (2.5 -- 2.7). Given the empirical nature of the data, it is important to design an experiment such that the planning phase uses only the \keyword{past} data to learn trends which can then be applied to the \keyword{future} data. Thus for our experiment we use data sets that have at least two consecutive releases. 
+\begin{itemize}
+\item To generate recommendations for a release $i$, the planner uses releases releases $(i-1)$ and $(i-2)$.
+\item The predictor also uses releases $(i-1)$ and $(i-2)$. However, we use SMOTE with re-sampling in order to handle the class imbalance in the data and to prevent the predictor from using the same training data as the planner.
+\end{itemize}
+
+
+The performance prediction data set was obtained from \cite{}. The data set contains six examples of real world configurable systems: \keyword{Apache}, \keyword{LLVM}, \keyword{x264}, \keyword{Berkeley DB (written in C and Java}, and \keyword{SQLite}. The systems have different characteristics, different implementation languages, and different configuration mechanisms. The data set is a collection of all possible configurations (with SQLITE being a exception with only 4653 configurations). We performed a 5-fold cross validation study on this data set.
+
+\subsection{Performance Assessment}
+
+In order to assess the performance of the planner for the defect data set, we use the Cliffs Delta score to measure the probability that the number of bugs in test data before applying the planner is larger than after. In other words, we use the delta score to measure the ability of the planner to effective reduce the number of defects.
+
+% \section{Experimental Results}
+% \section{Discussion}
+% \section{Threats to validity}
+% \section{Conclusion}
+% \section*{Acknowledgements}
 %\begin{thebibliography}{10}
 %\bibitem{test}
 %\end{thebibliography}
