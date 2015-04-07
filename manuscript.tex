@@ -58,9 +58,12 @@
 \section{Motivating Example}
 \section{Background}
 \section{Instance Based Learning}
-Assessing the performance of certain techniques can be extremely hard. In several applications we have models that can emulate the performance of systems. Using these models it is possible to examine several scenarios in a reproducible manner. However, models aren't always the solution, as we shall see. 
 
-There exists several problems where models are hard to obtain, or the input and output are related by complex connections that simply cannot be modeled in a reliable manner, or generation of reliable models take prohibitively long. Software defect prediction is an excellent example of such a case. Models that incorporate all the intricate issues that may lead defects in a product is extremely hard to come by. In this paper we propose the use of an instance based approach in place of the conventional model based approach.
+Assessing the quality of solutions to a real-world problem can be extremely hard. In several applications, researchers have models that can emulate the problem. Using these models it is possible to examine several scenarios in a short period of time, and this can be done in a reproducible manner. However, models aren't always the solution, as we shall see. 
+
+There exist several problems where models are hard to obtain, or the input and output are related by complex connections that simply cannot be modeled in a reliable manner, or generation of reliable models take prohibitively long. Software defect prediction is an excellent example of such a case. Models that incorporate all the intricate issues that may lead defects in a product is extremely hard to come by. Moreover, it has been shown that models for different regions within the same data can have very different properties \cite{}. 
+
+In this paper we propose the use of an instance based approach in place of the conventional model based approach.
 
 \subsection{Spectral Learning using WHERE}
 The algorithm uses WHERE to recursively cluster the input data to identify subsets in the training data that a test instance can learn from. WHERE is a spectral learner which uses the FastMap heuristic to estimate the first principal component. It then recursively partitions the data into two halves along the median point of the projection on the first principal component, terminating when a half has less than $\sqrt{N}$ items.   
