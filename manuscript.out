@@ -3,9 +3,11 @@
 \BOOKMARK [1][-]{section.3}{Background}{}% 3
 \BOOKMARK [1][-]{section.4}{Instance Based Learning}{}% 4
 \BOOKMARK [2][-]{subsection.4.1}{Spectral Learning using WHERE}{section.4}% 5
-\BOOKMARK [2][-]{subsection.4.2}{The Planning Algorithm}{section.4}% 6
+\BOOKMARK [2][-]{subsection.4.2}{Planning changes using WHAT}{section.4}% 6
 \BOOKMARK [2][-]{subsection.4.3}{Defect Prediction}{section.4}% 7
 \BOOKMARK [1][-]{section.5}{Experimental Design}{}% 8
 \BOOKMARK [2][-]{subsection.5.1}{Data sets}{section.5}% 9
-\BOOKMARK [2][-]{subsection.5.2}{Performance Assessment}{section.5}% 10
-\BOOKMARK [1][-]{section.6}{Experimental Results}{}% 11
+\BOOKMARK [2][-]{subsection.5.2}{The Rig}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.3}{Performance Assessment}{section.5}% 11
+\BOOKMARK [1][-]{section.6}{Experimental Results}{}% 12
+\BOOKMARK [1][-]{section*.6}{References}{}% 13
