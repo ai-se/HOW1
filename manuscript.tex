@@ -5,8 +5,6 @@
 \usepackage{algorithm}
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
-\usepackage{tabulary}
-\usepackage{bigstrut}
 \setlength\fboxsep{1pt}
 \setlength\fboxrule{1pt}
 \usepackage{multicol}
@@ -21,8 +19,6 @@
 \usepackage{amsmath}
 \usepackage{balance}
 \usepackage{flushend}
-\usepackage[english]{babel}
-\usepackage{blindtext}
 \usepackage{times}
 \usepackage{cite}
 \usepackage{hyperref}
@@ -78,7 +74,7 @@ The mutation policy works by projecting the test instance onto the projective pl
 \begin{figure}[!b]
 \small
 \begin{tabular}{|p{.95\linewidth}|}\hline
-WHAT begins by \textit{clustering} the training data into similar subsets using WHERE. It works as follows:
+WHAT begins by \textit{clustering} the training data into similar subsets using WHERE which works as follows:
 \begin{enumerate}
 \item Find two distant points in that population; call them the {\em east} and {\em west} poles. 
 \item Draw an axis of length $c$ between the poles. 
@@ -98,7 +94,7 @@ heuristic:
 These final sub-divisions found by this process are the {\em neighborhoods} that GALE will {\em perturb} as follows:
 \begin{itemize}
 \item Find the objective scores of the {\em east,west} poles in each neighborhood.
-\item Using the continuous domination predicate of \fig{moea}, find  the {\em better} pole. 
+\item Using the continuous domination predicate of MOEA, find  the {\em better} pole. 
 \item Perturb all points in that neighborhood by pushing them towards the better pole, by a distance  $c/2$ (recall that  $c$ is the distance between the poles).
 \item Let generation $i+1$ be the combination of all pushed points from all neighborhoods.
 \end{itemize}
