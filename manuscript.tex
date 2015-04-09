@@ -84,7 +84,7 @@ The mutation policy works by projecting the test instance onto the projective pl
 \begin{tabular}{|p{.95\linewidth}|}\hline
 WHAT begins by \textit{clustering} the training data into similar subsets using WHERE. WHERE works as follows:
 \begin{enumerate}
-\item Find two distant points in that population; call them the {\em east} and {\em west} poles. 
+\item Find the two most distant points in a given population; say {\em east} and {\em west}. 
 \item Draw an axis of length $c$ between the poles. 
 \item Let each point be at distance $a,b$ to the {\em east,west} poles.  Using the cosine rule, project each point onto the  axis  at $x=(a^2 + c^2 - b^2)/(2c)$.  
 \item Using the median $x$ value, divide the population.
