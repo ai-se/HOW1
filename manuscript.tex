@@ -74,7 +74,7 @@ The mutation policy works by projecting the test instance onto the projective pl
 \begin{figure}[!b]
 \small
 \begin{tabular}{|p{.95\linewidth}|}\hline
-WHAT begins by \textit{clustering} the training data into similar subsets using WHERE which works as follows:
+WHAT begins by \textit{clustering} the training data into similar subsets using WHERE, which works as follows:
 \begin{enumerate}
 \item Find two distant points in that population; call them the {\em east} and {\em west} poles. 
 \item Draw an axis of length $c$ between the poles. 
@@ -83,15 +83,14 @@ WHAT begins by \textit{clustering} the training data into similar subsets using 
 \item For each half that is larger than $\sqrt{N}$ of the original population, go to step 1.
 \end{enumerate}
 
-Note that the above requires a distance measure between sets of decisions: GALE uses the standard case-based reasoning measure defined by Aha et al.~\cite{aha91}. Note also that GALE implements step1 via  the FASTMAP~\cite{Faloutsos1995} linear-time
-heuristic:
+There are couple of things to note: firstly, the above algorithm requires a distance measure between sets of decisions, for this WHERE uses case-based reasoning measure defined by Aha et al.~\cite{aha91}; secondly, in step-1 a linear time heuristic called FASTMAP~\cite{Faloutsos1995} is used to find the two most distant points, this procedure is listed below:
 \begin{itemize}
-\item Pick any point at random; 
+\item Pick a point at random; 
 \item Let {\em east} be the point furthest from that point; 
-\item Let {\em west} be the point furthest from {\em east}.
+\item Then {\em west} be the point furthest from {\em east}.
 \end{itemize}
 
-These final sub-divisions found by this process are the {\em neighborhoods} that GALE will {\em perturb} as follows:
+The final clusters that are found by WHERE are then used by WHAT as follows:
 \begin{itemize}
 \item Find the objective scores of the {\em east,west} poles in each neighborhood.
 \item Using the continuous domination predicate of MOEA, find  the {\em better} pole. 
