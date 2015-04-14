@@ -17,7 +17,7 @@
 \definecolor{Gray}{gray}{0.9}
 \usepackage{picture}
 \newcommand{\kw}[1]{\textit{#1}}
-\newcommand{\quart}[4]{\begin{picture}(50,3)
+\newcommand{\quart}[4]{\begin{picture}(75,6)
   {\color{black}\put(#3,3){\circle*{4}}\put(#1,3){\line(1,0){#2}}}\end{picture}}
 \usepackage{amsmath}
 \usepackage{balance}
@@ -39,7 +39,7 @@
 \newcommand{\ee}{\end{enumerate}}
 
 \begin{document}
-  \title{``Don't tell me what is, tell me what to do'':\\Instance-Based Planning for Actionable Analytics}
+  \title{``Don't tell me what it is, tell me what to do'':\\Instance-Based Planning for Actionable Analytics}
   
   % make the title area
   \maketitle
@@ -64,7 +64,7 @@ There exist several problems where models are hard to obtain, or the input and o
 In this paper we propose the use of an instance based approach in place of the conventional model based approach. Instead of generating solutions and going back to a model to see if the solution has any value, we 
 
 \subsection{Spectral Learning using WHERE}
-The algorithm uses WHERE to recursively cluster the input data to identify subsets in the training data that a test instance can learn from. WHERE is a spectral learner which uses the FastMap heuristic to estimate the first principal component. It then recursively partitions the data into two halves along the median point of the projection on the first principal component, terminating when a half has less than $\sqrt{N}$ items.   
+The algorithm uses WHERE to recursively cluster the input data to identify subsets in the training data that a test instance can learn from. WHERE is a spectral learner which uses the FastMap heuristic to estimate the first principal component. It then recursively partitions the data into two halves along the Medianian point of the projection on the first principal component, terminating when a half has less than $\sqrt{N}$ items.   
 
 \subsection{Planning changes using WHAT}
 We propose the WHAT algorithm as a tool to plan changes in the original test data. Figure~\ref{fig:what} highlights the procedure by which WHAT operates. It begins by creating clusters which are generated using the WHERE algorithm discussed above. Following this, a nearest neighbour scheme is applied to identify pairs of nearby clusters. A projective plane is constructed with these clusters at the vertices to characterize the cluster pairs.
@@ -79,7 +79,7 @@ WHAT begins by \textit{clustering} the training data into similar subsets using 
 \item Find the two most distant points in a given population; say {\em east} and {\em west}. 
 \item Draw an axis of length $c$ between the poles. 
 \item Let each point be at distance $a,b$ to the {\em east,west} poles.  Using the cosine rule, project each point onto the  axis  at $x=(a^2 + c^2 - b^2)/(2c)$.  
-\item Using the median $x$ value, divide the population.
+\item Using the Medianian $x$ value, divide the population.
 \item For each half that is larger than $\sqrt{N}$ of the original population, go to step 1.
 \end{enumerate}
 
@@ -98,7 +98,7 @@ The final clusters that are found by WHERE are then used by WHAT as follows:
 \item Mutate the attributes of the test case towards the {\em Good Cluster} in that projective plane. 
 \end{itemize}
 
-Formally, WHAT can be considered as an instance based  learning scheme. And that's beacuse it builds a set of recommendations based on a given test case based on the clusters formed at the training stage. This is unlike a model based approach, which would have used a model to do the same~\cite{xomo}.
+Formally, WHAT can be considered as an instance based  learning scheme. And that's beacuse it builds a set of recommendations based on a given test case based on the clusters forMedian at the training stage. This is unlike a model based approach, which would have used a model to do the same~\cite{xomo}.
 \\\hline
 \end{tabular}
 \caption{Inside WHAT}\label{fig:what}
@@ -230,7 +230,7 @@ The data was obtained from the PROMISE repository. For the defect data we invest
 \end{itemize}
 
 
-The performance prediction data set was obtained from~\cite{}. The data set contains six examples of real world configurable systems: \kw{Apache}, \kw{LLVM}, \kw{x264}, \kw{Berkeley DB (written in C and Java}, and \kw{SQLite}. The systems have different characteristics, different implementation languages, and different configuration mechanisms. The data set is a collection of all possible configurations (with SQLITE being a exception with only 4653 configurations). We performed a 5-fold cross validation study on this data set.
+The performance prediction data set was obtained from~\cite{}. The data set contains six examples of real world configurable systems: \kw{Apache}, \kw{LLVM}, \kw{x264}, \kw{Berkeley DB (written in C and Java}, and \kw{SQLite}. The systems have different characteristics, different implementation languages, and different configuration mechanisms. The data set is a collection of all possible configurations (with SQLITE being a exception with only 4653 configurations). We perforMedian a 5-fold cross validation study on this data set.
 
 \subsection{The Rig}
 
@@ -247,202 +247,211 @@ In the context of our application, the $\delta$ attains a value of 1 if the numb
 
 For the performance prediction data set on the other hand, Cliff's delta measure is not directly applicable. We therefore assess the performance by measuring the gain, given by $\frac{Before}{After}$. The gain takes a value larger than 1 if the run times have been reduced, a value of 1 if there is no change, and a value less than 1 if run times have increased after applying the recommended changes. 
 
-In addition to the above, we rank the different variants of the planning scheme to identify the best approach. We make use of the Scott-Knott procedure, recommended by Mittas \& Angelis in their 2013 IEEE TSE paper~\cite{sk}, to compute the ranks. It works as follows: A list of treatments \textit{l} is sorted by the median score. The list \textit{l} is then split into sub-lists m, n in order to maximize the expected value of the differences in the observed performance before and after division. A statistical hypothesis test \textit{H} is applied on the splits \textit{m, n} to check if they are statistically different. If so, Skott-Knott then recurses on each division. 
+In addition to the above, we rank the different variants of the planning scheme to identify the best approach. We make use of the Scott-Knott procedure, recommended by Mittas \& Angelis in their 2013 IEEE TSE paper~\cite{sk}, to compute the ranks. It works as follows: A list of treatments \textit{l} is sorted by the Medianian score. The list \textit{l} is then split into sub-lists m, n in order to maximize the expected value of the differences in the observed performance before and after division. A statistical hypothesis test \textit{H} is applied on the splits \textit{m, n} to check if they are statistically different. If so, Skott-Knott then recurses on each division. 
 
 The research conducted by Shepperd and MacDonell~\cite{}, Kampenes~\cite{} and Kocaguenli et al.~\cite{}, highlighted that an ``effect size'' in lieu of a mere hypothesis test is required in order to verfiy if two populations are ``significantly'' different. An ICSE'11 paper by Arcuri~\cite{} endorsed the use of Vargha and Delaney's A12 effect size for reporting results in software engineering. Thus, for hypothesis testing H in Skott-Knott, we use the A12 test and a non-parametric bootstrap sampling~\cite{}.
 
 \section{Experimental Results}
-\begin{figure}
+\begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{_figs/Histogram}
 \caption{Caption}
 \label{fig:bugs}
 \end{figure}
 
-\begin{figure}[!t]
-  \centering
-\begin{minipage}{0.5\textwidth}
-\renewcommand{\baselinestretch}{}
-{\bf \scriptsize Ant:}
+\begin{figure*}[!t]
 
-
-{\scriptsize \begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
+\noindent\begin{minipage}{0.5\textwidth}
+  {\scriptsize \textbf{Ant}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
       \arrayrulecolor{darkgray}
-      \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-    1 &     Baseline &    0.03  &  0.0 & \quart{0}{0}{0}{62} \\
-    \hline  2 & $0.25$, Prune=50\% &    0.15  &  0.09 & \quart{4}{6}{7}{62} \\
-    \hline  3 & $0.5$, Prune=50\% &    0.25  &  0.1 & \quart{12}{6}{14}{62} \\
-    \hline  4 &     $0.25$ &    0.34  &  0.05 & \quart{18}{4}{20}{62} \\
-    4 &   $0.25$, weight &    0.36  &  0.08 & \quart{18}{5}{21}{62} \\
-    4 & $0.75$, Prune=50\% &    0.41  &  0.13 & \quart{21}{8}{24}{62} \\
-    \hline  5 &    $0.5$, weight &    0.46  &  0.18 & \quart{24}{12}{27}{62} \\
-    5 &      $0.5$ &    0.53  &  0.15 & \quart{27}{10}{32}{62} \\
-    \hline  6 &     $0.75$ &    0.64  &  0.17 & \quart{34}{11}{39}{62} \\
-    6 &   $0.75$, weight &    0.73  &  0.17 & \quart{38}{11}{45}{62} \\
-    \hline \end{tabular}\\}
-
-
-{\bf \scriptsize Camel}
-
-
-{\scriptsize \begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-    \arrayrulecolor{darkgray}
-    \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-1 &   Baseline &    0.16  &  0.03 & \quart{0}{3}{1}{111} \\
-1 &   $0.25$ &    0.17  &  0.06 & \quart{0}{7}{2}{111} \\
-1 & $0.25$, weight &    0.17  &  0.06 & \quart{0}{7}{2}{111} \\
-\hline  2 & $0.25$, Prune=50\% &    0.22  &  0.06 & \quart{5}{8}{9}{111} \\
-\hline  3 &    $0.5$ &    0.25  &  0.1 & \quart{3}{14}{13}{111} \\
-3 &  $0.5$, weight &    0.26  &  0.14 & \quart{7}{19}{14}{111} \\
-\hline  4 & $0.5$, Prune=50\% &    0.32  &  0.16 & \quart{10}{21}{22}{111} \\
-\hline  5 & $0.75$, weight &    0.38  &  0.19 & \quart{14}{25}{30}{111} \\
-5 &   $0.75$ &    0.4  &  0.12 & \quart{23}{16}{32}{111} \\
-\hline  6 & $0.75$, Prune=50\% &    0.47  &  0.15 & \quart{30}{19}{42}{111} \\
-\hline \end{tabular}}\\
-
-
-{\bf \scriptsize Ivy}
-
-
-    {\scriptsize\begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-        \arrayrulecolor{darkgray}
-        \rowcolor{Gray} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-        1 &     Baseline &    0.06  &  0.0 & \quart{0}{0}{0}{79} \\
-        \hline  2 & $0.25$, Prune=50\% &    0.14  &  0.04 & \quart{4}{3}{6}{79} \\
-        \hline  3 & $0.5$, Prune=50\% &    0.2  &  0.06 & \quart{9}{5}{11}{79} \\
-        \hline  4 & $0.75$, Prune=50\% &    0.27  &  0.14 & \quart{10}{12}{17}{79} \\
-        \hline  5 &     $0.25$ &    0.41  &  0.06 & \quart{27}{5}{29}{79} \\
-        5 &   $0.25$, weight &    0.42  &  0.06 & \quart{27}{6}{30}{79} \\
-        \hline  6 &    $0.5$, weight &    0.55  &  0.11 & \quart{35}{9}{41}{79} \\
-        6 &      $0.5$ &    0.57  &  0.09 & \quart{37}{7}{43}{79} \\
-        \hline  7 &   $0.75$, weight &    0.61  &  0.08 & \quart{42}{7}{46}{79} \\
-        7 &     $0.75$ &    0.62  &  0.04 & \quart{46}{3}{47}{79} \\
-        \hline \end{tabular}}\\
-
-
-{\bf \scriptsize Jedit}
-
-
-  {\scriptsize\begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-      \arrayrulecolor{darkgray}
-      \rowcolor{Gray} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-      1 &   Baseline &    0.05  &  0.0 & \quart{0}{0}{0}{75} \\
-      \hline  2 & $0.25$, Prune=50\% &    0.11  &  0.05 & \quart{2}{4}{4}{75} \\
-      \hline  3 & $0.5$, Prune=50\% &    0.16  &  0.1 & \quart{3}{8}{8}{75} \\
-      \hline  4 &   $0.25$ &    0.2  &  0.08 & \quart{10}{6}{11}{75} \\
-      4 & $0.25$, weight &    0.21  &  0.1 & \quart{7}{8}{12}{75} \\
-      \hline  5 & $0.75$, Prune=50\% &    0.32  &  0.15 & \quart{15}{11}{21}{75} \\
-      5 &  $0.5$, weight &    0.33  &  0.05 & \quart{19}{4}{22}{75} \\
-      5 &    $0.5$ &    0.34  &  0.18 & \quart{18}{14}{23}{75} \\
-      \hline  6 &   $0.75$ &    0.56  &  0.2 & \quart{27}{16}{40}{75} \\
-      6 & $0.75$, weight &    0.56  &  0.26 & \quart{29}{20}{40}{75} \\
-      \hline \end{tabular}}\\
-\end{minipage}
-\end{figure}
-\begin{figure}
-\begin{minipage}{0.5\textwidth}
-  \renewcommand{\baselinestretch}{}
-{\bf \scriptsize Log4j}
-
-
-  {\scriptsize\begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-      \arrayrulecolor{darkgray}
-      \rowcolor{Gray} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-      1 & $0.5$, Prune=50\% &    0.1  &  0.06 & \quart{1}{11}{5}{172} \\
-      1 & $0.25$, Prune=50\% &    0.11  &  0.04 & \quart{1}{8}{7}{172} \\
-      1 & $0.25$, weight &    0.1  &  0.03 & \quart{3}{6}{5}{172} \\
-      1 &  $0.5$, weight &    0.1  &  0.13 & \quart{0}{24}{5}{172} \\
-      1 &   Baseline &    0.11  &  0.04 & \quart{0}{7}{7}{172} \\
-      1 &   $0.25$ &    0.12  &  0.06 & \quart{1}{11}{9}{172} \\
-      \hline  2 &    $0.5$ &    0.15  &  0.09 & \quart{3}{17}{14}{172} \\
-      2 & $0.75$, Prune=50\% &    0.15  &  0.05 & \quart{9}{9}{14}{172} \\
-      2 & $0.75$, weight &    0.17  &  0.22 & \quart{9}{40}{18}{172} \\
-      2 &   $0.75$ &    0.22  &  0.16 & \quart{14}{30}{27}{172} \\
-      \hline \end{tabular}}\\
-
-
-{\bf \scriptsize Lucene}
-
-
-{\scriptsize\begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-    \arrayrulecolor{darkgray}
-    \rowcolor{Gray} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-    1 & $0.25$, weight &    0.03  &  0.03 & \quart{0}{4}{1}{148} \\
-    1 &  $0.25$ &    0.05  &  0.04 & \quart{1}{6}{4}{148} \\
-    \hline  2 &   $0.5$ &    0.09  &  0.09 & \quart{6}{13}{10}{148} \\
-    2 & $0.25$, Prune=50\% &    0.09  &  0.03 & \quart{7}{5}{10}{148} \\
-    2 &  Baseline &    0.1  &  0.01 & \quart{10}{2}{12}{148} \\
-    2 & $0.5$, weight &    0.14  &  0.06 & \quart{10}{9}{18}{148} \\
-    \hline  3 & $0.5$, Prune=50\% &    0.19  &  0.08 & \quart{21}{12}{25}{148} \\
-    \hline  4 & $0.75$, weight &    0.23  &  0.15 & \quart{22}{23}{31}{148} \\
-    4 &  $0.75$ &    0.26  &  0.1 & \quart{27}{15}{36}{148} \\
-    4 & $0.75$, Prune=50\% &    0.28  &  0.13 & \quart{30}{19}{39}{148} \\\hline \end{tabular}}\\
-
-
-{\bf \scriptsize Poi}
-
-
-{\scriptsize\begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-    \arrayrulecolor{darkgray}
-    \rowcolor{Gray} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-    1 & $0.25$, Prune=50\% &    0.09  &  0.15 & \quart{0}{9}{3}{62} \\
-    1 &     Baseline &    0.09  &  0.05 & \quart{2}{3}{3}{62} \\
-    1 & $0.5$, Prune=50\% &    0.12  &  0.13 & \quart{1}{8}{5}{62} \\
-    \hline  2 &     $0.25$ &    0.24  &  0.3 & \quart{5}{19}{13}{62} \\
-    2 &   $0.25$, weight &    0.25  &  0.32 & \quart{4}{20}{14}{62} \\
-    \hline  3 & $0.75$, Prune=50\% &    0.37  &  0.45 & \quart{4}{29}{21}{62} \\
-    3 &    $0.5$, weight &    0.49  &  0.5 & \quart{9}{32}{29}{62} \\
-    \hline  4 &     $0.75$ &    0.53  &  0.47 & \quart{16}{30}{32}{62} \\
-    4 &      $0.5$ &    0.53  &  0.28 & \quart{18}{18}{32}{62} \\
-    4 &   $0.75$, weight &    0.61  &  0.43 & \quart{22}{27}{37}{62} \\
-    \hline \end{tabular}}  \\
-
-
-{\bf \scriptsize Velocity}
-
-
-  {\scriptsize\begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-      \arrayrulecolor{darkgray}
-      \rowcolor{Gray} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-      1 & $0.25$ &    0.08  &  0.03 & \quart{0}{4}{1}{140} \\
-      1 & $0.25$, weight &    0.09  &  0.05 & \quart{0}{7}{3}{140} \\
-      \hline  2 & Baseline &    0.13  &  0.04 & \quart{6}{6}{9}{140} \\
-      \hline  3 & $0.5$ &    0.16  &  0.09 & \quart{9}{13}{13}{140} \\
-      3 & $0.25$, Prune=50\% &    0.17  &  0.04 & \quart{13}{6}{15}{140} \\
-      3 & $0.5$, weight &    0.19  &  0.09 & \quart{12}{13}{18}{140} \\
-      \hline  4 & $0.5$, Prune=50\% &    0.22  &  0.11 & \quart{15}{16}{22}{140} \\
-      4 & $0.75$, weight &    0.25  &  0.1 & \quart{19}{15}{27}{140} \\
-      4 & $0.75$ &    0.28  &  0.2 & \quart{19}{30}{31}{140} \\
-      4 & $0.75$, Prune=50\% &    0.28  &  0.09 & \quart{24}{13}{31}{140} \\
-      \hline \end{tabular}}\\
-
-
-
-
-{\bf \scriptsize Xalan}
-
-
-  {\scriptsize\begin{tabular}{l@{~~~}l@{~~~}r@{~~~}r@{~~~}c}
-      \rowcolor{Gray} \textbf{Rank} & \textbf{Treatment} & \textbf{Med} & \textbf{IQR} & \\
-      1 & $0.75$, weight &    0.31  &  0.14 & \quart{0}{31}{13}{170} \\
-      1 & $0.25$, weight &    0.32  &  0.1 & \quart{2}{22}{15}{170} \\
-      1 &   $0.25$ &    0.32  &  0.06 & \quart{13}{14}{15}{170} \\
-      \hline  2 &    $0.5$ &    0.34  &  0.11 & \quart{6}{25}{20}{170} \\
-      2 &   Baseline &    0.36  &  0.13 & \quart{4}{30}{24}{170} \\
-      2 &  $0.5$, weight &    0.35  &  0.12 & \quart{6}{28}{22}{170} \\
-      2 & $0.5$, Prune=50\% &    0.36  &  0.12 & \quart{11}{27}{24}{170} \\
-      2 & $0.25$, Prune=50\% &    0.38  &  0.1 & \quart{13}{23}{29}{170} \\
-      2 & $0.75$, Prune=50\% &    0.37  &  0.21 & \quart{2}{47}{27}{170} \\
-      2 &   $0.75$ &    0.38  &  0.17 & \quart{6}{39}{29}{170} \\
+      \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+      1 &     Base &    0.13  &  0.03 & \quart{0}{1}{1}{48}\\
+      \hline  2 & 0.25, weighting,  iP=50\% &    0.2  &  0.05 & \quart{3}{3}{4}{48}\\
+      \hline  3 & 0.5, weighting,  iP=50\% &    0.26  &  0.06 & \quart{6}{3}{8}{48}\\
+      \hline  4 &     0.25 &    0.3  &  0.1 & \quart{7}{6}{10}{48}\\
+      4 &   0.25&    0.3  &  0.08 & \quart{8}{4}{10}{48}\\
+      \hline  5 & 0.75, weighting,  iP=50\% &    0.42  &  0.13 & \quart{13}{7}{17}{48}\\
+      5 &      0.5 &    0.43  &  0.1 & \quart{14}{6}{17}{48}\\
+      5 &    0.5&    0.43  &  0.1 & \quart{15}{5}{17}{48}\\
+      \hline  6 &   0.75&    0.64  &  0.19 & \quart{22}{10}{29}{48}\\
+      6 &     0.75 &    0.63  &  0.08 & \quart{26}{4}{28}{48}\\
       \hline \end{tabular}}
- \end{minipage}  
-   \end{figure}
+\end{minipage}
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Camel}\\}
+{\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &   Base &    0.15  &  0.05 & \quart{0}{4}{1}{75}\\
+\hline  2 &   0.25 &    0.18  &  0.06 & \quart{1}{5}{4}{75}\\
+  2 & 0.25&    0.2  &  0.06 & \quart{2}{5}{6}{75}\\
+  2 & 0.25, weighting,  iP=50\% &    0.2  &  0.04 & \quart{4}{3}{6}{75}\\
+\hline  3 &  0.5&    0.25  &  0.1 & \quart{6}{9}{10}{75}\\
+  3 &    0.5 &    0.26  &  0.12 & \quart{6}{11}{11}{75}\\
+  3 & 0.5, weighting,  iP=50\% &    0.28  &  0.11 & \quart{10}{9}{13}{75}\\
+\hline  4 & 0.75&    0.39  &  0.16 & \quart{19}{13}{22}{75}\\
+  4 &   0.75 &    0.42  &  0.17 & \quart{15}{15}{25}{75}\\
+  4 & 0.75, weighting,  iP=50\% &    0.42  &  0.1 & \quart{20}{9}{25}{75}\\
+\hline \end{tabular}}
+\end{minipage}
+
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Ivy}\\[-0.05cm]}
+{\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 & 0.25, weighting,  iP=50\% &    0.15  &  0.04 & \quart{0}{2}{0}{55}\\
+\hline  2 &     Base &    0.16  &  0.0 & \quart{1}{0}{1}{55}\\
+  2 &     0.25 &    0.18  &  0.06 & \quart{1}{4}{2}{55}\\
+  2 &   0.25&    0.2  &  0.06 & \quart{1}{4}{3}{55}\\
+\hline  3 & 0.5, weighting,  iP=50\% &    0.28  &  0.08 & \quart{7}{5}{9}{55}\\
+\hline  4 &      0.5 &    0.33  &  0.11 & \quart{8}{7}{12}{55}\\
+  4 &    0.5&    0.37  &  0.09 & \quart{10}{6}{14}{55}\\
+\hline  5 & 0.75, weighting,  iP=50\% &    0.38  &  0.16 & \quart{12}{10}{15}{55}\\
+\hline  6 &   0.75&    0.56  &  0.08 & \quart{25}{5}{27}{55}\\
+  6 &     0.75 &    0.57  &  0.12 & \quart{25}{7}{27}{55}\\[-0.01cm]
+\hline \end{tabular}}
+\end{minipage}
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Jedit}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &   Base &    0.06  &  0.01 & \quart{0}{0}{0}{64}\\
+\hline  2 & 0.25&    0.08  &  0.06 & \quart{0}{4}{1}{64}\\
+  2 &   0.25 &    0.09  &  0.05 & \quart{0}{3}{2}{64}\\
+\hline  3 & 0.25, weighting,  iP=50\% &    0.12  &  0.08 & \quart{1}{5}{4}{64}\\
+\hline  4 &  0.5&    0.16  &  0.09 & \quart{4}{6}{6}{64}\\
+  4 &    0.5 &    0.17  &  0.09 & \quart{4}{6}{7}{64}\\
+\hline  5 & 0.5, weighting,  iP=50\% &    0.22  &  0.11 & \quart{8}{8}{10}{64}\\
+  5 & 0.75&    0.26  &  0.18 & \quart{9}{12}{13}{64}\\
+\hline  6 &   0.75 &    0.38  &  0.31 & \quart{11}{21}{21}{64}\\
+  6 & 0.75, weighting,  iP=50\% &    0.41  &  0.17 & \quart{17}{12}{24}{64}\\
+\hline \end{tabular}}
+\end{minipage}
+
+
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Log4j}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &   Base &    0.06  &  0.03 & \quart{0}{4}{4}{139}\\
+\hline  2 & 0.25&    0.09  &  0.04 & \quart{4}{6}{8}{139}\\
+  2 &   0.25 &    0.09  &  0.06 & \quart{4}{8}{8}{139}\\
+  2 & 0.25, weighting,  iP=50\% &    0.09  &  0.04 & \quart{4}{6}{8}{139}\\
+  2 &    0.5 &    0.1  &  0.07 & \quart{4}{10}{10}{139}\\
+\hline  3 &  0.5&    0.12  &  0.03 & \quart{10}{4}{12}{139}\\
+\hline  4 & 0.75&    0.13  &  0.11 & \quart{10}{15}{14}{139}\\
+  4 &   0.75 &    0.13  &  0.06 & \quart{12}{9}{14}{139}\\
+  4 & 0.5, weighting,  iP=50\% &    0.13  &  0.06 & \quart{10}{8}{14}{139}\\
+\hline  5 & 0.75, weighting,  iP=50\% &    0.19  &  0.11 & \quart{17}{15}{22}{139}\\
+\hline \end{tabular}}
+\end{minipage}
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Lucene}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &  0.25 &    0.05  &  0.02 & \quart{1}{4}{3}{188}\\
+  1 & 0.25&    0.05  &  0.04 & \quart{0}{7}{3}{188}\\
+\hline  2 &   0.5 &    0.07  &  0.04 & \quart{3}{8}{7}{188}\\
+  2 & 0.25, weighting,  iP=50\% &    0.07  &  0.04 & \quart{3}{8}{7}{188}\\
+  2 & 0.5&    0.08  &  0.05 & \quart{5}{10}{9}{188}\\
+\hline  3 & 0.5, weighting,  iP=50\% &    0.1  &  0.03 & \quart{9}{6}{13}{188}\\
+  3 &  Base &    0.1  &  0.03 & \quart{7}{6}{13}{188}\\
+\hline  4 & 0.75, weighting,  iP=50\% &    0.13  &  0.09 & \quart{9}{18}{19}{188}\\
+  4 &  0.75 &    0.15  &  0.08 & \quart{13}{16}{23}{188}\\
+  4 & 0.75&    0.15  &  0.11 & \quart{11}{21}{23}{188}\\
+\hline \end{tabular}}
+\end{minipage}
+
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Poi}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+      \arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &     Base &    0.1  &  0.03 & \quart{0}{2}{1}{61}\\
+\hline  2 & 0.25, weighting,  iP=50\% &    0.14  &  0.1 & \quart{0}{6}{4}{61}\\
+\hline  3 &   0.25&    0.18  &  0.14 & \quart{4}{9}{6}{61}\\
+  3 &     0.25 &    0.19  &  0.11 & \quart{4}{7}{7}{61}\\
+  3 & 0.5, weighting,  iP=50\% &    0.2  &  0.19 & \quart{4}{13}{8}{61}\\
+\hline  4 & 0.75, weighting,  iP=50\% &    0.26  &  0.2 & \quart{8}{13}{12}{61}\\
+  4 &      0.5 &    0.28  &  0.2 & \quart{6}{14}{13}{61}\\
+  4 &    0.5&    0.33  &  0.22 & \quart{10}{14}{16}{61}\\
+\hline  5 &     0.75 &    0.47  &  0.22 & \quart{18}{14}{26}{61}\\
+  5 &   0.75&    0.46  &  0.11 & \quart{22}{7}{25}{61}\\
+\hline \end{tabular}}
+\end{minipage}
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Synapse}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 & Base &    0.15  &  0.0 & \quart{1}{0}{1}{44}\\
+  1 & 0.5, weighting,  iP=50\% &    0.15  &  0.08 & \quart{1}{4}{1}{44}\\
+  1 & 0.25, weighting,  iP=50\% &    0.17  &  0.08 & \quart{0}{4}{2}{44}\\
+\hline  2 & 0.75, weighting,  iP=50\% &    0.21  &  0.08 & \quart{1}{4}{4}{44}\\
+  2 & 0.25 &    0.23  &  0.18 & \quart{2}{9}{5}{44}\\
+  2 & 0.25&    0.23  &  0.11 & \quart{2}{5}{5}{44}\\
+\hline  3 & 0.5&    0.38  &  0.19 & \quart{7}{10}{12}{44}\\
+  3 &  0.5 &    0.42  &  0.27 & \quart{6}{14}{14}{44}\\
+\hline  4 & 0.75 &    0.5  &  0.39 & \quart{12}{20}{19}{44}\\
+  4 & 0.75&    0.56  &  0.25 & \quart{17}{12}{22}{44}\\
+\hline \end{tabular}}
+\end{minipage}
+
+\noindent\begin{minipage}{0.50\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Velocity}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 & 0.25, weighting,  iP=50\% &    0.03  &  0.06 & \quart{0}{5}{1}{98}\\
+  1 & 0.25 &    0.04  &  0.02 & \quart{1}{2}{2}{98}\\
+  1 & 0.25&    0.05  &  0.03 & \quart{2}{3}{3}{98}\\
+  1 & Base &    0.05  &  0.06 & \quart{0}{5}{3}{98}\\
+\hline  2 & 0.5, weighting,  iP=50\% &    0.07  &  0.11 & \quart{3}{11}{5}{98}\\
+  2 & 0.5&    0.1  &  0.08 & \quart{5}{8}{8}{98}\\
+\hline  3 & 0.5 &    0.13  &  0.12 & \quart{5}{12}{11}{98}\\
+\hline  4 & 0.75 &    0.16  &  0.24 & \quart{8}{24}{14}{98}\\
+  4 & 0.75, weighting,  iP=50\% &    0.17  &  0.15 & \quart{9}{15}{15}{98}\\
+  4 & 0.75&    0.22  &  0.22 & \quart{9}{22}{20}{98}\\
+\hline \end{tabular}}
+\end{minipage}
+\noindent\begin{minipage}{0.50\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Xalan}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &   Base &    0.08  &  0.02 & \quart{0}{1}{0}{80}\\
+\hline  2 & 0.5, weighting,  iP=50\% &    0.14  &  0.05 & \quart{3}{4}{6}{80}\\
+  2 & 0.75, weighting,  iP=50\% &    0.15  &  0.06 & \quart{5}{5}{6}{80}\\
+  2 & 0.25, weighting,  iP=50\% &    0.15  &  0.06 & \quart{3}{5}{6}{80}\\
+\hline  3 &   0.25 &    0.23  &  0.11 & \quart{8}{10}{13}{80}\\
+  3 & 0.25&    0.23  &  0.09 & \quart{10}{8}{13}{80}\\
+\hline  4 &  0.5&    0.28  &  0.06 & \quart{16}{5}{18}{80}\\
+\hline  5 &    0.5 &    0.3  &  0.13 & \quart{15}{11}{19}{80}\\
+  5 & 0.75&    0.34  &  0.19 & \quart{16}{16}{23}{80}\\
+  5 &   0.75 &    0.38  &  0.11 & \quart{21}{10}{26}{80}\\
+\hline \end{tabular}}
+\end{minipage}
+   \end{figure*}
 
 
 % \section{Discussion}
 % \section{Threats to validity}
 % \section{Conclusion}
-% \section*{Acknowledgements}
+% \section*{Acknoweightingledgements}
 \newpage
 \bibliography{References}{}
 \bibliographystyle{IEEEtran}
