@@ -52,7 +52,7 @@
 \definecolor{Gray}{gray}{0.9}
 \newcommand{\kw}[1]{\textit{#1}}
 \newcommand{\quart}[4]{\begin{picture}(75,6)
-  {\color{black}\put(#3,3){\circle*{4}}\put(#1,3){\line(1,0){#2}}}\end{picture}}
+  {\color{black}\put(#3,3){\circle*{2.5}}\put(#1,3){\line(1,0){#2}}}\end{picture}}
 % New Commands
 
 \definecolor{Code}{rgb}{0,0,0}
@@ -96,9 +96,9 @@ morecomment=[s][\color{Strings}]{'''}{'''},
 morekeywords={[1]import,from,class,def,for,while,if,is,in,elif,else,not,and,or,print,break,continue,return,True,False,None,access,as,,del,except,exec,finally,global,import,lambda,pass,print,raise,try,assert, dot, norm, zip, sorted},
 keywordstyle={[1]\color{Code}\bfseries},
 % additional keywords
-morekeywords={[3]fastmap, project, furthest, split, where,clusterer, getExemplar, projection, mutate, WHAT, knn},
+morekeywords={[3]fastmap, project, furthest, split, WHERE,clusterer, getContours, envied, fWeight, nearestContour, projection, mutate, WHAT, knn},
 keywordstyle={[3]\color{Keywords}\bfseries},
-morekeywords={[2]@invariant},
+morekeywords={[2]@invari},
 keywordstyle={[2]\color{Decorators}\slshape},
 emph={self},
 emphstyle={\color{self}\slshape},
@@ -137,31 +137,35 @@ Assessing the quality of solutions to a real-world problem can be extremely hard
 
 There exist several problems where models are hard to obtain, or the input and output are related by complex connections that simply cannot be modeled in a reliable manner, or generation of reliable models take prohibitively long ~\cite{Ludewig2003}. Software defect prediction is an excellent example of such a case. Models that incorporate all the intricate issues that may lead defects in a product is extremely hard to come by. Moreover, it has been shown that models for different regions within the same data can have very different properties \cite{localvsglobal}. This makes it extremely hard for one to design planning systems that are capable of mitigating these defects.
 
-In this paper we propose the use of an instance based approach, an example of case based reasoning strategy, in place of the conventional model based approach. Instance based approaches have been used extensively by the effort estimation community, see~\cite{keung2008analogy, 6600685, walkerden1999empirical, shepperd1997estimating, kocaguneli2010use, some more form p1703 line 2}. This approach has been proposed as an alternative to closed form mathematical models of other modeling methods such as regression \cite{keung2008analogy}. There are several other reasons for instance based approaches being a useful tool, see~\cite{6600685}. As pointed out by~\cite{walkerden1999empirical} it can be used with partial knowledge of the target project at an early stage which could be a very useful tool in preventing software defects. Instance based approaches are also rather robust in handling cases with sparse samples \cite{1438374}. All these features are desirable and suggest that instance-based approach is a useful adjunct to traditional model based approach. 
+An alternative approach would be to make use of an instance based approach, an example of case based reasoning strategy, in place of the conventional model based approach. Instance based approaches have been used extensively by the effort estimation community, see~\cite{keung2008analogy, 6600685, walkerden1999empirical, shepperd1997estimating, kocaguneli2010use}. This approach has been proposed as an alternative to closed form mathematical models or other modeling methods such as regression \cite{keung2008analogy}. There are several other reasons for instance based approaches being a useful tool, see~\cite{6600685}. As pointed out by~\cite{walkerden1999empirical} it can be used with partial knowledge of the target project at an early stage which could be a very useful tool in preventing software defects. Instance based approaches are also rather robust in handling cases with sparse samples \cite{1438374}. All these features are desirable and suggest that instance-based approach is a useful adjunct to traditional model based approach. 
 
-We would like to stress that the purpose of our work is not to promote instance-based planning over model based analytics, rather it is to suggest an alternative when model based approaches cannot be used.
+In this paper the instance based learning principle is used to first cluster the training data and then create contours in the data. These contours can then be used by test cases to infer meaningful information in order to improve it. The entire process is described in greater detail in the following sections. We would like to stress that the purpose of our work is not to promote instance-based planning over model based analytics, rather it is to suggest an alternative when model based approaches cannot be used.
 
 \subsection{Spectral Learning using WHERE}
-The algorithm uses WHERE to recursively cluster the input data to identify subsets in the training data that a test instance can learn from. WHERE is a spectral learner which uses the FastMap heuristic to estimate the first principal component. It then recursively partitions the data into two halves along the Medianian point of the projection on the first principal component, terminating when a half has less than $\sqrt{N}$ items.   
+The algorithm uses WHERE to recursively cluster the input data to identify subsets in the training data that a test instance can learn from. WHERE is a spectral learner which uses the FastMap heuristic to estimate the first principal component. It then recursively partitions the data into two halves along the Median point of the projection on the first principal component, terminating when a half has less than $\sqrt{N}$ items.   
 
 \subsection{Planning changes using WHAT}
 We propose the WHAT algorithm as a tool to plan changes in the original test data. Figure~\ref{fig:what} highlights the procedure by which WHAT operates. It begins by creating clusters which are generated using the WHERE algorithm discussed above. Following this, a nearest neighbour scheme is applied to identify pairs of nearby clusters. A projective plane is constructed with these clusters at the vertices to characterize the cluster pairs.
 
-The mutation policy works by projecting the test instance onto the projective planes and identifying the the plane on which the test instance has the largest scalar projection. The planner then reflects over the vertices of the chosen hyperplane, identifying the \textit{better} vertex among the two. Now, a new instance is generated by mutating the attributes of the test instance towards the better vertex and away from the worse vertex. This process is repeated for all the test instances that are considered defective by the defect prediction scheme, discussed below.
+The mutation policy works by projecting the test instance onto the projective planes and identifying the the plane on which the test instance has the largest scalar projection. The planner then reflects over the vertices of the chosen hyperplane, identifying the \textit{better} vertex among the two. Now, a new instance is generated by \textit{mutating the attributes} of the test instance towards the better vertex and away from the worse vertex. This process is repeated for all the test instances that are considered defective by the defect prediction scheme, discussed below.
 
+\subsection{Feature Weighting}
+The algorithm also allows for a feature weighting and pruning scheme. We have employed a simple (and fast) attribute ranking method where the features are sorted based on their ability to find meaningful splits in the dependent class of the data, see ~\cite{hall03}. Features that can find splits with the \textit{lesser variance} in the dependent variable are \textit{ranked higher} than features that don't. 
+
+We reason that the most informative feature must undergo a larger change as compared to other features. Therefore, when feature weighting is employed, the higher ranked features are mutated by a larger extent. Additionally, we have also included information pruning. Here we mutate only the top X\% of the features in each test instance. The remaining features remain unaltered. 
 \begin{figure}[htbp!]
 \small
 \begin{tabular}{|p{.95\linewidth}|}\hline
 WHAT begins by \textit{clustering} the training data into similar subsets using WHERE. WHERE works as follows:
 \begin{enumerate}
-\item Find the two most distant points in a given population; say {\em east} and {\em west}. 
+\item Find the two most dist points in a given population; say {\em east} and {\em west}. 
 \item Draw an axis of length $c$ between the poles. 
 \item Let each point be at distance $a,b$ to the {\em east,west} poles.  Using the cosine rule, project each point onto the  axis  at $x=(a^2 + c^2 - b^2)/(2c)$.  
 \item Using the Medianian $x$ value, divide the population.
 \item For each half that is larger than $\sqrt{N}$ of the original population, go to step 1.
 \end{enumerate}
 
-There are couple of things to note: firstly, the above algorithm requires a distance measure between sets of decisions, for this WHERE uses case-based reasoning measure defined by Aha et al.~\cite{aha91}; secondly, in step-1 a linear time heuristic called FASTMAP~\cite{fastmap} is used to find the two most distant points, this procedure is listed below:
+There are couple of things to note: firstly, the above algorithm requires a distance measure between sets of decisions, for this WHERE uses case-based reasoning measure defined by Aha et al.~\cite{aha91}; secondly, in step-1 a linear time heuristic called FASTMAP~\cite{fastmap} is used to find the two most dist points, this procedure is listed below:
 \begin{itemize}
 \item Pick a point at random; 
 \item Let {\em east} be the point furthest from that point; 
@@ -176,7 +180,7 @@ The final clusters that are found by WHERE are then used by WHAT as follows:
 \item Mutate the attributes of the test case towards the {\em Good Cluster} in that projective plane. 
 \end{itemize}
 
-Formally, WHAT can be considered as an instance based  learning scheme. And that's beacuse it builds a set of recommendations based on a given test case based on the clusters forMedian at the training stage. This is unlike a model based approach, which would have used a model to do the same~\cite{xomo}.
+Formally, WHAT can be considered as an instance based  learning scheme. And that's because it builds a set of recommendations based on a given test case based on the clusters for Median at the training stage. This is unlike a model based approach, which would have used a model to do the same~\cite{xomo}.
 \\\hline
 \end{tabular}
 \caption{Inside WHAT}\label{fig:what}
@@ -190,10 +194,10 @@ Formally, WHAT can be considered as an instance based  learning scheme. And that
 \end{figure}
 
 \begin{figure}[!b]
-\begin{python}[right]
+\begin{python}[left]
 def fastmap(data): 
   """Project data on a line 
-     between 2 distant points
+     between 2 dist points
   """
   z          = random.choose(data)
   east       = furthest(z, data)
@@ -209,7 +213,8 @@ def project(west, east, c, x):
   "Project x onto line east to west"
   a = dist(x,west)
   b = dist(x,east)
-  return (a*a + c*c - b*b)/(2*c) #cosine rule
+  #cosine rule
+  return (a*a + c*c - b*b)/(2*c) 
 
 def furthest(x,data): 
   # what is furthest from x?
@@ -223,9 +228,9 @@ def split(data): # Split at median
    mid = len(data)/2; 
   return data[mid:], data[:mid]
 
-def where(data, scores={}, 
+def WHERE(data, scores={}, 
           lvl=10000, prune=True):  
-  "Recursively split data into 2 equal sizes."
+  "Recursively split data."
   if lvl < 1: 
      return data # stop if out of levels
   leafs      = [] # Empty Set
@@ -234,7 +239,7 @@ def where(data, scores={},
   $\omega=\sqrt{\mu}$ # enough data for recursion
   goWest = len(left) > $\omega$  
   goEast = len(right) > $\omega$ 
-  if prune: # if not pruning, ignore this step
+  if prune: 
     if goEast and better(west,east,scores): 
        goEast = False 
     if goWest and better(east,west,scores): 
@@ -252,53 +257,71 @@ def where(data, scores={},
 
 
 \begin{figure}[!t]
-\begin{python}[left]
-def clusterer():
- "Create clusters using WHERE"
- 
-def getExemplar():
+\begin{python}[right]
+def envied(leaves):
   """
-  Identify the contour that exemplifies
-  the test Instance the most
+  Returns a single exemplary row from 
+  a cluster.
+  """
+
+def fWeight(train, prune = 0):
+  """
+  Find the feature weights & prune features
+  """
+
+def getContours(train):
+  """
+  Identify the pairs of clusters
+  that can form a contour
   """
   contours = []
-  ClusterRows = clusterer()
-  while ClusterRows:
-    one = ClusterRows.pop()
-    two = knn(one, ClusterRows)[1]
-    contours.append([one, two])
+  # Clustering with where
+  clusters = WHERE(train) 
+  near = lambda x: knn(x, clusters)[1]
+  for c in clusters:
+    one = envied(c)
+    two = envied(near(one, clusters))
+    contours += [one, two]
   return contours
 
-def projection(one, two, three):
-  "Compute projection of three on one & two"
-  if one.score() > two.score():
-    bad, good = one, two
+def project(a, b, test):
+  if score(a) > score(b):
+    good, bad = a,b 
   else:
-    bad, good = two, one
-  plane = [b - a for a, b in zip(
-            bad.rep(), good.rep())]
-  Norm = norm(plane)
-  unitVect = [p / Norm for p in plane]
-  proj = dot(three - bad.rep(), unitVect)
-  return proj
+    good, bad = b,a
+  AB = dist(bad,test)
+  BC = dist(good,test)
+  AC = dist(good,bad)
+  # Cosine rule
+  y = (AB$^2$ + BC$^2$ - AC$^2$)/(2*AC)
+  return $\sqrt{AB^2 - y^2}$
 
-def mutate(me, others):
+def mutate(me, others, weights = None):
   "Mutate 'me' towards 'others'"
-  return [my + ext * (good - my) 
+  if weights:
+    return [my + ext * f * (good - my) for 
+    f, my, good in zip(wights, me, others)]
+  else:
+    return [my + ext * (good - my) 
     	 for my, good in zip(me, others)]
 
-def WHAT():
-  contours = getExemplar()
-  for rows in defectiveRows:
-    vtx = sorted(
+def nearestContour(contours, instance):
+  "Find the nearest contour to an instance"
+  return sorted(
         contours,
-        key=lambda F: projection(
-        F[0], F[1], rows), reverse=True)[0]
-    
+        key=lambda F: project(
+        F[0], F[1], instance), 
+        reverse=True)[0]
+        
+def WHAT():
+  contours = getContours()
+  weights = fWeight(train)
+  for rows in defectiveRows:
+    vtx = nearestContour(contours, rows)
     [good, bad] = sorted(vtx
-            , key=lambda F: F.score())
-    newRows.append(mutate(rows, good))
-  return newRows
+            , key=lambda F: score(F))
+    new += mutate(rows, good, weights)
+  return new
 \end{python}
 \caption{Instance-based Planning using WHAT}
 \label{fig:WHAT}   
@@ -310,8 +333,8 @@ To validate the treatments that have been suggested by our planner, we need to h
 \bi
 \item
 {\em Statistical classifiers:}
-Linear    discriminant analysis,
-Quadratic discriminant analysis,
+Linear    discrimin analysis,
+Quadratic discrimin analysis,
 Logistic regression,
 Naive Bayes,
 Bayesian networks,
@@ -363,6 +386,7 @@ In short, SMOTE works by under-sampling the majority class and oversampling all 
         in class\\\hline
         ca & afferent couplings & how many other classes use the specific
         class. \\\hline
+class. \\\hline
         cam & cohesion amongst classes & summation of number of different
         types of method parameters in every method divided by a multiplication
         of number of different method parameter types in whole class and
@@ -443,53 +467,245 @@ Xalan & xal &2.5, 2.6 &2.7 & 1688 & 798 & 47.27\\\hline
 \caption{Attributes of the defect datasets}\label{fig:ck}
 \end{figure}
 
-\section{Experimental Design}
-The following section describes the experimental rig and the experiments used to measure the performance of WHAT on 10 defect data sets and 6 performance prediction data sets.
+\begin{figure}[!hbp]
+  \renewcommand{\baselinestretch}{1}\begin{center}
+{\scriptsize
+\begin{tabular}{llllll}
+  \hline
+  \rowcolor{lightgray}
+Project & Domain & Lang. & LOC & Features & Config\\\hline
+
+Berkeley DB CE & Database & C & 219,811 & 18 & 2560\\
+
+Berkeley DB JE & Database & Java & 42,596 & 32  & 400\\
+
+Apache & Web Server & C & 230,277 & 9 & 192\\
+
+SQLite & Database & C & 312,625 & 39 & 3,932,160\textsuperscript{*}\\
+
+LLVM & Compiler & C++ & 47,549 & 11 & 1024\\
+
+x264 & Video Enc. & C& 45,743 & 16 & 1152\\\hline
+\end{tabular}}\par\medskip
+
+{ \footnotesize $^*$ Dataset contains 4, 553 configurations for prediction modeling and 100 additional random configurations for prediction evaluation, see \cite{vapp}.}
+\end{center}
+
+\caption{Attributes of the Performance Prediction datasets}\label{fig:cpm}
+\end{figure}
+
+
 
 \begin{figure}[tbp!]
-%   \subfloat[\label{oracle}]{\includegraphics[width=\linewidth]{./_figs/Oracle}}\\
-  \includegraphics[width=\linewidth]{./_figs/WHAT}
-  \caption{The Planning scheme}
-  \label{fig:what}
+% \subfloat[\label{oracle}]{\includegraphics[width=\linewidth]{./_figs/Oracle}}\\
+\includegraphics[width=\linewidth]{./_figs/WHAT}
+\caption{Experimental Rig}
+\label{fig:rig}
+  
+  
+%   \subfloat[Experimental Rig for Defect Prediction]{  \includegraphics[width=\linewidth]{./_figs/WHAT}
+%   \label{fig:rig2}}
+
 \end{figure}
 
 %involves two key components. Firstly, there is the oracle (Random Forest with SMOTE) which is used to make predictions. Then we have the 
-\subsection{Data sets}
-The data was obtained from the PROMISE repository. For the defect data we investigated 32 releases from 11 open source Java projects defined by the metrics highlighted in Fig.~\ref{fig:ck}: \kw{Apache Ant} (1.5 -- 1.7), \kw{Apache Camel} (1.2 -- 1.6), \kw{Apache Ivy} (1.1 -- 2.0), \kw{JEdit} (4.1 -- 4.3), \kw{Apache Log4j} (1.0 -- 1.2), \kw{Apache Lucene} (2.0 -- 2.2), \kw{PBeans} (1.0 and 2.0), \kw{Apache POI} (2.0 -- 3.0), \kw{Apache Synapse} (1.0 -- 1.2), \kw{Apache Velocity} (1.4 -- 1.6), and \kw{Apache Xalan-Java} (2.5 -- 2.7). Given the empirical nature of the data, it is important to design an experiment such that the planning phase uses only the \kw{past} data to learn trends which can then be applied to the \kw{future} data. Thus for our experiment we use data sets that have at least two consecutive releases. 
+\section{Data sets}
+
+The following section describes the experimental rig and the experiments used to measure the performance of WHAT on 10 defect data sets and 6 performance prediction data sets.
+
+\subsection{Defect Data Set}
+The data was obtained from the PROMISE repository\footnote{Promise Repository: \url{http://openscience.us/repo}}. For the defect data we investigated 32 releases from 11 open source Java projects defined by the metrics highlighted in figure ~\ref{fig:ck}: \kw{Apache } (1.5 -- 1.7), \kw{Apache Camel} (1.2 -- 1.6), \kw{Apache Ivy} (1.1 -- 2.0), \kw{JEdit} (4.1 -- 4.3), \kw{Apache Log4j} (1.0 -- 1.2), \kw{Apache Lucene} (2.0 -- 2.2), \kw{PBeans} (1.0 and 2.0), \kw{Apache POI} (2.0 -- 3.0), \kw{Apache Synapse} (1.0 -- 1.2), \kw{Apache Velocity} (1.4 -- 1.6), and \kw{Apache Xalan-Java} (2.5 -- 2.7). 
+
+Given the empirical nature of the data, it is import to design an experiment such that the planning phase uses only the \kw{past} data to learn trends which can then be applied to the \kw{future} data. Thus for our experiment we use data sets that have at least two consecutive releases. 
 \begin{itemize}
 \item To generate recommendations for a release $i$, the planner uses releases releases $(i-1)$ and $(i-2)$.
 \item The predictor also uses releases $(i-1)$ and $(i-2)$. However, we use SMOTE with re-sampling in order to handle the class imbalance in the data and to prevent the predictor from using the same training data as the planner.
 \end{itemize}
 
+\subsection{Performance Prediction Data Set}
 
-In order to answer {\bfseries RQ4}, we have used the performance prediction data set was obtained from the PROMISE repository~\cite{}. The data set contains six examples of real world configurable systems: \kw{Apache}, \kw{LLVM}, \kw{x264}, \kw{Berkeley DB (written in C and Java}, and \kw{SQLite}. The systems have different characteristics, different implementation languages, and different configuration mechanisms. The data set is a collection of all possible configurations (with SQLITE being a exception with only 4653 configurations). 
+{\bfseries RQ3} asks if the aforementioned method can be expanded to other kinds of data. To answer this, we have used the performance prediction data set collected by Siegmund et al. for their ICSE '12 paper~\cite{sven12}. The data sets have been deployed as a part of the \textsc{SPLConqueror} tool\footnote{\url{http://fosd.de/SPLConqueror}}. This data set contains six examples of real world configurable systems that cover a broad spectrum of scenarios, see figure \ref{fig:cpm} for a summary. The systems have different characteristics (lines of code: 40 thousand to 300 thousand; Valid configurations: 192 to about 3.9 million), different implementation languages (C, C++, and Java), different mechanism (conditional compilation, configuration files, and command-line options), and different domains (Web servers, compilers, encoders, and databases). The data contains a measurement of all the configurations that are invoked by the benchmarking tool. The measurements were conducted 5 to 20 times and the mean of all measurements for each configuration was recoded.
+
+For our experiments, we randomly split the data sets into two equal halves, one for training and the other for testing. The planning phase learns configuration settings from the training half and plans for changes in the test half aiming to optimize the performance of the test instances. We repeat our measurements 20 to 25 times to overcome measurement bias.
+\section{Experimental Design}
 
 \subsection{The Rig}
 
-The experimental rig is shown in Figure \ref{fig:rig}. It uses an \textit{oracle} to determine wether a certain test case is defective or not. If the oracle suggests that an instance is defective, then we use WHAT to apply the recommendations to that test instance. The oracle is used to check if the recommendation helped subdue the defect.
+The experimental rig for defect prediction is shown in Figure \ref{fig:rig}. It works as follows: 
+\bi
+\item We use an {oracle} (Random Forest + SMOTE) to determine whether a certain test case is defective or not. 
+\item If the oracle suggests that an instance is defective, then we use WHAT to apply the recommendations to that test instance. 
+\item The oracle is then used to predict the attributes in the modified instance.
+\item The statistical significance of the changes are verified using the cliffs delta measure described below.
+\ei
+
+For run time optimization, we use a similar rig. The oracle is Random Forest, and it predicts for run times of specific configuration. WHAT is used to generate a recommended configuration to reduce the run times. The run time is measured by the oracle. The reduction of run times are expressed as fractions of the original (also referred to as baseline) run time.
+
+Note that we report the performance scores as a comparison between the oracle's prediction \textit{before} and that \textit{after}. We refrain from using the \textit{actual} defects in the data sets to perform the same comparison. This is because the oracle is limited in its ability to predict defects, there are instances that are inherently misclassified. These misclassifications however are not affected by the planner. Therefore, by comparing the defect counts before and after applying the planner and doing so with a the same oracle would give us an accurate albeit relativistic measure of performance.
+
 
 \subsection{Performance Assessment}
 
 In order to assess the performance of the planner for the defect data set, we use the Cliffs Delta score to measure the probability that the number of bugs in test data before applying the planner is larger than after doing so. In other words, we use the delta score to measure the ability of the planner to effective reduce the number of defects. Given the untreated test instance labeled \textit{Before} of length \textit{M} and the treated instances labeled \textit{After}, the delta score is obtained as follows:
 \begin{equation}
-\delta = \frac{\#(Before>After) - \#(Before<After)}{M^2}
+\delta = \frac{\#(Before<After) - \#(Before>After)}{M^2}
 \end{equation}
 
-In the context of our application, the $\delta$ attains a value of 1 if the number of defects after applying the treatments has reduced to zero, and 0 if there is no change.
+In the context of our application, the $\delta$ attains a value of -1 if the number of defects after applying the treatments has reduced to zero. On the other hand $\delta$ will be 0 if there is no change at all. Thus, most of the values reported will lie between 0 and -1. It needs to be highlighted that although $\delta$ can lie between -1 and +1, the in our application the range is limited to -1 and 0. And this is because we only apply the treatments to defective cases. 
 
 For the performance prediction data set on the other hand, Cliff's delta measure is not directly applicable. We therefore assess the performance by measuring the gain, given by $\frac{Before}{After}$. The gain takes a value larger than 1 if the run times have been reduced, a value of 1 if there is no change, and a value less than 1 if run times have increased after applying the recommended changes. 
 
-In addition to the above, we rank the different variants of the planning scheme to identify the best approach. We make use of the Scott-Knott procedure, recommended by Mittas \& Angelis in their 2013 IEEE TSE paper~\cite{sk}, to compute the ranks. It works as follows: A list of treatments \textit{l} is sorted by the Medianian score. The list \textit{l} is then split into sub-lists m, n in order to maximize the expected value of the differences in the observed performance before and after division. A statistical hypothesis test \textit{H} is applied on the splits \textit{m, n} to check if they are statistically different. If so, Skott-Knott then recurses on each division. 
+In addition to the above, we rank the different varis of the planning scheme to identify the best approach. We make use of the Scott-Knott procedure, recommended by Mittas \& Angelis in their 2013 IEEE TSE paper~\cite{sk}, to compute the ranks. It works as follows: A list of treatments \textit{l} is sorted by the Median score. The list \textit{l} is then split into sub-lists m, n in order to maximize the expected value of the differences in the observed performance before and after division. A statistical hypothesis test \textit{H} is applied on the splits \textit{m, n} to check if they are statistically different. If so, Skott-Knott then recurses on each division. 
 
-The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\cite{kampenes07} and Kocaguenli et al.~\cite{}, highlighted that an ``effect size'' in lieu of a mere hypothesis test is required in order to verfiy if two populations are ``significantly'' different. An ICSE'11 paper by Arcuri~\cite{} endorsed the use of Vargha and Delaney's A12 effect size for reporting results in software engineering. Thus, for hypothesis testing H in Skott-Knott, we use the A12 test and a non-parametric bootstrap sampling~\cite{}.
+The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\cite{kampenes07} and Kocaguenli et al.~\cite{}, highlighted that an ``effect size'' in lieu of a mere hypothesis test is required in order to verfiy if two populations are ``significly'' different. An ICSE'11 paper by Arcuri~\cite{} endorsed the use of Vargha and Delaney's A12 effect size for reporting results in software engineering. Thus, for hypothesis testing H in Skott-Knott, we use the A12 test and a non-parametric bootstrap sampling~\cite{}.
 
 \section{Experimental Results}
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{_figs/histograms.pdf}
-\caption{Caption}
+\caption{Comparison of defects before and after planning.}
 \label{fig:bugs}
 \end{figure}
+
+\begin{figure*}[htbp!]
+\centering
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/Apache.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/BDBJ.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/BDBC.pdf}
+\end{minipage}
+
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/LLVM.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/SQL.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/X264.pdf}
+\end{minipage}
+\caption{Run time optimization using WHAT. Blue curve represents a mutation probability of 0.75 with feature weighting and information pruning; Red curve represents a mutation probability of 0.25 with feature weighting, but no information pruning; Black curve represents the raw test data used as baseline for the comparision.}
+\label{fig:pp}
+\end{figure*}
+
+\begin{figure*}[htbp!]
+\noindent\begin{minipage}{0.5\textwidth}
+  {\scriptsize \textbf{Apache}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+      \arrayrulecolor{darkgray}
+      \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 & 75, weighting, Prune=25\% &    0.77  &  0.05 & \quart{0}{9}{3}{49} \\
+  1 &   75 &    0.79  &  0.08 & \quart{1}{16}{7}{49} \\
+\hline  2 & 75, weighting &    0.85  &  0.07 & \quart{9}{14}{19}{49} \\
+  2 & 50, weighting, Prune=25\% &    0.85  &  0.04 & \quart{15}{8}{19}{49} \\
+  2 &  50 &    0.85  &  0.05 & \quart{17}{10}{19}{49} \\
+\hline  3 & 50, weighting &    0.91  &  0.05 & \quart{25}{10}{31}{49} \\
+  3 &  25 &    0.92  &  0.04 & \quart{29}{8}{33}{49} \\
+  3 & 25, weighting, Prune=25\% &    0.93  &  0.02 & \quart{33}{4}{35}{49} \\
+\hline  4 & 25, weighting &    0.96  &  0.03 & \quart{37}{6}{41}{49} \\
+\hline  5 & baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+\end{minipage}
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{BDBC}\\}
+{\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &     75 &    0.22  &  0.05 & \quart{0}{3}{1}{49} \\
+  1 &  75, weighting, Prune=25\% &    0.21  &  0.04 & \quart{0}{2}{0}{49} \\
+\hline  2 &  75, weighting &    0.24  &  0.1 & \quart{0}{6}{2}{49} \\
+\hline  3 &     50 &    0.4  &  0.04 & \quart{11}{2}{12}{49} \\
+  3 &  50, weighting, Prune=25\% &    0.4  &  0.05 & \quart{10}{3}{12}{49} \\
+\hline  4 &  50, weighting &    0.47  &  0.09 & \quart{14}{5}{16}{49} \\
+\hline  5 &     25 &    0.66  &  0.03 & \quart{28}{1}{28}{49} \\
+  5 &  25, weighting, Prune=25\% &    0.67  &  0.06 & \quart{28}{3}{29}{49} \\
+\hline  6 &  25, weighting &    0.69  &  0.06 & \quart{29}{4}{30}{49} \\
+\hline  7 &  baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+\end{minipage}
+
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{BDBJ}\\}
+{\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &     75 &    0.63  &  0.16 & \quart{0}{19}{3}{49} \\
+  1 &  75, weighting, Prune=25\% &    0.68  &  0.17 & \quart{1}{21}{9}{49} \\
+  1 &  75, weighting &    0.74  &  0.11 & \quart{8}{14}{17}{49} \\
+\hline  2 &  50, weighting, Prune=25\% &    0.75  &  0.09 & \quart{14}{12}{18}{49} \\
+  2 &     50 &    0.79  &  0.13 & \quart{16}{16}{23}{49} \\
+\hline  3 &  50, weighting &    0.82  &  0.09 & \quart{23}{11}{27}{49} \\
+\hline  4 &  25, weighting, Prune=25\% &    0.87  &  0.07 & \quart{29}{9}{33}{49} \\
+\hline  5 &     25 &    0.88  &  0.06 & \quart{33}{8}{34}{49} \\
+  5 &  25, weighting &    0.92  &  0.06 & \quart{36}{7}{39}{49} \\
+\hline  6 &  baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+\end{minipage}
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{LLVM}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &     75 &    0.92  &  0.01 & \quart{5}{6}{5}{49} \\
+  1 &  75, weighting, Prune=25\% &    0.92  &  0.02 & \quart{0}{11}{5}{49} \\
+  1 &  75, weighting &    0.93  &  0.02 & \quart{5}{11}{11}{49} \\
+\hline  2 &     50 &    0.94  &  0.01 & \quart{16}{6}{16}{49} \\
+  2 &  50, weighting, Prune=25\% &    0.95  &  0.0 & \quart{22}{0}{22}{49} \\
+  2 &  50, weighting &    0.96  &  0.02 & \quart{22}{11}{27}{49} \\
+\hline  3 &     25 &    0.98  &  0.01 & \quart{33}{5}{38}{49} \\
+  3 &  25, weighting, Prune=25\% &    0.98  &  0.01 & \quart{33}{5}{38}{49} \\
+  3 &  25, weighting &    0.98  &  0.0 & \quart{38}{0}{38}{49} \\
+\hline  4 &  baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+\end{minipage}
+
+
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{SQL}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &      75 &    0.98  &  0.01 & \quart{0}{16}{16}{49} \\
+  1 &  75, weighting, Prune=25\% &    0.98  &  0.0 & \quart{16}{0}{16}{49} \\
+  1 &  75, weighting &    0.99  &  0.01 & \quart{16}{17}{33}{49} \\
+  1 &  50, weighting, Prune=25\% &    0.99  &  0.0 & \quart{33}{0}{33}{49} \\
+  1 &      50 &    0.99  &  0.0 & \quart{33}{0}{33}{49} \\
+  1 &  50, weighting &    0.99  &  0.01 & \quart{33}{16}{33}{49} \\
+  1 &  25, weighting, Prune=25\% &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 &      25 &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 &  25, weighting &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 &  baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  \hline \end{tabular}}
+\end{minipage}
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{X264}\\}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
+  1 &  75, weighting, Prune=25\% &    0.73  &  0.05 & \quart{1}{9}{3}{49} \\
+  1 &     75 &    0.74  &  0.05 & \quart{0}{8}{5}{49} \\
+\hline  2 &  75, weighting &    0.81  &  0.04 & \quart{13}{7}{17}{49} \\
+  2 &  50, weighting, Prune=25\% &    0.82  &  0.04 & \quart{17}{7}{18}{49} \\
+  2 &     50 &    0.83  &  0.03 & \quart{17}{5}{20}{49} \\
+\hline  3 &  50, weighting &    0.88  &  0.03 & \quart{25}{6}{29}{49} \\
+\hline  4 &     25 &    0.9  &  0.03 & \quart{31}{5}{32}{49} \\
+  4 &  25, weighting, Prune=25\% &    0.91  &  0.03 & \quart{32}{5}{34}{49} \\
+\hline  5 &  25, weighting &    0.93  &  0.02 & \quart{36}{3}{37}{49} \\
+\hline  6 &  baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+\end{minipage}
+\end{figure*}
+
+
 
 \begin{figure*}[htbp!]
 
@@ -498,17 +714,17 @@ The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\c
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
       \arrayrulecolor{darkgray}
       \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
-      1 &     Base &    0.13  &  0.03 & \quart{0}{1}{1}{48}\\
-      \hline  2 & 0.25, weighting,  iP=50\% &    0.2  &  0.05 & \quart{3}{3}{4}{48}\\
-      \hline  3 & 0.5, weighting,  iP=50\% &    0.26  &  0.06 & \quart{6}{3}{8}{48}\\
-      \hline  4 &     0.25 &    0.3  &  0.1 & \quart{7}{6}{10}{48}\\
-      4 &   0.25, weighting&    0.3  &  0.08 & \quart{8}{4}{10}{48}\\
-      \hline  5 & 0.75, weighting,  iP=50\% &    0.42  &  0.13 & \quart{13}{7}{17}{48}\\
-      5 &      0.5 &    0.43  &  0.1 & \quart{14}{6}{17}{48}\\
-      5 &    0.5, weighting&    0.43  &  0.1 & \quart{15}{5}{17}{48}\\
-      \hline  6 &   0.75, weighting&    0.64  &  0.19 & \quart{22}{10}{29}{48}\\
-      6 &     0.75 &    0.63  &  0.08 & \quart{26}{4}{28}{48}\\
-      \hline \end{tabular}}
+  1 & ant,  0.25,  weight &    -0.33  &  0.05 & \quart{1}{5}{3}{149}\\
+  1 &   ant,  0.25 &    -0.31  &  0.06 & \quart{2}{6}{5}{149}\\
+  1 &    ant,  0.5 &    -0.28  &  0.15 & \quart{1}{16}{8}{149}\\
+\hline  2 & ant,  0.5,  weight &    -0.26  &  0.19 & \quart{0}{20}{10}{149}\\
+  2 & ant,  0.5,  weight,  iP= 50\\% &    -0.26  &  0.11 & \quart{5}{12}{10}{149}\\
+  2 & ant,  0.75,  weight &    -0.25  &  0.3 & \quart{0}{32}{12}{149}\\
+  2 &   ant,  0.75 &    -0.23  &  0.23 & \quart{1}{25}{14}{149}\\
+  2 & ant,  0.25,  weight,  iP= 50\\% &    -0.22  &  0.08 & \quart{8}{9}{15}{149}\\
+  2 & ant,  0.75,  weight,  iP= 50\\% &    -0.21  &  0.13 & \quart{8}{15}{16}{149}\\
+\hline  3 &   ant,  Base &    -0.13  &  0.03 & \quart{24}{3}{25}{149}\\
+\hline \end{tabular}}
 \end{minipage}
 \noindent\begin{minipage}{0.5\textwidth}
   \flushleft
@@ -516,16 +732,16 @@ The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\c
 {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
-  1 &   Base &    0.15  &  0.05 & \quart{0}{4}{1}{75}\\
-\hline  2 &   0.25 &    0.18  &  0.06 & \quart{1}{5}{4}{75}\\
-  2 & 0.25, weighting&    0.2  &  0.06 & \quart{2}{5}{6}{75}\\
-  2 & 0.25, weighting,  iP=50\% &    0.2  &  0.04 & \quart{4}{3}{6}{75}\\
-\hline  3 &  0.5, weighting&    0.25  &  0.1 & \quart{6}{9}{10}{75}\\
-  3 &    0.5 &    0.26  &  0.12 & \quart{6}{11}{11}{75}\\
-  3 & 0.5, weighting,  iP=50\% &    0.28  &  0.11 & \quart{10}{9}{13}{75}\\
-\hline  4 & 0.75, weighting&    0.39  &  0.16 & \quart{19}{13}{22}{75}\\
-  4 &   0.75 &    0.42  &  0.17 & \quart{15}{15}{25}{75}\\
-  4 & 0.75, weighting,  iP=50\% &    0.42  &  0.1 & \quart{20}{9}{25}{75}\\
+  1 & camel_0.75_w_iP(50\%) &    -0.45  &  0.17 & \quart{0}{21}{8}{189}\\
+\hline  2 &   camel_0.75 &    -0.39  &  0.21 & \quart{8}{26}{16}{189}\\
+  2 & camel_0.75_w &    -0.37  &  0.19 & \quart{9}{24}{18}{189}\\
+\hline  3 & camel_0.5_w_iP(50\%) &    -0.28  &  0.13 & \quart{19}{17}{29}{189}\\
+\hline  4 &  camel_0.5_w &    -0.26  &  0.1 & \quart{27}{12}{32}{189}\\
+  4 &    camel_0.5 &    -0.24  &  0.1 & \quart{29}{13}{34}{189}\\
+\hline  5 & camel_0.25_w_iP(50\%) &    -0.22  &  0.07 & \quart{33}{9}{37}{189}\\
+\hline  6 &   camel_0.25 &    -0.17  &  0.08 & \quart{39}{10}{43}{189}\\
+  6 & camel_0.25_w &    -0.17  &  0.06 & \quart{38}{8}{43}{189}\\
+  6 &   camel_Base &    -0.16  &  0.02 & \quart{43}{3}{44}{189}\\
 \hline \end{tabular}}
 \end{minipage}
 
@@ -535,16 +751,16 @@ The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\c
 {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
-  1 & 0.25, weighting,  iP=50\% &    0.15  &  0.04 & \quart{0}{2}{0}{55}\\
-\hline  2 &     Base &    0.16  &  0.0 & \quart{1}{0}{1}{55}\\
-  2 &     0.25 &    0.18  &  0.06 & \quart{1}{4}{2}{55}\\
-  2 &   0.25, weighting&    0.2  &  0.06 & \quart{1}{4}{3}{55}\\
-\hline  3 & 0.5, weighting,  iP=50\% &    0.28  &  0.08 & \quart{7}{5}{9}{55}\\
-\hline  4 &      0.5 &    0.33  &  0.11 & \quart{8}{7}{12}{55}\\
-  4 &    0.5, weighting&    0.37  &  0.09 & \quart{10}{6}{14}{55}\\
-\hline  5 & 0.75, weighting,  iP=50\% &    0.38  &  0.16 & \quart{12}{10}{15}{55}\\
-\hline  6 &   0.75, weighting&    0.56  &  0.08 & \quart{25}{5}{27}{55}\\
-  6 &     0.75 &    0.57  &  0.12 & \quart{25}{7}{27}{55}\\[-0.01cm]
+  1 &     ivy_0.75 &    -0.62  &  0.05 & \quart{0}{4}{1}{141}\\
+  1 &   ivy_0.75_w &    -0.61  &  0.09 & \quart{0}{7}{2}{141}\\
+\hline  2 &      ivy_0.5 &    -0.56  &  0.09 & \quart{4}{8}{6}{141}\\
+  2 &    ivy_0.5_w &    -0.53  &  0.12 & \quart{4}{10}{9}{141}\\
+\hline  3 &   ivy_0.25_w &    -0.41  &  0.06 & \quart{17}{5}{19}{141}\\
+  3 &     ivy_0.25 &    -0.39  &  0.06 & \quart{18}{6}{21}{141}\\
+\hline  4 & ivy_0.75_w_iP(50\%) &    -0.27  &  0.14 & \quart{27}{12}{31}{141}\\
+\hline  5 & ivy_0.5_w_iP(50\%) &    -0.18  &  0.06 & \quart{35}{5}{39}{141}\\
+\hline  6 & ivy_0.25_w_iP(50\%) &    -0.12  &  0.04 & \quart{42}{3}{44}{141}\\
+\hline  7 &     ivy_Base &    -0.06  &  0.0 & \quart{49}{0}{49}{141}\\
 \hline \end{tabular}}
 \end{minipage}
 \noindent\begin{minipage}{0.5\textwidth}
@@ -553,16 +769,16 @@ The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\c
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
-  1 &   Base &    0.06  &  0.01 & \quart{0}{0}{0}{64}\\
-\hline  2 & 0.25, weighting&    0.08  &  0.06 & \quart{0}{4}{1}{64}\\
-  2 &   0.25 &    0.09  &  0.05 & \quart{0}{3}{2}{64}\\
-\hline  3 & 0.25, weighting,  iP=50\% &    0.12  &  0.08 & \quart{1}{5}{4}{64}\\
-\hline  4 &  0.5, weighting&    0.16  &  0.09 & \quart{4}{6}{6}{64}\\
-  4 &    0.5 &    0.17  &  0.09 & \quart{4}{6}{7}{64}\\
-\hline  5 & 0.5, weighting,  iP=50\% &    0.22  &  0.11 & \quart{8}{8}{10}{64}\\
-  5 & 0.75, weighting&    0.26  &  0.18 & \quart{9}{12}{13}{64}\\
-\hline  6 &   0.75 &    0.38  &  0.31 & \quart{11}{21}{21}{64}\\
-  6 & 0.75, weighting,  iP=50\% &    0.41  &  0.17 & \quart{17}{12}{24}{64}\\
+  1 &   jedit_0.75 &    -0.55  &  0.19 & \quart{2}{17}{6}{142}\\
+  1 & jedit_0.75_w &    -0.55  &  0.35 & \quart{0}{30}{6}{142}\\
+\hline  2 &    jedit_0.5 &    -0.34  &  0.19 & \quart{14}{16}{24}{142}\\
+  2 &  jedit_0.5_w &    -0.31  &  0.08 & \quart{23}{7}{27}{142}\\
+  2 & jedit_0.75_w_iP(50\%) &    -0.32  &  0.17 & \quart{21}{14}{26}{142}\\
+\hline  3 & jedit_0.25_w &    -0.21  &  0.1 & \quart{33}{9}{35}{142}\\
+  3 &   jedit_0.25 &    -0.2  &  0.07 & \quart{32}{6}{36}{142}\\
+\hline  4 & jedit_0.5_w_iP(50\%) &    -0.16  &  0.11 & \quart{37}{10}{40}{142}\\
+\hline  5 & jedit_0.25_w_iP(50\%) &    -0.11  &  0.06 & \quart{42}{6}{44}{142}\\
+\hline  6 &   jedit_Base &    -0.05  &  0.0 & \quart{49}{0}{49}{142}\\
 \hline \end{tabular}}
 \end{minipage}
 
@@ -573,16 +789,16 @@ The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\c
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
-  1 &   Base &    0.06  &  0.03 & \quart{0}{4}{4}{139}\\
-\hline  2 & 0.25, weighting&    0.09  &  0.04 & \quart{4}{6}{8}{139}\\
-  2 &   0.25 &    0.09  &  0.06 & \quart{4}{8}{8}{139}\\
-  2 & 0.25, weighting,  iP=50\% &    0.09  &  0.04 & \quart{4}{6}{8}{139}\\
-  2 &    0.5 &    0.1  &  0.07 & \quart{4}{10}{10}{139}\\
-\hline  3 &  0.5, weighting&    0.12  &  0.03 & \quart{10}{4}{12}{139}\\
-\hline  4 & 0.75, weighting&    0.13  &  0.11 & \quart{10}{15}{14}{139}\\
-  4 &   0.75 &    0.13  &  0.06 & \quart{12}{9}{14}{139}\\
-  4 & 0.5, weighting,  iP=50\% &    0.13  &  0.06 & \quart{10}{8}{14}{139}\\
-\hline  5 & 0.75, weighting,  iP=50\% &    0.19  &  0.11 & \quart{17}{15}{22}{139}\\
+  1 &   log4j_0.75 &    -0.19  &  0.2 & \quart{0}{41}{24}{272}\\
+  1 & log4j_0.75_w &    -0.15  &  0.16 & \quart{6}{33}{33}{272}\\
+  1 & log4j_0.75_w_iP(50\%) &    -0.15  &  0.05 & \quart{29}{10}{33}{272}\\
+  1 &    log4j_0.5 &    -0.15  &  0.09 & \quart{27}{18}{33}{272}\\
+\hline  2 &   log4j_0.25 &    -0.12  &  0.07 & \quart{35}{14}{39}{272}\\
+  2 &   log4j_Base &    -0.11  &  0.04 & \quart{41}{8}{41}{272}\\
+  2 & log4j_0.25_w &    -0.1  &  0.03 & \quart{39}{6}{43}{272}\\
+  2 &  log4j_0.5_w &    -0.1  &  0.13 & \quart{22}{27}{43}{272}\\
+  2 & log4j_0.25_w_iP(50\%) &    -0.09  &  0.04 & \quart{39}{8}{45}{272}\\
+  2 & log4j_0.5_w_iP(50\%) &    -0.09  &  0.05 & \quart{39}{10}{45}{272}\\
 \hline \end{tabular}}
 \end{minipage}
 \noindent\begin{minipage}{0.5\textwidth}
@@ -591,16 +807,16 @@ The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\c
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
-  1 &  0.25 &    0.05  &  0.02 & \quart{1}{4}{3}{188}\\
-  1 & 0.25, weighting&    0.05  &  0.04 & \quart{0}{7}{3}{188}\\
-\hline  2 &   0.5 &    0.07  &  0.04 & \quart{3}{8}{7}{188}\\
-  2 & 0.25, weighting,  iP=50\% &    0.07  &  0.04 & \quart{3}{8}{7}{188}\\
-  2 & 0.5, weighting&    0.08  &  0.05 & \quart{5}{10}{9}{188}\\
-\hline  3 & 0.5, weighting,  iP=50\% &    0.1  &  0.03 & \quart{9}{6}{13}{188}\\
-  3 &  Base &    0.1  &  0.03 & \quart{7}{6}{13}{188}\\
-\hline  4 & 0.75, weighting,  iP=50\% &    0.13  &  0.09 & \quart{9}{18}{19}{188}\\
-  4 &  0.75 &    0.15  &  0.08 & \quart{13}{16}{23}{188}\\
-  4 & 0.75, weighting&    0.15  &  0.11 & \quart{11}{21}{23}{188}\\
+  1 & lucene_0.75_w_iP(50\%) &    -0.27  &  0.16 & \quart{0}{24}{10}{209}\\
+  1 &  lucene_0.75 &    -0.25  &  0.1 & \quart{6}{15}{14}{209}\\
+  1 & lucene_0.75_w &    -0.22  &  0.14 & \quart{6}{22}{18}{209}\\
+\hline  2 & lucene_0.5_w_iP(50\%) &    -0.18  &  0.09 & \quart{15}{14}{24}{209}\\
+\hline  3 & lucene_0.5_w &    -0.11  &  0.08 & \quart{29}{13}{35}{209}\\
+\hline  4 &  lucene_Base &    -0.1  &  0.01 & \quart{37}{2}{37}{209}\\
+  4 &   lucene_0.5 &    -0.09  &  0.07 & \quart{32}{11}{39}{209}\\
+  4 & lucene_0.25_w_iP(50\%) &    -0.09  &  0.03 & \quart{37}{5}{39}{209}\\
+\hline  5 &  lucene_0.25 &    -0.05  &  0.04 & \quart{42}{6}{45}{209}\\
+  5 & lucene_0.25_w &    -0.03  &  0.03 & \quart{45}{4}{48}{209}\\
 \hline \end{tabular}}
 \end{minipage}
 
@@ -610,16 +826,16 @@ The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\c
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
       \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\\hline
-  1 &     Base &    0.1  &  0.03 & \quart{0}{2}{1}{61}\\
-\hline  2 & 0.25, weighting,  iP=50\% &    0.14  &  0.1 & \quart{0}{6}{4}{61}\\
-\hline  3 &   0.25, weighting&    0.18  &  0.14 & \quart{4}{9}{6}{61}\\
-  3 &     0.25 &    0.19  &  0.11 & \quart{4}{7}{7}{61}\\
-  3 & 0.5, weighting,  iP=50\% &    0.2  &  0.19 & \quart{4}{13}{8}{61}\\
-\hline  4 & 0.75, weighting,  iP=50\% &    0.26  &  0.2 & \quart{8}{13}{12}{61}\\
-  4 &      0.5 &    0.28  &  0.2 & \quart{6}{14}{13}{61}\\
-  4 &    0.5, weighting&    0.33  &  0.22 & \quart{10}{14}{16}{61}\\
-\hline  5 &     0.75 &    0.47  &  0.22 & \quart{18}{14}{26}{61}\\
-  5 &   0.75, weighting&    0.46  &  0.11 & \quart{22}{7}{25}{61}\\
+  1 &   poi_0.75_w &    -0.59  &  0.36 & \quart{0}{26}{9}{123}\\
+  1 &      poi_0.5 &    -0.5  &  0.28 & \quart{12}{20}{16}{123}\\
+  1 &     poi_0.75 &    -0.5  &  0.47 & \quart{0}{33}{16}{123}\\
+\hline  2 &    poi_0.5_w &    -0.37  &  0.51 & \quart{4}{37}{25}{123}\\
+  2 & poi_0.75_w_iP(50\%) &    -0.34  &  0.41 & \quart{15}{29}{27}{123}\\
+\hline  3 &   poi_0.25_w &    -0.25  &  0.31 & \quart{23}{22}{34}{123}\\
+  3 &     poi_0.25 &    -0.23  &  0.29 & \quart{24}{20}{35}{123}\\
+\hline  4 & poi_0.5_w_iP(50\%) &    -0.11  &  0.12 & \quart{39}{9}{44}{123}\\
+  4 &     poi_Base &    -0.09  &  0.06 & \quart{43}{4}{45}{123}\\
+  4 & poi_0.25_w_iP(50\%) &    -0.08  &  0.15 & \quart{39}{10}{46}{123}\\
 \hline \end{tabular}}
 \end{minipage}
 \noindent\begin{minipage}{0.5\textwidth}
