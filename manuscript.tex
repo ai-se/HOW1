@@ -106,7 +106,8 @@ emphstyle={\color{self}\slshape},
 %
 }}{}
  
-
+\title{Learning Actionable Analytics 
+ (with applications for reducing defects and reducing runtimes)}
 \author{
 % You can go ahead and credit any number of authors here,
 % e.g. one 'row of three' or two rows (consisting of one row of three
@@ -131,14 +132,13 @@ Rahul Krishna, Tim Menzies, Xipeng Shen\\
        {amarcus@utdallas.edu} }
 
 
+  \pagestyle{plain}
 \begin{document}
-  \title{Learning Actionable Analytics 
- (with applications for reducing defects and reducing runtimes)}
+  \maketitle
   
   % make the title area
-  \maketitle
-  \pagestyle{plain}
   
+   
   \begin{abstract}
  As business users demand more insightful
  analytics, data scientists need to change
@@ -199,93 +199,200 @@ tell me what to \underline{change}.''}
 \end{quote}
 In order to satisfy the demands of this new kind of business user, we  study the generation of {\em plans} in the context
 of software analytics.  
-As reported in this paper, that study makes five contributions:
+This paper presents
+HOW, a novel  {\em instance-based planner} that runs in near-linear time.
+In the experiments shown below, we see that HOW's plans can
+significantly reduce the expected
+value of:
+\bi
+\item Software defects in certain object-oriented JAVA systems listed in \tion{oo}:  Ant Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces;
+\item The runtime of the software systems discussed in \tion{cpu}: Berkeley DB, Apache, SQLite, LLVM, 
+  x264.
+\ei
+HOW's instance-based reasoning  makes its conclusions by
+studying the space of examples. This is a very different approach to
+{\em model-based planners} that use the model
+as sub-routine within a Monte Carlo simulation~\cite{me07f} or the evolutionary 
+programming methods explored by the search-based software
+engineering community~\cite{krall14,harman12dec}. 
+We find   HOW's instance-based approach useful since it can be applied
+to domains that lack a model, but possess a historical log of observed behaviours.
+
+Instance-based reasoning is also useful if building and certifying a model   takes a long time. Such slow-to-build models exist in software engineering. For  example, in previous work~\cite{me07f} we used models
+developed by Boehm's group at the University of Southern California.
+Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}).  This is not an isolated example. One of us (Menzies) teaches a graduate class in automated model-based software engineering. 
+Students in that class are asked to find (or build) a non-trivial model of
+some software process (where ``non-trivial'' means something that processes
+a  model at least an order of magnitude more complex than Brooks' Law). 
+While the  number of such models has been growing in recent years\footnote{See the
+catalogue at goo.gl/nv2AVK.}, 
+the total number remains very small-- which is an observation consistent with
+SE models typically require  much effort to build and certify.
+
+Finally, even when there is an existing model, instance-based reasoning can be useful.
+Sometimes  it is easier to access instances of a model's behaviour than the model
+itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
+Laboratory~\cite{fea02a},  our research partner could not share a
+propriety model from within the NASA firewalls. However, they could share 
+logs of the input/output of that model.
+ 
+In summary, this paper makes five contributions:
 \be
 \item A general framework for augmenting a prediction system such that
 it becomes a planning system;
 \item A  test that recognizes  when we should {\em not}  plan: in summary, our kind of planning is
 not recommended in domains that  generate poorly performing predictors;
 \item A general verification rig for assessing the value of plans generated within this rig.
-\item A novel near-linear-time instance-based planner called ``HOW''. 
+\item The HOW  instance-based planner.
+\item A proof that HOW runs in near-linear time.
 \item An experimental validation that the HOW planner is useful for reducing the
-expected values of 
-\bi
-\item Software defects in certain object-oriented JAVA systems listed in \tion{oo}:  Ant Camel, Ivy, Jedit, Log4, Lucene, Poi, Synapse, Velocity, Xalan;
-\item The runtime of the software systems discussed in \tion{cpu}: Berkeley DB, Apache, SQLite, LLVM, 
-  x264.
-\ei
-\ei
-HOW is an {\em instance-based planner} in that it make its conclusions by
-studying the space of examples. This is a very different approach to
-{\em model-based planners} that use the model
-as sub-routine within a Monte Carlo~\cite{me07f} or evolutionary 
-programming rig~\cite{krall14,harman12dec}. 
-We prefer HOW's instance-based approach since
-it is not dependent on any underlying model.
-This is important since:
-\bi
-\item
-When some models are hard to access or slow to run (see examples, below),
-then it useful to reason from historical logs rather than from hard-to-collect
-model output.
-\item
-For reasons of confidentionality or priorpiarty restrictions, 
-It can be harder to access 
-\item
-Building and certifying a model   can take years. For example, in previous work~\cite{me07f} we used models
-developed by Boehm's group at the University of Southern California.
-Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}). 
-\ei
+expected values of software defects and software runtimes (at least, for the data sets studied here).
+\ee
 The rest of this paepr is structued as follows.
 
+ 
+
 \section{From ``Prediction'' to ``Planning''}
+A major  problem with building a planning mechanism in software engineering is ``how to verify the generated
+plans?''. For example,  in the experiments shown below,  HOW comments  on how to reduce
+software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be automatically adjusted using code refactoring
+tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
 
-approach if the underlying model
+Some organizations have the resources to 
+run repeated trials to assess the effect of different treatments.
+For example, in one remarkable recent study, Bente et al. report results
+were the same specification was developed into a product by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
+to (say) take a code base, assign it to $N$ different teams, apply
+HOW's plans the code used by  $N/2$ teams, then check in 12 months time
+if those halves of the teams have fewer defects than the other.  
 
-This paper presents the following general framework for extending  predictor systems
-such that they become 
-policy generators:
+Very few industrial or research groups have access
+to the kinds of resources using by Bente et al. (evidence: in the size years since the
+publication of that work, we know of only one of two similar studies). Hence, it
+we wish to verify HOW's plans, then some other approach is required that is less
+resource intensive.
 
-\begin{small}
-\[
+We propose using prediction systems (built by data mining) as a verification
+tool for planners. In domains with data, from which data miners can build
+predictors of adequate performance, then those predictors can assess the value
+of the changes proposed by HOW.
+As shown in \fig{work}, 
+project data is divided into two disjoint sets {\em train} and {\em test}
+(so {\em train} $\cup$ {\em test} $=\;\emptyset$).
+Next, from the train set, we build both a {\em planner} as well
+as a {\em predictor}. Our general framework does not   commit to any particular  choice
+of {\em planner} or {\em predictor}. For the purposes of this discussion 
+our {\em planner}
+will be HOW (discussed below)and our
+our {\em predictors} will be the Random Forest and Random Forest
+Regressor\footnote{Decision tree learners find the attribute whose value's
+select for for sections of the data with least variation in the class
+variable. Decision tree learners then recurse on each selection~\cite{breiman84}. A random forest is a set of decision trees, each built
+from some random subset of the rows and columns. The conclusions
+of the forest are a ``vote'' generated by all the trees~\cite{Breiman2001}. 
+A standard Random Forest predicts for a discrete class variable while
+a Random Forest Regressor generates numeric predictions.} taken from the SciKit
+Learn toolkit~\cite{Pedregosa2012}.
+
+Turning now to the {\em test} data, this is based to the {\em predictor}
+to generate a baseline {\em before} performance score.
+Note that if our {\em predictors} fail to perform adequately on the test data,
+then we cannot trust them to comment on our plans. Accordingly,
+if that performance is unsatisfactory, we abort.
+Else, we (1)~apply the {\em planner} to alter the {\em test} data;
+then (2)~apply the {\em predictor} to the altered data {\em test'};
+then (3)~return the performance delta $\Delta$.
+
+The clear advantage of this approach is that it can be readily and automatically
+applied to domains with historical data. That said, the drawback with this approach
+is that our assessment of the plans is only as good as the predictor. To 
+mitigate for this {\em problem of poor planners}, it is wise to demand high standards form the {\em
+satisfactory} threshold used in this \fig{frame}. 
+
+
+
+\begin{figure}[!t]
+\small
+\[  
 \begin{array}{r}
 project\\
 data
-\end{array}\rightarrow \left\{\begin{array}{l}\mathit{train}
-\rightarrow \left\{\begin{array}{l}\mathit{build\;predictor\;(e.g.\;CART\;or\; RF)}\\
-\mathit{build\;planner\; (e.g.\; HOW)}\end{array}\right.
-\\
-~\\
-\mathit{test}  \rightarrow  \left\{\begin{array}{l@{~}l}
-\mathit{before}& =\mathit{predictor}(\mathit{test})\\
-\mathit{if\; before} & \ge  \mathif{satisfactory\; then}\\
- &
-\begin{array}{l@{~}l}
+\end{array} 
+\left\{\begin{array}{l}\mathit{train}
+        \left\{\begin{array}{l}
+                \mathrm{learn\;a\;}\mathrm{predictor\;}\mathrm{e.g.\;Random\;Forest}\\
+                \mathrm{learn\;a\;}\mathrm{planner\;}\mathrm{e.g.\; HOW}
+              \end{array}\right.
+       \\
+      ~\\
+\mathit{test}  
+    \left\{\begin{array}{l@{~}l}
+           \mathit{before}& =\mathrm{predictor}(\mathit{test})\\
+           \mathrm{\bf if\;}\mathit{before} & <  \mathit{satisfactory}\\
+           \mathrm{\bf then}  & \mathrm{{\bf return}\; 0}\\~\\
+           \mathrm{\bf else} &
+           \left\{
+            \begin{array}{l}
+                \mathit{test'} = \mathrm{planner}(\mathit{test})\\
+                \mathit{after} =\mathrm{predictor}(\mathit{test'})\\ 
+                \mathrm{{\bf return}\;} \mathit{after} /  \mathit{before}
+            \end{array}
+          \right.
+   \end{array}\right.
+\end{array} \right. 
+\] 
+ 
+\caption{How to use {\em predictors} for {\em planning}.}\label{fig:work}
+\end{figure}
 
-\mathit{test'}& = \mathit{planner}(\mathit{test})\\
-\mathit{after}& =\mathit{predictor}(\mathit{test'})\\ 
-\Delta& =\mathit{after} / \mathit{before}
-\end{array}
-\end{array}\right.
-\end{array} \right.
-\]
-\end{small}
-In the above:
+This study explores data sets from two types of domains:
 \bi
 \item
-Project data is divided into a train and test set.
-\item
-From the train set, we learn {\em both} a policy generator as well
-as a predictor using (e.g.)
-CART (for making numeric predictions~\cite{Breiman1984}) or Random Forests (for making predictions
-about symbolic classes~\cite{Breiman2001}). 
-\item
-The test data is then studied to generate two predictions:
-a {\em before} prediction (on the raw test data); then an {\em after}
-prediction (after applying the policies learned from the training data).
-\item
-The improvement delta $\Delta$ is then computed by dividing {\em after} and {\em before}.
+In one type, we 
+build plans to change static code attributes in order to reduce defects in
+Java classes.  Here,,
+performance can be measured in terms of recall (percent of faulty classes in
+the test data detected
+by the {\em predictor}). Using engineering judgement, we define satisfactory recall as anything less than 70\%. 
+\item 
+In the other type, we   build
+plans to change configurations settings within a Makefile such that the resulting compiled
+code will run faster. Here, performance can be measured in terms of difference
+between the predicted runtime $p$ of test case items and their actual runtimes $a$
+using  $s= 1- \frac{abs(a - p)}{a}$.
+Using engineering judgement, we define satisfactory $s$ as anything less than 70\%. 
 \ei
+This paper explores 12 static code data sets
+Ant, Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.} and five configuration data sets Berkeley DB, Apache, SQLite, LLVM,
+  x264\footnote{Available from the performance prediction section of PROMISE
+  http://openscience.us/repo/performance-predict.}. For each of these data sets,
+  we generated 25 {\em before} scores from
+  random split train:test splits in the ratio 4:1 train.
+ The median {\em before} recalls from  the static code data sets was:
+%issue24
+\[\mathrm{recall}=\{98,88,86,84,82,81,79,78,78,\overbrace{55,23,20}^{\mathrm{JBeans,Poi,Xalan}}\}\]
+The median {\em before} $e$  scores from  the configuration data was
+%issue 24
+\[s=\{98,97,95,88,92\}\]
+Note that we need to abort planning in only $3/17$ of our data sets.  
+
+This paper also explores five configuration data sets Berkeley DB, Apache, SQLite, LLVM,
+  x264. The median {\em before} scores from these data sets (generated in 
+-- which means we cannot generate plans for $3/12$ of our data sets. However, as shown
+below, we were able to generate useful plans for the other $9/12$ of the data.
+
+
+In the other type, 
+
+
+then studied to generate a prediction
+on the test data. If the performance on that test data is not
+satisfactory, thempredictions:
+a {\em before} prediction (on the raw test data); and  an {\em after}
+prediction (that is  applying the policies learned from the training data).
+ 
+The improvement delta $\Delta$ is then computed by dividing {\em after} and {\em before}
+
 This paper presents a novel policy generator called ``HOW''.
 HOW is a near-linear time  instance-based
 local search algorithm that looks for improvement trends in the data,
@@ -296,6 +403,7 @@ At least for the data explored here, HOW's reductions in defects and runtimes
 are very large-- up to 50\% fewer defects and up to 50\% faster runtimes.
 
 The rest of this paper is structured as follows.
+
 
 
 \section{Releated Work}
@@ -756,7 +864,7 @@ x264 & Video Enc. & C& 45,743 & 16 & 1152\\\hline
 The following section describes the experimental rig and the experiments used to measure the performance of HERE on 10 defect data sets and 6 performance prediction data sets.
 
 \subsection{Defect Data Set}
-The data was obtained from the PROMISE repository\footnote{Promise Repository: \url{http://openscience.us/repo}}. For the defect data we investigated 32 releases from 11 open source Java projects defined by the metrics highlighted in figure ~\ref{fig:ck}: \kw{Apache Ant} (1.5 -- 1.7), \kw{Apache Camel} (1.2 -- 1.6), \kw{Apache Ivy} (1.1 -- 2.0), \kw{JEdit} (4.1 -- 4.3), \kw{Apache Log4j} (1.0 -- 1.2), \kw{Apache Lucene} (2.0 -- 2.2), \kw{PBeans} (1.0 and 2.0), \kw{Apache POI} (2.0 -- 3.0), \kw{Apache Synapse} (1.0 -- 1.2), \kw{Apache Velocity} (1.4 -- 1.6), and \kw{Apache Xalan-Java} (2.5 -- 2.7). 
+The data was obtained from the PROMISE repository\footnote{Promise Repository: \url{openscience.us/repo}}. For the defect data we investigated 32 releases from 11 open source Java projects defined by the metrics highlighted in figure ~\ref{fig:ck}: \kw{Apache Ant} (1.5 -- 1.7), \kw{Apache Camel} (1.2 -- 1.6), \kw{Apache Ivy} (1.1 -- 2.0), \kw{JEdit} (4.1 -- 4.3), \kw{Apache Log4j} (1.0 -- 1.2), \kw{Apache Lucene} (2.0 -- 2.2), \kw{PBeans} (1.0 and 2.0), \kw{Apache POI} (2.0 -- 3.0), \kw{Apache Synapse} (1.0 -- 1.2), \kw{Apache Velocity} (1.4 -- 1.6), and \kw{Apache Xalan-Java} (2.5 -- 2.7). 
 
 Given the empirical nature of the data, it is import to design an experiment such that the planning phase uses only the \kw{past} data to learn trends which can then be applied to the \kw{future} data. Thus for our experiment we use data sets that have at least two consecutive releases. 
 \begin{itemize}
@@ -766,7 +874,7 @@ Given the empirical nature of the data, it is import to design an experiment suc
 
 \subsection{Performance Prediction Data Set}
 
-{\bfseries RQ3} asks if the aforementioned method can be expanded to other kinds of data. To answer this, we have used the performance prediction data set collected by Siegmund et al. for their ICSE '12 paper~\cite{sven12}. The data sets have been deployed as a part of the \textsc{SPLConqueror} tool\footnote{\url{http://fosd.de/SPLConqueror}}. This data set contains six examples of real world configurable systems that cover a broad spectrum of scenarios, see figure \ref{fig:cpm} for a summary. The systems have different characteristics (lines of code: 40 thousand to 300 thousand; Valid configurations: 192 to about 3.9 million), different implementation languages (C, C++, and Java), different mechanism (conditional compilation, configuration files, and command-line options), and different domains (Web servers, compilers, encoders, and databases). The data contains a measurement of all the configurations that are invoked by the benchmarking tool. The measurements were conducted 5 to 20 times and the mean of all measurements for each configuration was recoded.
+{\bfseries RQ3} asks if the aforementioned method can be expanded to other kinds of data. To answer this, we have used the performance prediction data set collected by Siegmund et al. for their ICSE '12 paper~\cite{sven12}. The data sets have been deployed as a part of the \textsc{SPLConqueror} tool\footnote{\url{fosd.de/SPLConqueror}}. This data set contains six examples of real world configurable systems that cover a broad spectrum of scenarios, see figure \ref{fig:cpm} for a summary. The systems have different characteristics (lines of code: 40 thousand to 300 thousand; Valid configurations: 192 to about 3.9 million), different implementation languages (C, C++, and Java), different mechanism (conditional compilation, configuration files, and command-line options), and different domains (Web servers, compilers, encoders, and databases). The data contains a measurement of all the configurations that are invoked by the benchmarking tool. The measurements were conducted 5 to 20 times and the mean of all measurements for each configuration was recoded.
 
 For our experiments, we randomly split the data sets into two equal halves, one for training and the other for testing. The planning phase learns configuration settings from the training half and plans for changes in the test half aiming to optimize the performance of the test instances. We repeat our measurements 20 to 25 times to overcome measurement bias.
 \section{Experimental Design}
