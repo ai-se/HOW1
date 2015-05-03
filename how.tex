@@ -272,6 +272,8 @@ publication of that work, we know of only one of two similar studies). Hence, it
 we wish to verify HOW's plans, then some other approach is required that is less
 resource intensive.
 
+\subsection{Proposed Framework}
+
 We propose using prediction systems (built by data mining) as a verification
 tool for planners. In domains with data, from which data miners can build
 predictors of adequate performance, then those predictors can assess the value
@@ -301,13 +303,15 @@ then we cannot trust them to comment on our plans. Accordingly,
 if that performance is unsatisfactory, we abort.
 Else, we (1)~apply the {\em planner} to alter the {\em test} data;
 then (2)~apply the {\em predictor} to the altered data {\em test'};
-then (3)~return the performance delta $\Delta$.
+then (3)~return the performance delta.
+
+\subsection{When Not to Plan: Problem of Poor Planner}
 
 The clear advantage of this approach is that it can be readily and automatically
 applied to domains with historical data. That said, the drawback with this approach
 is that our assessment of the plans is only as good as the predictor. To 
 mitigate for this {\em problem of poor planners}, it is wise to demand high standards form the {\em
-satisfactory} threshold used in this \fig{frame}. 
+satisfactory} threshold used in this \fig{work}. 
 
 
 
@@ -345,7 +349,10 @@ data
 \caption{How to use {\em predictors} for {\em planning}.}\label{fig:work}
 \end{figure}
 
-This study explores data sets from two types of domains:
+How prevalent is the problem of poor planners? While
+this is hard to answer in the general case, we can say that for the 17 data
+sets explored in this study, only 3 suffer from this problem.
+This study's    data   from two  types of domains:
 \bi
 \item
 In one type, we 
@@ -353,14 +360,14 @@ build plans to change static code attributes in order to reduce defects in
 Java classes.  Here,,
 performance can be measured in terms of recall (percent of faulty classes in
 the test data detected
-by the {\em predictor}). Using engineering judgement, we define satisfactory recall as anything less than 70\%. 
+by the {\em predictor}). Using engineering judgement, we define satisfactory recall as anything over   70\%. 
 \item 
 In the other type, we   build
 plans to change configurations settings within a Makefile such that the resulting compiled
 code will run faster. Here, performance can be measured in terms of difference
 between the predicted runtime $p$ of test case items and their actual runtimes $a$
 using  $s= 1- \frac{abs(a - p)}{a}$.
-Using engineering judgement, we define satisfactory $s$ as anything less than 70\%. 
+Using engineering judgement, we define satisfactory $s$ as anything over   70\%. 
 \ei
 This paper explores 12 static code data sets
 Ant, Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.} and five configuration data sets Berkeley DB, Apache, SQLite, LLVM,
@@ -368,41 +375,60 @@ Ant, Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xer
   http://openscience.us/repo/performance-predict.}. For each of these data sets,
   we generated 25 {\em before} scores from
   random split train:test splits in the ratio 4:1 train.
- The median {\em before} recalls from  the static code data sets was:
+ The median {\em before} scores from  the static code data sets were:
 %issue24
 \[\mathrm{recall}=\{98,88,86,84,82,81,79,78,78,\overbrace{55,23,20}^{\mathrm{JBeans,Poi,Xalan}}\}\]
-The median {\em before} $e$  scores from  the configuration data was
+The median {\em before}   scores from  the configuration data were:
 %issue 24
 \[s=\{98,97,95,88,92\}\]
 Note that we need to abort planning in only $3/17$ of our data sets.  
-
-This paper also explores five configuration data sets Berkeley DB, Apache, SQLite, LLVM,
-  x264. The median {\em before} scores from these data sets (generated in 
--- which means we cannot generate plans for $3/12$ of our data sets. However, as shown
-below, we were able to generate useful plans for the other $9/12$ of the data.
-
-
-In the other type, 
-
-
-then studied to generate a prediction
-on the test data. If the performance on that test data is not
-satisfactory, thempredictions:
-a {\em before} prediction (on the raw test data); and  an {\em after}
-prediction (that is  applying the policies learned from the training data).
  
-The improvement delta $\Delta$ is then computed by dividing {\em after} and {\em before}
+\subsection{Testing for Grainer Causality}
+With one small variation,  the above framework can be used to check if the learned
+plans can be said to {\em cause} a change in the domain being explored.
 
-This paper presents a novel policy generator called ``HOW''.
-HOW is a near-linear time  instance-based
-local search algorithm that looks for improvement trends in the data,
-then adjusting examples to nudge them along that trend.
-The experiments of this paper apply HOW to learning policies for 
-software defect reduction and for compiling software that runs faster.
-At least for the data explored here, HOW's reductions in defects and runtimes
-are very large-- up to 50\% fewer defects and up to 50\% faster runtimes.
+In the literature, there are two main definitions of causality: Hill's H-causality
+and Grainer's G-casualty. 
+Of the two, Hill's definition is the most strict. An effect
+is H-causal if it satisfies nine criteria including:
+\be
+\item
+Plausibility;
+\item
+Strength of the effect; 
+\item
+Specificity: locality of the effect
+to specialized groups;
+\item
+Support by experimental evidence;
+\item
+Coherence between cause-effects noted
+in the field and in laboratory samples;
+\item
+Temporally: the effect has to follow the cause;
+\item
+Analogy: similar causes have similar effects;
+\item
+Biological gradient: more exposure to the cause leads to more of an
+effect)
+\item
+Consistency: the same cause-effect pairings have been seen by different persons
+in different places.
+\ee
+It is hard to demonstrate H-causality in software. For example, Hill's criteria emphasises repeatability and laboratory studies-- both of which are
+hard to perform in software engineering (e.g. see the continued debate about
+the value of using undergraduate students to surrogates for industrial
+practitioners in software engineering research~\cite{Carver2003}). Also, Hill's requirement
+for consistency is easier to achieve in studies of small closed systems (e.g. bacteria in a petri dish)
+than in large socio-technical systems (e.g. open source projects). As Lofti Zadeh
+commented: ``as complexity rises, precise statements lose meaning and meaningful statements lose precision''~\cite{zadeh.
 
-The rest of this paper is structured as follows.
+
+Granger causality is a statistical concept of causality that is based on prediction. According to Granger causality, if a signal X1 "Granger-causes" (or "G-causes") a signal X2, then past values of X1 should contain information that helps predict X2 above and beyond the information contained in past values of X2 alone. Its mathematical formulation is based on linear regression modeling of stochastic processes (Granger 1969).
+
+Hill1965
+
+\cite{Seth2007,granger80}
 
 
 
