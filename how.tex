@@ -248,7 +248,7 @@ not recommended in domains that  generate poorly performing predictors;
 \item An experimental validation that the HOW planner is useful for reducing the
 expected values of software defects and software runtimes (at least, for the data sets studied here).
 \ee
-The rest of this paepr is structued as follows.
+The rest of this paper is structured as follows.
 
  
 
@@ -383,12 +383,12 @@ The median {\em before}   scores from  the configuration data were:
 \[s=\{98,97,95,88,92\}\]
 Note that we need to abort planning in only $3/17$ of our data sets.  
  
-\subsection{Testing for Grainer Causality}
+\subsection{Are These Plans ``Causal''?}
 With one small variation,  the above framework can be used to check if the learned
 plans can be said to {\em cause} a change in the domain being explored.
 
-In the literature, there are two main definitions of causality: Hill's H-causality
-and Grainer's G-casualty. 
+In the literature, there are two main definitions of causality: Hill's H-causality~\cite{Hill1965}
+and Granger's G-casualty~\cite{granger80}. 
 Of the two, Hill's definition is the most strict. An effect
 is H-causal if it satisfies nine criteria including:
 \be
@@ -415,22 +415,38 @@ effect)
 Consistency: the same cause-effect pairings have been seen by different persons
 in different places.
 \ee
-It is hard to demonstrate H-causality in software. For example, Hill's criteria emphasises repeatability and laboratory studies-- both of which are
+It is hard to demonstrate H-causality in software engineering.
+For example, Hill's criteria emphasises repeatability and laboratory studies-- both of which are
 hard to perform in software engineering (e.g. see the continued debate about
 the value of using undergraduate students to surrogates for industrial
 practitioners in software engineering research~\cite{Carver2003}). Also, Hill's requirement
-for consistency is easier to achieve in studies of small closed systems (e.g. bacteria in a petri dish)
-than in large socio-technical systems (e.g. open source projects). As Lofti Zadeh
-commented: ``as complexity rises, precise statements lose meaning and meaningful statements lose precision''~\cite{zadeh.
+for consistency is far easier to achieve in studies of small closed systems (e.g. bacteria in a petri dish)
+than in large socio-technical systems (e.g. open source projects). 
 
+The practical difficulties associated with Hill's criteria lead Granger~\cite{granger80}
+to propose another criteria\footnote{Granger  notes that
+his proposal was based on earlier work by Norbert Weiner~\cite{Seth2007}.}.
+G-causality is based on building predictions based on {\em past} data,
+then showing that this works for {\em future} data~\cite{granger80}. 
 
-Granger causality is a statistical concept of causality that is based on prediction. According to Granger causality, if a signal X1 "Granger-causes" (or "G-causes") a signal X2, then past values of X1 should contain information that helps predict X2 above and beyond the information contained in past values of X2 alone. Its mathematical formulation is based on linear regression modeling of stochastic processes (Granger 1969).
+Note that the standard 10-way cross-validation
+procedure  in data mining does {\em not} demonstrate G-causality.  In a N-way cross-val experiments, the data is divided into $N$ bins.  
+$N-1$ bins are used for learning and the results are tested
+on the  remaining bin.
+Cross-validation is then repeated $N$ times, each time using a different bin for the test set.
+This approach can not be used to demonstrate causality since, if the initial data is collected
+over (say) $N$ months, then it is possible that the test set contains observations collected
+{\em before}   items seen in the training set. 
 
-Hill1965
+Jiang et al.~\cite{me11f} and Lumpe et al.~\cite{me11f} propose a modification to cross-validation which lets them
+demonstate G-causal defect effects in softwrare engineering.
+They divide project data  into $N$ bins, each of with contain data collected at similar times.
+They then sort those bins (on the collection date) and use bins $i,j$ to predict for $k$ where 
+$i<j<k$. 
 
-\cite{Seth2007,granger80}
-
-
+We adapt the work of Jiang,Lumpe et al.  as follows. In  \fig{work}, we demand that the {\em test}
+data is not collected before the {\em train} data.  With that change,
+we can reasonably claim that the plan's generating by HOW are G-causal.
 
 \section{Releated Work}
 
@@ -1310,6 +1326,6 @@ In this section,
 % \section{Conclusion}
 % \section*{Acknowledgements}
 \newpage
-\bibliography{References}{}
+\bibliography{how}{}
 \bibliographystyle{IEEEtran}
 \end{document}
