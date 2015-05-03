@@ -10,6 +10,8 @@
 \usepackage{color, colortbl}
 \usepackage{graphicx}
 \usepackage{algorithmicx}
+
+\usepackage[running]{lineno}
 \usepackage{program}
 \usepackage{cite}
 \usepackage{alltt}
@@ -205,10 +207,13 @@ In the experiments shown below, we see that HOW's plans can
 significantly reduce the expected
 value of:
 \bi
-\item Software defects in certain object-oriented JAVA systems listed in \tion{oo}:  Ant Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces;
-\item The runtime of the software systems discussed in \tion{cpu}: Berkeley DB, Apache, SQLite, LLVM, 
-  x264.
+\item The software defects found in  twelve object-oriented JAVA systems explored in 2010 by Jureczko et al.~\cite{jureczko10};
+\item The runtime of the six software systems whose configurations
+are explored in 2013 by Seigmund et al.~\cite{sven12};
 \ei
+Many papers use this above data to build {\em predictors} for defects and runtimes.
+However, none of those papers then go on to use this data to build {\em planners}.
+
 HOW's instance-based reasoning  makes its conclusions by
 studying the space of examples. This is a very different approach to
 {\em model-based planners} that use the model
@@ -246,7 +251,7 @@ not recommended in domains that  generate poorly performing predictors;
 \item The HOW  instance-based planner.
 \item A proof that HOW runs in near-linear time.
 \item An experimental validation that the HOW planner is useful for reducing the
-expected values of software defects and software runtimes (at least, for the data sets studied here).
+expected values of the Jureczko software defects and the Seigmund software runtimes.
 \ee
 The rest of this paper is structured as follows.
 
@@ -255,7 +260,7 @@ The rest of this paper is structured as follows.
 \section{From ``Prediction'' to ``Planning''}
 A major  problem with building a planning mechanism in software engineering is ``how to verify the generated
 plans?''. For example,  in the experiments shown below,  HOW comments  on how to reduce
-software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be automatically adjusted using code refactoring
+software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be mnaually adjusted by programmers or (for large scale changes) automatically adjusted using code refactoring
 tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
 
 Some organizations have the resources to 
@@ -280,7 +285,7 @@ predictors of adequate performance, then those predictors can assess the value
 of the changes proposed by HOW.
 As shown in \fig{work}, 
 project data is divided into two disjoint sets {\em train} and {\em test}
-(so {\em train} $\cup$ {\em test} $=\;\emptyset$).
+(so \mbox{{\em train} $\cup$ {\em test} $=\;\emptyset$}).
 Next, from the train set, we build both a {\em planner} as well
 as a {\em predictor}. Our general framework does not   commit to any particular  choice
 of {\em planner} or {\em predictor}. For the purposes of this discussion 
@@ -296,7 +301,7 @@ A standard Random Forest predicts for a discrete class variable while
 a Random Forest Regressor generates numeric predictions.} taken from the SciKit
 Learn toolkit~\cite{Pedregosa2012}.
 
-Turning now to the {\em test} data, this is based to the {\em predictor}
+Turning now to the {\em test} data, this is passed to the {\em predictor}
 to generate a baseline {\em before} performance score.
 Note that if our {\em predictors} fail to perform adequately on the test data,
 then we cannot trust them to comment on our plans. Accordingly,
@@ -305,27 +310,21 @@ Else, we (1)~apply the {\em planner} to alter the {\em test} data;
 then (2)~apply the {\em predictor} to the altered data {\em test'};
 then (3)~return the performance delta.
 
-\subsection{When Not to Plan: Problem of Poor Planner}
 
-The clear advantage of this approach is that it can be readily and automatically
-applied to domains with historical data. That said, the drawback with this approach
-is that our assessment of the plans is only as good as the predictor. To 
-mitigate for this {\em problem of poor planners}, it is wise to demand high standards form the {\em
-satisfactory} threshold used in this \fig{work}. 
 
 
 
 \begin{figure}[!t]
-\small
-\[  
+\small 
+\[
 \begin{array}{r}
-project\\
-data
+\mathrm{project}\\
+\mathrm{data}
 \end{array} 
 \left\{\begin{array}{l}\mathit{train}
         \left\{\begin{array}{l}
-                \mathrm{learn\;a\;}\mathrm{predictor\;}\mathrm{e.g.\;Random\;Forest}\\
-                \mathrm{learn\;a\;}\mathrm{planner\;}\mathrm{e.g.\; HOW}
+                \mathrm{learn\;a\;}\mathrm{predictor\;}\mathrm{(e.g.\;via \;Random\;Forest)}\\
+                \mathrm{learn\;a\;}\mathrm{planner\;}\mathrm{(e.g.\;via \; HOW)}
               \end{array}\right.
        \\
       ~\\
@@ -344,109 +343,145 @@ data
           \right.
    \end{array}\right.
 \end{array} \right. 
-\] 
+\]
  
 \caption{How to use {\em predictors} for {\em planning}.}\label{fig:work}
 \end{figure}
 
-How prevalent is the problem of poor planners? While
-this is hard to answer in the general case, we can say that for the 17 data
-sets explored in this study, only 3 suffer from this problem.
-This study's    data   from two  types of domains:
-\bi
-\item
-In one type, we 
-build plans to change static code attributes in order to reduce defects in
-Java classes.  Here,,
-performance can be measured in terms of recall (percent of faulty classes in
-the test data detected
-by the {\em predictor}). Using engineering judgement, we define satisfactory recall as anything over   70\%. 
-\item 
-In the other type, we   build
-plans to change configurations settings within a Makefile such that the resulting compiled
-code will run faster. Here, performance can be measured in terms of difference
-between the predicted runtime $p$ of test case items and their actual runtimes $a$
-using  $s= 1- \frac{abs(a - p)}{a}$.
-Using engineering judgement, we define satisfactory $s$ as anything over   70\%. 
-\ei
-This paper explores 12 static code data sets
-Ant, Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.} and five configuration data sets Berkeley DB, Apache, SQLite, LLVM,
-  x264\footnote{Available from the performance prediction section of PROMISE
-  http://openscience.us/repo/performance-predict.}. For each of these data sets,
-  we generated 25 {\em before} scores from
-  random split train:test splits in the ratio 4:1 train.
- The median {\em before} scores from  the static code data sets were:
-%issue24
-\[\mathrm{recall}=\{98,88,86,84,82,81,79,78,78,\overbrace{55,23,20}^{\mathrm{JBeans,Poi,Xalan}}\}\]
-The median {\em before}   scores from  the configuration data were:
-%issue 24
-\[s=\{98,97,95,88,92\}\]
-Note that we need to abort planning in only $3/17$ of our data sets.  
- 
 \subsection{Are These Plans ``Causal''?}
-With one small variation,  the above framework can be used to check if the learned
+With one additional stipulation,   this framework can be used to check if the learned
 plans can be said to {\em cause} a change in the domain being explored.
 
 In the literature, there are two main definitions of causality: Hill's H-causality~\cite{Hill1965}
 and Granger's G-casualty~\cite{granger80}. 
 Of the two, Hill's definition is the most strict. An effect
-is H-causal if it satisfies nine criteria including:
-\be
-\item
-Plausibility;
-\item
-Strength of the effect; 
-\item
-Specificity: locality of the effect
+is H-causal if it satisfies nine criteria including
+{\em  plausibility};
+{\em strength} of the effect;
+{\em 
+specificity}, i.e. locality of the effect
 to specialized groups;
-\item
-Support by experimental evidence;
-\item
-Coherence between cause-effects noted
+{\em
+support} by experimental evidence;
+{\em 
+coherence} between cause-effects noted
 in the field and in laboratory samples;
-\item
-Temporally: the effect has to follow the cause;
-\item
-Analogy: similar causes have similar effects;
-\item
-Biological gradient: more exposure to the cause leads to more of an
-effect)
-\item
-Consistency: the same cause-effect pairings have been seen by different persons
+{\em
+temporally} i.e. the effect has to follow the cause;
+{\em 
+analogy}, i.e.  similar causes have similar effects;
+{\em
+biological gradient}, i.e.  more exposure to the cause leads to more of an
+effect; and
+{\em
+consistency}, i.e.  the same cause-effect pairings have been seen by different persons
 in different places.
-\ee
+
 It is hard to demonstrate H-causality in software engineering.
 For example, Hill's criteria emphasises repeatability and laboratory studies-- both of which are
 hard to perform in software engineering (e.g. see the continued debate about
 the value of using undergraduate students to surrogates for industrial
 practitioners in software engineering research~\cite{Carver2003}). Also, Hill's requirement
 for consistency is far easier to achieve in studies of small closed systems (e.g. bacteria in a petri dish)
-than in large socio-technical systems (e.g. open source projects). 
+than in large socio-technical systems (e.g. open source projects). In the latter,
+effects are more {\em probabilistic} than {\em categorical}-- by which we mean that 
+some cause tends to cause some effect at some probability $p$ less that one.
+This in turn means that at some probability $q$ (where $0 \le q < p \le 1$)
+that we will find examples of {\em inconsistency} where some cause does {\em not} lead
+to some effect (thus violating one of Hill's criteria for demonstrating causality).
 
-The practical difficulties associated with Hill's criteria lead Granger~\cite{granger80}
-to propose another criteria\footnote{Granger  notes that
+The  difficulties associated with Hill's criteria lead Granger~\cite{granger80}
+to propose another more practical criteria\footnote{Granger  himself comments that
 his proposal was based on earlier work by Norbert Weiner~\cite{Seth2007}.}.
-G-causality is based on building predictions based on {\em past} data,
+\mbox{G-causality} is based on building predictions based on {\em past} data,
 then showing that this works for {\em future} data~\cite{granger80}. 
-
-Note that the standard 10-way cross-validation
-procedure  in data mining does {\em not} demonstrate G-causality.  In a N-way cross-val experiments, the data is divided into $N$ bins.  
+In should be noted  that the standard 10-way cross-validation
+procedure used  in data mining does not necessarily demonstrate G-causality.  In a N-way cross-val experiments, the data is divided into $N$ bins.  
 $N-1$ bins are used for learning and the results are tested
 on the  remaining bin.
-Cross-validation is then repeated $N$ times, each time using a different bin for the test set.
+This is repeated $N$ times, each time using a different bin for the test set.
 This approach can not be used to demonstrate causality since, if the initial data is collected
 over (say) $N$ months, then it is possible that the test set contains observations collected
 {\em before}   items seen in the training set. 
 
-Jiang et al.~\cite{me11f} and Lumpe et al.~\cite{me11f} propose a modification to cross-validation which lets them
-demonstate G-causal defect effects in softwrare engineering.
-They divide project data  into $N$ bins, each of with contain data collected at similar times.
-They then sort those bins (on the collection date) and use bins $i,j$ to predict for $k$ where 
-$i<j<k$. 
+Jiang et al.~\cite{me11f} and Lumpe et al.~\cite{me11f} propose a modification to cross-validation.
+which lets a researcher
+demonstrate G-causal defect effects in software engineering.
+In this modification, we  divide project data  into $N$ bins, each of with contain data collected at similar times.
+They then sort those bins (on the collection date) and use bins $i,j$ to build models that
+are applied to bin  $k$ where 
+$i<j<k$. Note that this procedure ensures that we are building theories on data seen
+before the test data.
 
 We adapt the work of Jiang,Lumpe et al.  as follows. In  \fig{work}, we demand that the {\em test}
-data is not collected before the {\em train} data.  With that change,
+data is not necessarily collected before the {\em train} data:
+\bi
+\item[\#1:] For data collected from software released in multiple versions, we should hence use  versions  $i,j$ to build models that are applied to version  $k$ where $i<j<k$.
+\item[\#2:] For data collected from Monte Carlo simulations (where inputs are selected at random)
+then as long as simulation $i$ is not used to adjust simulation $j> i$, then any item in that
+data could be generated before any other. For this kind of data, we  can use the first $X\%$
+of the simulation for training, and the remaining data for testing.
+\ee
+In the two case studies of this paper, the Jureczko object-oriented defect data comes from software
+released in multiple versions while the Seigmund configuration data comes from Monte Carlo simulations.
+Hence, we use procedure \#1 for the defect data and procedure \#2 for the configuration data.
+
+With these changes,
 we can reasonably claim that the plan's generating by HOW are G-causal.
+
+\subsection{When Not to Plan: the Problem of Poor Predictors}
+
+The clear advantage of the approach of \fig{work} is that it can be readily and automatically
+applied to domains with historical data. That said, the obvious drawback with this approach
+is that our assessment of the plans is only as good as the predictor. To 
+mitigate for this {\em problem of poor predictors}, it is hence wise to demand high standards for the {\em
+satisfactory} threshold used in this \fig{work}. 
+
+How prevalent is the problem of poor planners? 
+In the general case, this is hard to answer. However, as discussed in this section, for the 17 data
+sets explored in this study, only 
+%XXX 
+3 suffer from this problem.
+
+This study's data from two types of domains: the Jureczko   object-oriented data  
+and the Seigmund configuration data. 
+For the Seigmund data, the plans generated by HOW advise on how  to change the   configurations settings within a Makefile
+(in order to make resulting compiled
+code  run faster). Here, performance can be measured in terms of  difference
+between the predicted runtime $p$ of test case items and their actual runtimes $a$
+using  $s= 100*(1- \frac{abs(a - p)}{a})$.
+Using engineering judgement, we define satisfactory $s$ as anything over   70\%. 
+This paper  explores    six Seigmund configuration data sets:  Berkeley DB (Java and Windows versions), Apache, SQLite, LLVM, and
+  x264\footnote{Available from the performance prediction section of PROMISE
+  http://openscience.us/repo/performance-predict.}. 
+  After splitting that data into equal sized train:test groups, a Random Forest
+  Regressor trained on one half, then applied to the other, achieved nearly perfect scores of
+%issue 24
+\[s=\{99.9, 99.8, 99.4, 99.1, 96,1\}\]
+(Aside: if the reader doubts that such high scores are achievable, we note that these scores are 
+consistent with those achieved by predictors built by Seigmund et al.~\cite{sven12}.)
+
+For the  Jureczko   object-oriented data,
+the plans generated by HOW advise   how to change static code attributes in order to reduce defects in
+Java classes.  Here,
+performance can be measured in terms of recall (percent of faulty classes in
+the test data detected
+by the {\em predictor}). Using engineering judgement, we define satisfactory recall as anything over   70\%. 
+This paper explores 12 of the Jureczko   object-oriented static code data sets: Ant, Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.}.
+For each of these data sets, we generated  {\em before} scores  by finding the latest
+version $k$, then training  a predictor on versions $k-2$ and $k-1$. As reported below,
+our initial recall scores from this data were unpromising (very low recall values). However,
+after applying certain data pre-processing steps (described below), a Random Forest generated
+on the $k-2,k-1$ versions achieved recalls on version $k$ of
+%issue24
+\[\mathrm{recall}=\{98,88,86,84,82,81,79,78,78,\overbrace{55,23,20}^{\mathrm{JBeans,Poi,Xalan}}\}\]
+From the above, we conclude that all the Seigmund configuration data and most of the Jureczko data
+avoids the problem of poor predictors. Hence, we can use that data for the planning
+experiments described below.
+ 
+\section{Experimental Methods}
+
+blah blah data. algorithms. statistics
 
 \section{Releated Work}
 
