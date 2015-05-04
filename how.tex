@@ -211,22 +211,20 @@ value of:
 \item The runtime of the six software systems whose configurations
 are explored in 2013 by Seigmund et al.~\cite{sven12};
 \ei
-Many papers use this above data to build {\em predictors} for defects and runtimes.
-However, aside from work by the authors of this paper,
-none of those papers then go on to use this data to build {\em planners}.
-
-
-
-In summary, this paper makes five contributions:
+In summary, this paper makes six contributions that are significantly different to
+prior work:
 \be
-\item A general framework for augmenting a prediction system such that
+\item Many software analytics papers use data to build {\em predictors} for (e.g.) defects and runtimes.
+However, aside from work by the authors of this paper,
+none of those papers then go further to use that data to build {\em planners}.
+\item This paper offers a general framework for augmenting a prediction system such that
 it becomes a planning system;
-\item A  test that recognizes  when we should {\em not}  plan: in summary, our kind of planning is
+\item This paper offers a  test that recognizes  when we should {\em not}  plan: in summary, our kind of planning is
 not recommended in domains that  generate poorly performing predictors;
-\item A general verification rig for assessing the value of plans generated within this rig.
-\item The HOW  instance-based planner.
-\item A proof that HOW runs in near-linear time.
-\item An experimental validation that the HOW planner is useful for reducing the
+\item This paper offers a general verification rig for assessing the value of plans generated within this rig.
+\item The HOW  instance-based planner of this paper has not been presented before.
+\item The experiments of this paper show that HOW planner is useful for real-world tasks;
+e.g. reducing the
 expected values of the Jureczko software defects and the Seigmund software runtimes.
 \ee
 The rest of this paper is structured as follows.
@@ -242,18 +240,25 @@ engineering community~\cite{krall14,harman12dec}.
 
 \section{HOW: Motivation and Methods}\label{sec:mm}
  
- \subsectuion{Why ``HOW''?}
-
+ \subsection{Motivation: Why ``HOW''?}
 HOW was inspired by some recent work by Krall and Menzies and Davis on 
 the GALE optimizer~\cite{krall14}. A well-known effect in machine learning (and, in computer vision
 and compression~\cite{levina04}) is that the $n$ dimensions of a data set can be represented by a  much
 lower-dimensional approximation. GALE finds those $m << n$ dimensions then mutates examples
-towards the better end of each dimension $m_i$. 
+towards the better end of each dimension $m_i$. Since it explores $m \ll n$ dimensions,
+GALE terminates much faster than standard optimiser (e.g. for one large model, 4 minutes versus 7 hours~\cite{krall14}).
+Better yet, GALE's rapdily generated  solutions are competitive (or better) than those found by 
+slower optimizers.
 
-A limitation with GALE is that whenever it adjusts an instance, some model has to be called
-to re-evaluate the new objective scores for the new examples. This can be a limitation
-since, in some domains, no such model exists or is readily accessible.
-Building and certifying a model   takes a long time. Such slow-to-build models exist in software engineering. For  example, in previous work~\cite{me07f} we used models
+A limitation with GALE is that it makes extensive use of
+an underlying domain model to asses generations of newly mutated instances.  This is an issue since
+in some domains, no such model exists or is readily accessible. For example, this whole paper
+began when, after briefing a business client on GALE, they asked:
+\begin{quote}
+{\em ``But what if I do not have a model of my business?''}
+\end{quote}
+This is a legitimate concern.
+Building and certifying a model  can  takes  long time, especially in software engineering. For  example, in previous work~\cite{me07f} we used models
 developed by Boehm's group at the University of Southern California.
 Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}).  This is not an isolated example. One of us (Menzies) teaches a graduate class in automated model-based software engineering. 
 Students in that class are asked to find (or build) a non-trivial model of
@@ -264,39 +269,41 @@ catalogue at goo.gl/nv2AVK.},
 the total number remains very small-- which is an observation consistent with
 SE models typically require  much effort to build and certify.
 
-Finally, even when there is an existing model, instance-based reasoning can be useful.
-Sometimes  it is easier to access instances of a model's behaviour than the model
+Also, even when there is an existing model, instance-based reasoning can be useful.
+Models need maintenance lest they become out-dated. Elsewhere, we have described our
+extensions to the USC models to enable reasoning about agile software developments. 
+It took many months to implement and certify those extensions~\cite{me09i,me09j}.
+The problem of model maintenance is another
+motivation to look for alternate methods that can be automateically updated whenever new data arrives.
+
+Finally, sometimes  it is easier to access instances of a model's behaviour than the model
 itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
 Laboratory~\cite{fea02a},  our research partner could not share a
 propriety model from within the NASA firewalls. However, they could share 
 logs of the input/output of that model.
  
+Note that this lack of access to a workable model is not just fatal for GALE, but also for every
+other model-based optimization algorithm such as simulated
+annealling or evolutuionary methods such as   
+NSGA-II, NSGA-III, SPEA2, IBEA, PSO, DE, MOEA/D, etc.~\cite{deb00a,zit02,zit04,%
+deb14,Cui2005a,storn97,zhang07:TEC}. Accordingly, this paper seeks
+an optimization methods that avoids the problem of models that are missing, slow
+to build, hard to maintain, or difficult to access.
 
+\subsection{Methods: How to Build ``HOW''?}
+HOW is a variant of GALE that does not need a underlying domain model.
 
-
-Depending on the audience, we can
-might call HOW a spectral learner, 
-a response surface method, or  a local search operator.
-{\em Spectral learners}~\cite{kamvar03} reason across $m$ dimensions synthesized
-using (say) PCA~\cite{pearson1901}. For example,
-algorithms like PDDP~\cite{boley98} use PCA to
-recursively divide data into smaller regions where each level of recursion needs an   $O(N^2)$ analysis
-to infer the principle components. HOW performs an analogous procedure using a   $O(2N)$ analysis
-based on a heuristic proposed by
-Faloutsos and Lin~\cite{Faloutsos1995} (see above, the ``FASTMAP'' algorithm).
-
-{\em Response surface methods}  build a fast approximation to the function being optimized,
-then uses that  approximation to take intelligent guesses about useful mutations. HOW
-is a non-parametric response surface method that finds its response surface via recursive
-clustering. For an example of a parametric response surface method, that uses Gaussian process
-models, see Zuluaga et al.~\cite{zuluaga13}.
-
-A {\em local search operator} that a some probability $p$, nudges  instance variables
-along a dimension that improves its objective scores. HOW's recursive clustering methods
-combine $n$ dimensions into $m \ll n$ so its ``nudges'' are simultaneous
-adjustments along multiple dimensions. For an example of other kinds of local search algorithms, that only adjust
-one variable at a time, see the literature on WALKSAT~\cite{Selman1992} and MAXWALKSAT~\cite{kautz97}.
-See also the literature on local search methods in multi-objective optimization.
+When designing HOW, our premises were:
+\bi
+\item
+This is no domain model; (b)~we have some
+labelled data and (b)~we seek minimal
+disrupttion
+HOW divide training into regions where the training
+data has similar properties. Each region is then examined and divided into ``west'' and ``east''
+where the region's ``west'' end has examples with worst performance stores than the east
+end (mnemoc: west starts with ``w'' and is short for ``worst' and east starts with ``e;;]which is shirt
+for excellent).so the ``e'' in 
 
 
 \be
@@ -364,18 +371,12 @@ Finally, WHERE
 $m \ll n$
 dimension 
 
-HOW divide training into regions where the training
-data has similar properties. Each region is then examined and divided into ``west'' and ``east''
-where the region's ``west'' end has examples with worst performance stores than the east
-end (mnemoc: west starts with ``w'' and is short for ``worst' and east starts with ``e;;]which is shirt
-for excellent).so the ``e'' in 
-
 \be
 \item Clustering the training data 
 \item 
 (c) finding which end of the cluster has better performance scores.
 (d) find
-
+\ee
 
 \section{Methodological Comments:\\ from ``Prediction'' to ``Planning''}
 A major  problem with building a planning mechanism in software engineering is ``how to verify the generated
@@ -626,44 +627,6 @@ our case studies are defect and runtime reduction, HERE is a general
 purpose algorithm that could be applied to any table of data with at least
 one column whose values can be sorted from ``desired'' to ``undesired''.
 
-\section{Related Work}
-Policy generation is different to standard data mining in that the 
-latter is most concerned with what {\em is} rather than {\em what to do}.
-For example, a classification or prediction system such as C4.5~\cite{quinlan92} or CART~\cite{breiman84} can predict for a discrete or continuous class variable
-(respectively). As such, they can be used as a sub-routine within a
-policy generator. For example, later in this paper we will use the CART
-prediction system to assess the policies generated by HERE.
-
-
-Policy generation with HERE is different to the recommendor systems.
-As described by Robillard and Walker~\cite{rob14}, recommendor systems
-in software engineering
-are less {\em directive} and more    {\em collaborative} than policy
-generators:
-\bi
-\item
-Directive systems such as HERE tell developers exactly what to do
-(e.g. ``use these settings in a Makefile'') 
-\item
-Collaborative systems are more suggestive guides that
-help (e.g.) programmers focus on very small sets
-with  very large libraries of code of documentation.
-\ei
-Collaborative systems may not presume to know what to do
-in that smaller set (while the directive systems would issue an edict
-such as  ``change this to that'').
-
-We also distinguish HERE's policy generation fro the multi-objective optimization methods explored by Harman and Krall and Menzies and 
-and many others.
-
-
-
-Previous with have explored model-based policy generation with STAR,
-NOVA, and instance-based policy generation with  W2.
-
-refactoring XXX
-
-Finally, we note that HERE is a temporal transfer learner.
 
 
 {\bf RQ1: Can Instance-based Learning techniques be used to create Planning tools that can better analyse software defect?} 
@@ -1477,8 +1440,11 @@ In this section,
 
 
 % \section{Discussion}
-% \section{Threats to validity}
-% \section{Conclusion}
+\section{Threats to validity}
+\input{related}
+
+
+\section{Conclusion}
 % \section*{Acknowledgements}
 \newpage
 \bibliography{how}{}

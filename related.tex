@@ -1,3 +1,112 @@
-W2: optimization failure.
 
-Tree query languages
+
+\section{Related Work}
+The connection of HOW to model-based evolutionary programming was discussed above.
+In summary,   model-based tools such as NSGA-III~\cite{deb14} or MOEA/D~\cite{zhang07:TEC}
+use some domain model as part of extensive Monte Carlo studies (augmented with some
+evolution of selected best instances).
+The premise of HOW is that we have access to domain data, but not a domain model.
+Also, the results shown above were obtained without evolving/updating some current population
+multiple times.
+
+
+Planning with HERE is somewhat different to the recommendor systems.
+As described by Robillard and Walker~\cite{rob14}, recommendor systems
+in software engineering
+are less {\em directive} and more    {\em collaborative} than policy
+generators:
+\bi
+\item
+Directive systems such as HERE tell developers exactly what to do
+(e.g. ``use these settings in a Makefile'') 
+\item
+The collaborative systems discussed by Robillard and Walker
+are more suggestive guides that
+help (e.g.) programmers focus on very small sets
+with  very large libraries of code of documentation.
+\ei
+One difference between directive and collaborative systems is that
+the latter may not presume to suggest exactly what to do next.
+However, planning systems like HOW are much more ardent: then make precise recommendations
+of how to change all items in the test suite.
+ 
+
+HOW is more a data mining method than a model-based optimizer. It represents our next attempt
+to develop model-less instance-based optimizers.  Our previous attempts in this area
+were the W2, WHERE, and IDEA systems~~\cite{menzies13:brady,Menzies2013:local,me12c}.
+W2 was developed with Brady et al.~\cite{menzies13:brady}. 
+W2 reasoned over deltas in the the raw
+attributes values (and not the synthesized attributes used by HOW). 
+The results of  adjusting values via those deltas was assessed via an SQL-like
+query that selected all examples in the database that satisfied the newly adjusted
+values. W2 suffers from two problems that are resolved
+in this paper: {\em optimization failure} and {\em instance exhastion}.
+\bi
+\item 
+As reported in that paper, W2
+had a large number of {\em optimization failures}; i.e. after applying its recommendations,
+the objective scores actually got worse. We recommend HOW's approach (of reasoning
+over the synthesized attributes) to W2 since {\em in none of the above
+results} do we observe that {\em after} we treat the data, that the objective scores are worse.
+\item
+As to {\em instance exhaustion}, W2 was a simple case-based reasoning system that never generalized
+over its instances. Hence, the SQl-like query used to asses W2's plans often returned
+a vanishingly small number of instances. To avoid this problem, we strongly recommend
+combining a planning system with a prediction system (as done in this paper) such that we can
+generalize to adjusted examples not seen on the original sample.
+\ei
+The WHERE tool~\cite{Menzies2013:local} developed the recursive clustering method over synthesized attributes
+  used in this paper. WHERE was   a prediction
+system since reported current patterns in the data, rather than proposing plans
+on how to improve those patterns. Nor did that tool offer guidance on how to assess
+the results of stepping along those patterns to guide changes to the system.
+
+The problems of W2 and the success of WHERE suggested in might be useful to combine
+WHERE's synthesized attributes with W2. The result was the IDEA tool~\cite{me12c}. 
+While the initial prototype seemed promising~\cite{me12c}, we made the mistake of using
+the tree structure of the recursive clusters to generate plans (in IDEA, the plan to
+move an instance from one poorly performing cluster $C_1$ to another $C_2$ was computed
+from the different in the  median
+values of the instances in the two  branches that lead to $C_1$ and $C_2$).  When
+that approach was applied to the data used in this paper, the results were quite weak
+(very little net improvement). However, we abandoned the tree-query approach
+and went for the pure instance-based approach discussed at the start of this paper.
+
+
+Moving on to other releated work, depending on the audience  we would
+ call HOW a {\em spectral learner}, 
+a {\em response surface method}, or  a {\em local search operator}.
+According to
+Kamvar et al~\cite{kamvar03}
+{\em spectral learners}reason across $m$ underlying dimensions synthesized
+using (say) PCA~\cite{pearson1901}. For example,
+algorithms like PDDP~\cite{boley98} use PCA to
+recursively divide data into smaller regions where each level of recursion needs an   $O(N^2)$ analysis
+to infer the principle components. HOW performs an analogous procedure using a   $O(2N)$ analysis
+based on a heuristic proposed by
+Faloutsos and Lin~\cite{Faloutsos1995} (see above, the ``FASTMAP'' algorithm).
+
+{\em Response surface methods}  build a fast approximation to the function being optimized,
+then uses that  approximation to take intelligent guesses about useful mutations. HOW
+is a non-parametric response surface method that finds its response surface via recursive
+clustering. For an example of a parametric response surface method, that uses Gaussian process
+models, see Zuluaga et al.~\cite{zuluaga13}.
+
+A {\em local search operator} that a some probability $p$, nudges  instance variables
+along a dimension that improves its objective scores. HOW's recursive clustering methods
+combine $n$ dimensions into $m \ll n$ so its ``nudges'' are simultaneous
+adjustments along multiple dimensions. For an example of other kinds of local search algorithms, that only adjust
+one variable at a time, see the literature on WALKSAT~\cite{Selman1992} and MAXWALKSAT~\cite{kautz97}.
+See also the literature on local search methods in multi-objective optimization.
+For example,
+Peng et al.~\cite{peng09:ls} have augmented MOEAs with
+local search  (i.e. applying a problem-specific repair/improvement
+heuristic on some current solution).
+Also, Igel et al.'s~\cite{igel07} multi-objective
+covariance matrix adaptation evolution strategy
+can run the mutations along  ``ridges'' in the search space.
+
+Note that the above response surface methods and local search operators cannot be compared to HOW
+since, unlike HOW, they assume the presence of some model that can evaluate generations of newly mutated
+instances. Recall from the above that the goal of HOW is to offer an optimization method without
+using the evolutionary methods that make extensive demands on an underlying domain model.
