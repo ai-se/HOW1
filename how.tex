@@ -4,7 +4,7 @@
  \usepackage{amsmath}
  \usepackage{url}
  \usepackage{pifont}
- \usepackage{times}
+ %\usepackage{times}
 \usepackage{rotating}
 %\usepackage{balance} 
 \usepackage{color, colortbl}
@@ -66,6 +66,7 @@
 \definecolor{self}{rgb}{0,0,0}
 \definecolor{Strings}{rgb}{0,0.63,0}
 \definecolor{Comments}{rgb}{0,0.63,1}
+\definecolor{Comments}{rgb}{0.5,0.5,0.5}
 \definecolor{Backquotes}{rgb}{0,0,0}
 \definecolor{Classname}{rgb}{0,0,0}
 \definecolor{FunctionName}{rgb}{0,0,0}
@@ -76,7 +77,7 @@
 \lstset{
 mathescape,
 numbers=#1,
-numberstyle=\footnotesize,
+numberstyle=\scriptsize,
 numbersep=0.5em,
 xleftmargin=0em,
 framextopmargin=2em,
@@ -86,7 +87,7 @@ showtabs=false,
 showstringspaces=false,
 tabsize=2,
 % Basic
-basicstyle=\ttfamily\small\setstretch{0.8},
+basicstyle=\ttfamily\scriptsize\setstretch{0.8},
 backgroundcolor=\color{Background},
 language=Python,
 % Comments
@@ -241,8 +242,9 @@ engineering community~\cite{krall14,harman12dec}.
 \section{HOW: Motivation and Methods}\label{sec:mm}
  
  \subsection{Motivation: Why ``HOW''?}
-HOW was inspired by some recent work by Krall and Menzies and Davis on 
-the GALE optimizer~\cite{krall14}. A well-known effect in machine learning (and, in computer vision
+HOW was inspired by certain  limits observed in 
+the GALE optimizer~\cite{krall14}. 
+A well-known effect in machine learning (and, in computer vision
 and compression~\cite{levina04}) is that the $n$ dimensions of a data set can be represented by a  much
 lower-dimensional approximation. GALE finds those $m << n$ dimensions then mutates examples
 towards the better end of each dimension $m_i$. Since it explores $m \ll n$ dimensions,
@@ -252,7 +254,7 @@ slower optimizers.
 
 A limitation with GALE is that it makes extensive use of
 an underlying domain model to asses generations of newly mutated instances.  This is an issue since
-in some domains, no such model exists or is readily accessible. For example, this whole paper
+in some domains, no such model exists or is readily accessible. For example, this   paper
 began when, after briefing a business client on GALE, they asked:
 \begin{quote}
 {\em ``But what if I do not have a model of my business?''}
@@ -291,8 +293,100 @@ an optimization methods that avoids the problem of models that are missing, slow
 to build, hard to maintain, or difficult to access.
 
 \subsection{Methods: How to Build ``HOW''?}
-HOW is a variant of GALE that does not need a underlying domain model.
 
+A general model for {\em predictors} is as follows. 
+During testing, each test instance gains a  prediction 
+by finding which region of the data it falls into.
+During training, those regions are inferred from
+divisions that ``chunk'' together regions with instances
+with similar properties. These dividers can be categorical (as in the case of decision trees) or probabilistic (as in the
+case of Naive Bayes) or learned via some distance minimization
+process 
+(as in the case of support vector machines) or generated
+directly by some clustering algorithm. 
+
+Those same regions can be used for instance-based 
+{\em planning}-- but instead of leaving test instances in the regions
+found during training, we displace them towards regions
+with better objective scores. 
+Two important design decision with HOW 
+is how to determine the {\em magnitude} and {\em direction} of the
+displacement.
+ 
+For HOW v1.0 (reported in this paper), we committed to a policy
+of {\em minimal displacement}  since we do not wish to alarm developers and managers
+with large scale change requests.
+Note that minimal displacement makes HOW very different
+to evolutionary optimizers.
+Those algorithms, which include  
+GALE, NSGA-II, NSGA-III, SPEA2, IBEA, PSO, DE and  MOEA/D~\cite{krall14,deb00a,zit02,zit04,%
+deb14,Cui2005a,storn97,zhang07:TEC} can make large scale
+displacements to the original population.
+
+Accordingly, HOW v1.0  executes by:
+\be
+\item Dividing the $N$ training examples into many small clusters (each of size of , at most, $\sqrt{N}$);
+\item
+For a test instance that falls into cluster $C_i$,
+never displace more than the boundary of that  cluster.
+\ee
+For the purposes of clustering, we use the WHERE recursive
+descent procedure~\cite{me
+WHERE is a spectral clusterer; i.e. it
+executes over   synthesized dimensions discovered
+by a 
+principle components analysis (PCA)
+
+
+Having  limiting the displacement {\em distance} to within one cluster,
+there is still the issue of how to select the displacement 
+{\em direction}.
+
+
+Let the training and test instances comprise pair of independent and objective values. For example:
+\bi 
+\item
+For the Seigmund data,
+the objective score is the runtime of the test suite of some compiled program;
+\item
+For the Jureczko data, the objective score
+is a boolean that is true if defects have been noted
+for that class.
+\ei
+Let $X,Y$ be particular  training and test instance.
+Further, 
+let the training data be clustered and $X$
+comes from a cluster $C_i$ that is near the test instance $Y$
+and has objective scores better than those seen in $Y$.
+We call $X$  the {\em exemplar} of $C_i$ since it
+holds independent values that best characterize that cluster:
+\bi
+\item
+For
+instances with numeric objectives (e.g. the Seigmund data), 
+the exemplar of a cluster is the instance
+with the best objective score.
+\item
+For instances with discrete objectives (e.g. Jureczko data),
+there is less differentiation between the objective scores.
+Hence, for this kind of the data, the exemplar of a cluster is
+an instance synthesized from the median values of the instances
+in that cluster.
+\ei
+Given the above, we can now define a {\em plan} to be
+a set of values to be added to a test instance in order
+to reduce the distance between that instance and the exemplar: 
+\[Y_j = Y_j + f*(X_j - Y_j)\]
+In the above, $Y_j$ is an independent variable within the
+test instance $Y$; $X$ is the exemplar found at training time;
+and  $f$ is a constant that controls
+how far we  move an instance (which is tuned for different data
+sets).
+
+A core design principle for HOW was ``minimal change'';
+i.e. make very small changes to the current instance.
+\ei
+There are many ways to find those regions 
 When designing HOW, our premises were:
 \bi
 \item
@@ -327,7 +421,8 @@ by a random amount (in the direction of  the  better ends of each dimension).
 
 PCA explores the $e$
 eigenvectors of the correlation matrix between $d$
-variables~\cite{pearson1901}.  Usually,
+variables~\cite{pearson1901}.  
+This is a useful approach since, usually,
 only a few $e \ll d$ eigenvectors are required
 since multiple inter-related variables $i,j,k \subseteq d$ can be represented
 by a single  eigenvector.
@@ -341,7 +436,7 @@ since effects that change over $j$ also
 change in the same way over $i$.
 
 Algorithms like PDDP~\cite{boley98} use PCA to
-recursively divide data into smaller regions. Each
+recursively cluster data into smaller regions. Each
 step of that process requires an $O(N^2)$ analysis
 of the data to compute the components~\cite{ilin10}. Worse, it requires an evaluation of every example.
 Using WHERE, competitive results can be achieved
@@ -353,23 +448,20 @@ Platt has
   shown computes a Nystr\"om
   approximation to the first component of
   PCA~\cite{platt05}).
-In step one, WHERE inputs
+Initially, WHERE inputs
 $N$
-examples $N_1,N_2,..$. Secondly, WHERE
+instances $N_1,N_2,..$. Secondly, WHERE
 picks any
-point $N_i$ at random. Thirdly, WHERE
-finds the point  {\em West}~$\in N$ that is
-furthest\footnote{
- For this work, we use the standard Euclidean measure recommended for
+instance $N_i$ at random. Thirdly, WHERE
+finds the instance  {\em West}~$\in N$ that is
+furthest from $N_i$. Finally,
+if funds the point {\em East}~$\in N$ 
+that is furthest from {\em West}. To computer these distances,
+we use the standard Euclidean measure recommended for
 instance-based reasoning by Aha et al.~\cite{aha91};
 i.e. $\sqrt{\sum_i(x_i-y_i)^2}$ where $x_i,y_i$
-are values normalized 0..1 for the range min..max.}
-from $N_i$.
-Finally, WHERE
+are values normalized 0..1 for the range min..max.
 
-
-$m \ll n$
-dimension 
 
 \be
 \item Clustering the training data 
