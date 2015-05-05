@@ -276,7 +276,7 @@ Models need maintenance lest they become out-dated. Elsewhere, we have described
 extensions to the USC models to enable reasoning about agile software developments. 
 It took many months to implement and certify those extensions~\cite{me09i,me09j}.
 The problem of model maintenance is another
-motivation to look for alternate methods that can be automateically updated whenever new data arrives.
+motivation to look for alternate methods that can be automatically updated whenever new data arrives.
 
 Finally, sometimes  it is easier to access instances of a model's behaviour than the model
 itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
@@ -295,7 +295,7 @@ to build, hard to maintain, or difficult to access.
 \subsection{Methods: How to Build ``HOW''?}
 
 A general model for {\em predictors} is as follows. 
-During testing, each test instance gains a  prediction 
+During testing, each test instance gains a prediction 
 by finding which region of the data it falls into.
 During training, those regions are inferred from
 divisions that ``chunk'' together regions with instances
@@ -316,34 +316,64 @@ displacement.
 For HOW v1.0 (reported in this paper), we committed to a policy
 of {\em minimal displacement}  since we do not wish to alarm developers and managers
 with large scale change requests.
+HOW's minimal displacement policy is to generate
+many small clusters, then limit displacement to the distance
+to the nearest cluster.
 Note that minimal displacement makes HOW very different
 to evolutionary optimizers.
 Those algorithms, which include  
 GALE, NSGA-II, NSGA-III, SPEA2, IBEA, PSO, DE and  MOEA/D~\cite{krall14,deb00a,zit02,zit04,%
 deb14,Cui2005a,storn97,zhang07:TEC} can make large scale
 displacements to the original population.
-
-Accordingly, HOW v1.0  executes by:
-\be
-\item Dividing the $N$ training examples into many small clusters (each of size of , at most, $\sqrt{N}$);
-\item
-For a test instance that falls into cluster $C_i$,
-never displace more than the boundary of that  cluster.
-\ee
+ 
 For the purposes of clustering, we use the WHERE recursive
-descent procedure~\cite{me
-WHERE is a spectral clusterer; i.e. it
-executes over   synthesized dimensions discovered
-by a 
-principle components analysis (PCA)
+descent procedure of \fig{where} that converts
+$N$ instances into $\sqrt{N}$ clusters.
+WHERE is a spectral clusterer~\cite{kamvar03}; i.e. it
+executes in near linear time to generate
+cluster using dimensions  discovered
+by a  PCA-like analysis (PCA=principle components analysis).
+ 
+
+\begin{figure}[t!]
+\small
+\begin{tabular}{|p{.95\linewidth}|}\hline
+WHERE recursive divides data as follows.
+It finds the two   distance instances,  $X,Y$
+by picking any instance $W$ at random, then setting $X$ to its most
+distant instance, then setting $Y$ to the instance most distant from
+$X$. 
+Note that finding $X,Y$ requires only $O(2N)$ comparisons
+of $N$ instances.
+
+Let $c=dist(X,Y)$. Using $c$, we next  project each instance $Z$
+onto a line that  runs between $X,Y$ as follows. If $a=dist(Z,X)$ and
+$b=dist(Z,Y)$, the $Z$'s
+distance from   {\em X} along the $XY$ line is
+$x=(a^2 + c^2 - b^2)/(2c)$.
+To recurse, split the data at the median $x$ value of all instances then call WHERE on each half (stopping when
+one half has less  than $\sqrt{N}$ of the original population 
+
+In the above, to computer distances, we use
+the Euclidean measure recommended for
+instance-based reasoning by Aha et al.~\cite{aha91};
+i.e. $\sqrt{\sum_i(X_i-Y_i)^2}$ where $X_i,Y_i$
+are values normalized 0..1 for the range min..max.
+\\\hline
+\end{tabular}
+\caption{Clustering data with WHERE. From~\cite{me12d}.}\label{fig:where}
+\end{figure}
 
 
-Having  limiting the displacement {\em distance} to within one cluster,
+
+
+Having  limiting the displacement {\em distance} to no further that
+the nearest  cluster,
 there is still the issue of how to select the displacement 
-{\em direction}.
-
-
-Let the training and test instances comprise pair of independent and objective values. For example:
+{\em direction}. 
+To determine that direction, we reflect on the objective
+scores of each cluster.
+For example:
 \bi 
 \item
 For the Seigmund data,
@@ -353,12 +383,8 @@ For the Jureczko data, the objective score
 is a boolean that is true if defects have been noted
 for that class.
 \ei
-Let $X,Y$ be particular  training and test instance.
-Further, 
-let the training data be clustered and $X$
-comes from a cluster $C_i$ that is near the test instance $Y$
-and has objective scores better than those seen in $Y$.
-We call $X$  the {\em exemplar} of $C_i$ since it
+We say that each cluster can be represented by one
+{\em exemplar} that
 holds independent values that best characterize that cluster:
 \bi
 \item
@@ -388,8 +414,7 @@ i.e. make very small changes to the current instance.
 \ei
 There are many ways to find those regions 
 When designing HOW, our premises were:
-\bi
-\item
+
 This is no domain model; (b)~we have some
 labelled data and (b)~we seek minimal
 disrupttion
@@ -674,6 +699,10 @@ This paper  explores    six Seigmund configuration data sets:  Berkeley DB (Java
 (Aside: if the reader doubts that such high scores are achievable, we note that these scores are 
 consistent with those achieved by predictors built by Seigmund et al.~\cite{sven12}.)
 
+\begin{figure}
+\input{deltas1}
+\caption{Jureczko data sets, experiments with tuning.}\label{fig:jtune}
+\end{figure}
 For the  Jureczko   object-oriented data,
 the plans generated by HOW advise   how to change static code attributes in order to reduce defects in
 Java classes.  Here,
@@ -755,38 +784,6 @@ The mutation policy works by projecting the test instance onto the contours and 
 The algorithm also allows for a feature weighting and pruning scheme. We have employed a simple (and fast) attribute ranking method where the features are sorted based on their ability to find meaningful splits in the dependent class of the data, see ~\cite{hall03}. Features that can find splits with the \textit{lesser variance} in the dependent variable are \textit{ranked higher} than features that don't. 
 
 We reason that the most informative feature must undergo a larger change as compared to other features. Therefore, when feature weighting is employed, the higher ranked features are mutated by a larger extent. Additionally, we have also included information pruning. Here we mutate only the top X\% of the features in each test instance. The remaining features remain unaltered. 
-\begin{figure}[htbp!]
-\small
-\begin{tabular}{|p{.95\linewidth}|}\hline
-HERE begins by \textit{clustering} the training data into similar subsets using WHERE. WHERE works as follows:
-\begin{enumerate}
-\item Find the two most dist points in a given population; say {\em east} and {\em west}. 
-\item Draw an axis of length $c$ between the poles. 
-\item Let each point be at distance $a,b$ to the {\em east,west} poles.  Using the cosine rule, project each point onto the  axis  at $x=(a^2 + c^2 - b^2)/(2c)$.  
-\item Using the Median $x$ value, divide the population.
-\item For each half that is larger than $\sqrt{N}$ of the original population, go to step 1.
-\end{enumerate}
-
-There are couple of things to note: firstly, the above algorithm requires a distance measure between sets of decisions, for this WHERE uses case-based reasoning measure defined by Aha et al.~\cite{aha91}; secondly, in step-1 a linear time heuristic called FASTMAP~\cite{fastmap} is used to find the two most dist points, this procedure is listed below:
-\begin{itemize}
-\item Pick a point at random; 
-\item Let {\em east} be the point furthest from that point; 
-\item Then {\em west} be the point furthest from {\em east}.
-\end{itemize}
-
-The final clusters that are found by WHERE are then used by HERE as follows:
-\begin{itemize}
-\item For each cluster find its nearest neighbor.
-\item Construct a projective plane for each cluster pair. Label the cluster pairs as {\em Good} and {\em Bad}.
-\item For a test instance, project it onto the planes generated above and pick the one on which the test case has the largest projection.
-\item Mutate the attributes of the test case towards the {\em Good Cluster} in that projective plane. 
-\end{itemize}
-
-Formally, HERE can be considered as an instance based  learning scheme. And that's because it builds a set of recommendations based on a given test case based on the clusters for Median at the training stage. This is unlike a model based approach, which would have used a model to do the same~\cite{xomo}.
-\\\hline
-\end{tabular}
-\caption{Inside HERE}\label{fig:what}
-\end{figure}
 
 \begin{figure}
 \centering
