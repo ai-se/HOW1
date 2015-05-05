@@ -5,8 +5,8 @@ Bib=  $(BibDir)/refs.bib
 
 all : dirs tex bib  tex tex embedfonts done publocal
 
-commit:  ; - git status; git commit -a; git push origin master; cd $(BibDir); svn commit -m stuff
-typo:  ; - git status; git commit -am "typo"; git push origin master; cd $(BibDir); svn update 
+commit:  ; - git status; git commit -a; git push origin master; 
+typo:  ; - git status; git commit -am "typo"; git push origin master; 
 update:; - git pull origin master
 status:; - git status
 gitting:
