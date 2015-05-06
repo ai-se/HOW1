@@ -1,0 +1,59 @@
+\begin{figure*}[!t]
+\scriptsize
+   \begin{center}
+   \begin{minipage}{.45\linewidth}
+    \begin{tabular}{r@{~}|l@{~}|r@{~}|l@{~}|r@{~}|r@{~}|} \cline{2-6}
+   & \multicolumn{5}{c|}{ }\\ 
+   
+   & \multicolumn{5}{c|}{ Data set  properties}\\ 
+   & \multicolumn{5}{c|}{  }\\ 
+           & \multicolumn{2}{c|}{training}   & \multicolumn{3}{c|}{testing}      \\ \cline{2-6}
+   data set      & versions           & instances & versions     & instances    & \% defective             \\ \hline
+        jedit    & 3.2, 4.0, 4.1, 4.2 & 1257      & 4.3          & 492          & 2 \\
+        ivy      & 1.1, 1.4           & 352       & 2.0          & 352          & 11 \\
+        camel    & 1.0, 1.2, 1.4      & 1819      & 1.6          & 965          & 19 \\
+        ant      & 1.3, 1.4, 1.5, 1.6 & 947       & 1.7          & 745          & 22 \\
+        synapse  & 1.0, 1.1           & 379       & 1.2          & 256          & 34 \\
+        velocity & 1.4, 1.5           & 410       & 1.6          & 229          & 34 \\
+        lucene   & 2.0, 2.2           & 442       & 2.4          & 340          & 59 \\
+        poi      & 1.5, 2, 2.5        & 936       & 3.0          & 442          & 64 \\
+        xerces   & 1.0, 1.2, 1.3      & 1055      & 1.4          & 588          & 74  \\ 
+        log4j    & 1.0, 1.1           & 244       & 1.2          & 205          & 92   \\
+        xalan    & 2.4, 2.5, 2.6      & 2411      & 2.7          & 909          & 99  \\\hline
+        \multicolumn{6}{c}{~}\\
+        \multicolumn{6}{c}{~}\\
+        \multicolumn{6}{c}{~}\\
+        
+        
+    \end{tabular}\end{minipage}\begin{minipage}{.4\linewidth}
+    \begin{tabular}{rrr|rrr|rr|l} \cline{1-8}
+      \multicolumn{8}{c|}{  }\\
+      \multicolumn{8}{c|}{  Results from learning}\\
+       \multicolumn{8}{c|}{   }\\
+   \multicolumn{3}{c|}{untuned} & \multicolumn{3}{c|}{tuned} & \multicolumn{2}{c|}{change}\\
+  \cline{1-8}
+  
+  pd & pf & good? & pd & pf & good? & pd & pf\\\cline{1-8}
+  50 & 27 &   & 64 & 28 & y & 14 & 1&$\star$\\
+  65 & 35 & y & 65 & 25 & y & 0 & -10&$\star$\\
+  50 & 30 &   & 62 & 41 &   & 12 & 11\\
+  66 & 21 & y & 63 & 18 & y & -3 & -3\\
+  45 & 18 &   & 47 & 15 &   & 2 & -3\\
+  79 & 61 &   & 77 & 61 &   & -2 & 0\\
+  55 & 25 &   & 60 & 27 & y & 5 & 2\\
+  51 & 32 &   & 61 & 12 & y & 10 & -20&$\star$\\
+ 30 & 28 &   & 39 & 33 &   & 9 & 5&$\times$\\
+  32 & 6 &   & 30 & 9 &   & -2 & 3&$\times$\\
+  41 & 5 &   & 48 & 0 &   & 7 & -5&\times\\
+\hline
+  \multicolumn{5}{c}{~}    &  & -1 & -4& 25th\\
+\multicolumn{6}{r|}{the percentiles of the changes:}    &   5 & 0 & 50th\\
+ \multicolumn{5}{c}{~}             & & 10 & 3 & 75th\\
+\end{tabular}
+
+\end{minipage}
+\end{center}    
+    \caption{Training and test data for the Jureczko data sets.
+    Sorted in ascending order of \% defective examples.
+    Data marked with ``$\times$'' is discussed in \fig{jtune}.}\label{fig:j}
+\end{figure*}

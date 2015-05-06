@@ -1,0 +1,19 @@
+In should be noted  that the standard 10-way cross-validation
+procedure used  in data mining does not necessarily demonstrate G-causality.  In a N-way cross-val experiments, the data is divided into $N$ bins.  
+$N-1$ bins are used for learning and the results are tested
+on the  remaining bin.
+This is repeated $N$ times, each time using a different bin for the test set.
+This approach can not be used to demonstrate causality since, if the initial data is collected
+over (say) $N$ months, then it is possible that the test set contains observations collected
+{\em before}   items seen in the training set. 
+
+Jiang et al.~\cite{me11f} and Lumpe et al.~\cite{me11f} propose a modification to cross-validation.
+which lets a researcher
+demonstrate G-causal defect effects in software engineering.
+In this modification, we  divide project data  into $N$ bins, each of with contain data collected at similar times.
+They then sort those bins (on the collection date) and use bins $i,j$ to build models that
+are applied to bin  $k$ where 
+$i<j<k$. Note that this procedure ensures that we are building theories on data seen
+before the test data.
+
+We adapt the work of Jiang,Lumpe et al.  as follows.

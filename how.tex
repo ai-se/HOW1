@@ -28,6 +28,7 @@
 \usepackage{multirow}
 \usepackage{listings}
 \usepackage{amsmath} 
+\usepackage[caption=false,font=footnotesize]{subfig}
 \DeclareMathOperator*{\argmin}{arg\,min} 
 \DeclareMathOperator*{\argmax}{arg\,max} 
 
@@ -76,7 +77,7 @@
 \lstnewenvironment{python}[1][]{
 \lstset{
 mathescape,
-numbers=#1,
+numbers=none,
 numberstyle=\scriptsize,
 numbersep=0.5em,
 xleftmargin=0em,
@@ -146,18 +147,18 @@ Rahul Krishna, Tim Menzies, Xipeng Shen\\
  As business users demand more insightful
  analytics, data scientists need to change
  their tools. Instead of merely predicting 
- some result, they also need tools that generate ``policy advice'';
- i.e. suggestions on  how to change values in order to
+ some result, they also need tools that generate ``plans'';
+ i.e. specific suggestions on  how to change values in order to
  improve on some predicted value.
  
- This paper proposes one such policy
- generator. ``HOW'' is a near-linear-time
+ This paper proposes one such planner. ``HOW'' is a 
  tool for proposing changes to independent
  variables in order to improve on 
  the predictions of the dependent variables. Unlike other approaches
- for learning optimizations to software does not require
- an underlying of the domain (rather, HOW automatically
- learns that model as part of its operation). 
+ for learning optimizations to software, HOW does not require
+ an underlying of the domain. Also, HOW's plans
+ are designed to result in {\em minimal displacement}
+ to current practice.
  
  This paper uses  HOW to learn methods
  to reduce defects and decrease program runtime.
@@ -166,19 +167,20 @@ Rahul Krishna, Tim Menzies, Xipeng Shen\\
  50\% of their original values.
   \end{abstract}
   \begin{IEEEkeywords}
-Instance-based reasoning, defect prediction, random forest, optimization.
+Defect prediction, configuration, prediction, planning, instance-based reasoning.
   \end{IEEEkeywords}
   
 \section{Introduction}
-Business  users are now demanding that data mining tools
-be augmented with tools to support  business-level
+Business  users   now demand   data mining tools
+that  support a  business-level
 interpretation of that data. For example,
 at a  panel on software analytics at ICSE'12,
 industrial practitioners lamented the state of the art in data mining
 and software engineering~\cite{menzies12a}. Panelists commented that
 ``prediction is all well and good, but what about decision
 making?''. That is, these panelists are more interested in the interpretations
-that follow the mining, rather than just  the mining. For example:
+and follow-up
+that occurs {\em after} the mining, rather than just  the mining itself. For example:
 \bi
 \item Instead of just accepting  {\em predictions} on how many 
  software defects
@@ -200,33 +202,41 @@ since, as one gruff user once shouted at us:
 {\em ``Don't tell me what \underline{is};
 tell me what to \underline{change}.''}
 \end{quote}
-In order to satisfy the demands of this new kind of business user, we  study the generation of {\em plans} in the context
-of software analytics.  
-This paper presents
-HOW, a novel  {\em instance-based planner} that runs in near-linear time.
+Generating plans is also differed to the recommender systems. 
+discussed by Robillard and Walker~\cite{rob14}.  Recommendor systems
+in software engineering
+are less {\em directive} and more    {\em collaborative} than plan generators:
+\bi
+\item
+Directive systems (such as those discussed in this paper) tell developers exactly what to do;
+e.g. ``use these settings in a Makefile''. 
+\item
+On the other hand, the collaborative systems discussed by Robillard and Walker
+are more suggestive guides that
+help (e.g.) programmers focus on very small sets
+with  very large libraries of code of documentation.
+\ei
+This paper presents HOW, a novel planner for learning actionable analytics.
 In the experiments shown below, we see that HOW's plans can
 significantly reduce the expected
 value of:
 \bi
-\item The software defects found in  twelve object-oriented JAVA systems explored in 2010 by Jureczko et al.~\cite{jureczko10};
-\item The runtime of the six software systems whose configurations
+\item The software defects found in  the object-oriented JAVA systems explored in 2010 by Jureczko et al.~\cite{jureczko10};
+\item The runtime of the  software systems whose configurations
 are explored in 2013 by Seigmund et al.~\cite{sven12};
 \ei
-In summary, this paper makes six contributions that are significantly different to
+In summary, this paper makes five contributions that are significantly different to
 prior work:
 \be
-\item Many software analytics papers use data to build {\em predictors} for (e.g.) defects and runtimes.
-However, aside from work by the authors of this paper,
-none of those papers then go further to use that data to build {\em planners}.
-\item This paper offers a general framework for augmenting a prediction system such that
-it becomes a planning system;
-\item This paper offers a  test that recognizes  when we should {\em not}  plan: in summary, our kind of planning is
-not recommended in domains that  generate poorly performing predictors;
-\item This paper offers a general verification rig for assessing the value of plans generated within this rig.
 \item The HOW  instance-based planner of this paper has not been presented before.
 \item The experiments of this paper show that HOW planner is useful for real-world tasks;
 e.g. reducing the
 expected values of the Jureczko software defects and the Seigmund software runtimes.
+\item Apart from HOW, we  also offers a general framework for using  predictive system to build planners;
+\item Further, we offer a  test to recognizes  when we should {\em not}  plan: specifically,
+planning is
+not recommended in domains with  poorly performing predictors;
+\item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
 \ee
 The rest of this paper is structured as follows.
 HOW's instance-based reasoning  makes its conclusions by
@@ -242,54 +252,57 @@ engineering community~\cite{krall14,harman12dec}.
 \section{HOW: Motivation and Methods}\label{sec:mm}
  
  \subsection{Motivation: Why ``HOW''?}
-HOW was inspired by certain  limits observed in 
-the GALE optimizer~\cite{krall14}. 
+HOW was inspired by two     business issues raised about the  GALE optimizer~\cite{krall14}. 
 A well-known effect in machine learning (and, in computer vision
 and compression~\cite{levina04}) is that the $n$ dimensions of a data set can be represented by a  much
-lower-dimensional approximation. GALE finds those $m << n$ dimensions then mutates examples
+lower-dimensional approximation. GALE finds those $m \ll n$ dimensions then mutates examples
 towards the better end of each dimension $m_i$. Since it explores $m \ll n$ dimensions,
 GALE terminates much faster than standard optimiser (e.g. for one large model, 4 minutes versus 7 hours~\cite{krall14}).
 Better yet, GALE's rapdily generated  solutions are competitive (or better) than those found by 
 slower optimizers.
 
-A limitation with GALE is that it makes extensive use of
-an underlying domain model to asses generations of newly mutated instances.  This is an issue since
-in some domains, no such model exists or is readily accessible. For example, this   paper
-began when, after briefing a business client on GALE, they asked:
+When GALE executes, it searches for better examples of data
+ by (a)~inputting an initial population of data; then (b)~making
+ extensive mutation to that data. In practice, GALE makes
+100s to 100,000s of mutations. Each of these mutations
+is reassessed using some domain model.
+For certain users,this approach raises some issues.  One such user commented:
 \begin{quote}
-{\em ``But what if I do not have a model of my business?''}
+ISSUE~\#1: {\em ``What if I only want the minimum useful change, not
+the maximum possible?''}
 \end{quote}
-This is a legitimate concern.
+Note here that this business user is asking for solutions  that do not require extensive 
+changes to their current  approaches. 
+
+Later in that discussion, another business user asked:
+\begin{quote}
+ISSUE~\#2: {\em ``But what if I do not have a domain model of my business?''}
+\end{quote}
+This also is a legitimate issue.
 Building and certifying a model  can  takes  long time, especially in software engineering. For  example, in previous work~\cite{me07f} we used models
 developed by Boehm's group at the University of Southern California.
-Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}).  This is not an isolated example. One of us (Menzies) teaches a graduate class in automated model-based software engineering. 
-Students in that class are asked to find (or build) a non-trivial model of
-some software process (where ``non-trivial'' means something that processes
-a  model at least an order of magnitude more complex than Brooks' Law). 
-While the  number of such models has been growing in recent years\footnote{See the
-catalogue at goo.gl/nv2AVK.}, 
-the total number remains very small-- which is an observation consistent with
-SE models typically require  much effort to build and certify.
+Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}). 
 
-Also, even when there is an existing model, instance-based reasoning can be useful.
-Models need maintenance lest they become out-dated. Elsewhere, we have described our
+Also, even when there is an existing model, they can require
+constant  maintenance lest they become out-dated. Elsewhere, we have described our
 extensions to the USC models to enable reasoning about agile software developments. 
 It took many months to implement and certify those extensions~\cite{me09i,me09j}.
 The problem of model maintenance is another
 motivation to look for alternate methods that can be automatically updated whenever new data arrives.
 
-Finally, sometimes  it is easier to access instances of a model's behaviour than the model
+Further, sometimes  it is easier to access instances of a model's behaviour than the model
 itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
 Laboratory~\cite{fea02a},  our research partner could not share a
 propriety model from within the NASA firewalls. However, they could share 
 logs of the input/output of that model.
  
-Note that this lack of access to a workable model is not just fatal for GALE, but also for every
-other model-based optimization algorithm such as simulated
-annealling or evolutuionary methods such as   
+These two issues are not just problems for GALE, but also for every
+other model-based optimization algorithm  that makes
+extensive use of mutation  and domain models such as
 NSGA-II, NSGA-III, SPEA2, IBEA, PSO, DE, MOEA/D, etc.~\cite{deb00a,zit02,zit04,%
 deb14,Cui2005a,storn97,zhang07:TEC}. Accordingly, this paper seeks
-an optimization methods that avoids the problem of models that are missing, slow
+an optimization methods that make minimal changes to instances,
+while avoiding the problem of models that are missing, slow
 to build, hard to maintain, or difficult to access.
 
 \subsection{Methods: How to Build ``HOW''?}
@@ -305,253 +318,145 @@ process
 (as in the case of support vector machines) or generated
 directly by some clustering algorithm. 
 
-Those same regions can be used for instance-based 
-{\em planning}-- but instead of leaving test instances in the regions
-found during training, we displace them towards regions
-with better objective scores. 
-Two important design decision with HOW 
-is how to determine the {\em magnitude} and {\em direction} of the
-displacement.
- 
-For HOW v1.0 (reported in this paper), we committed to a policy
-of {\em minimal displacement}  since we do not wish to alarm developers and managers
-with large scale change requests.
-HOW's minimal displacement policy is to generate
-many small clusters, then limit displacement to the distance
-to the nearest cluster.
-Note that minimal displacement makes HOW very different
-to evolutionary optimizers.
-Those algorithms, which include  
-GALE, NSGA-II, NSGA-III, SPEA2, IBEA, PSO, DE and  MOEA/D~\cite{krall14,deb00a,zit02,zit04,%
-deb14,Cui2005a,storn97,zhang07:TEC} can make large scale
-displacements to the original population.
- 
-For the purposes of clustering, we use the WHERE recursive
-descent procedure of \fig{where} that converts
-$N$ instances into $\sqrt{N}$ clusters.
-WHERE is a spectral clusterer~\cite{kamvar03}; i.e. it
-executes in near linear time to generate
-cluster using dimensions  discovered
-by a  PCA-like analysis (PCA=principle components analysis).
- 
 
 \begin{figure}[t!]
 \small
-\begin{tabular}{|p{.95\linewidth}|}\hline
-WHERE recursive divides data as follows.
-It finds the two   distance instances,  $X,Y$
+~\hrule~
+
+{\bf \fig{where}a: top down clustering:}
+
+Data can be rapidly and recursively divided   as follows.
+Find   two   distance instances,  $X,Y$
 by picking any instance $W$ at random, then setting $X$ to its most
 distant instance, then setting $Y$ to the instance most distant from
-$X$. 
-Note that finding $X,Y$ requires only $O(2N)$ comparisons
-of $N$ instances.
+$X$~\cite{fastmap}
+(this requires only $O(2N)$ comparisons
+of $N$ instances).
+Next, project each instance $Z$
+onto a line that  runs between $X,Y$ using the cosine
+rule of \fig{where}b. After that,  split the data at the median $x$ value of all instances and
+recurses on each half  (stopping when
+one half has less  than $\sqrt{N}$ of the original population). See \fig{code1d} for further details.
 
-Let $c=dist(X,Y)$. Using $c$, we next  project each instance $Z$
-onto a line that  runs between $X,Y$ as follows. If $a=dist(Z,X)$ and
-$b=dist(Z,Y)$, the $Z$'s
-distance from   {\em X} along the $XY$ line is
-$x=(a^2 + c^2 - b^2)/(2c)$.
-To recurse, split the data at the median $x$ value of all instances then call WHERE on each half (stopping when
-one half has less  than $\sqrt{N}$ of the original population 
+~\hrule~
+ 
+{\bf \fig{where}b: finding distances:}
 
-In the above, to computer distances, we use
+In the \fig{where}a, to compute distances, we use
 the Euclidean measure recommended for
 instance-based reasoning by Aha et al.~\cite{aha91};
-i.e. $\sqrt{\sum_i(X_i-Y_i)^2}$ where $X_i,Y_i$
-are values normalized 0..1 for the range min..max.
-\\\hline
-\end{tabular}
-\caption{Clustering data with WHERE. From~\cite{me12d}.}\label{fig:where}
+i.e. $\sqrt{\sum_iw_i(X_i-Y_i)^2}$ where $X_i,Y_i$
+where values are  normalized 0..1 for the range min..max and 
+$w_i$ is some importance weight given to attribute $i$.
+Usually, $w_i=1$ but it can be adjusted using, say,
+the feature weighting methods of \fig{where}d.
+ 
+ ~\hrule~
+ 
+{\bf \fig{where}c: 3 point geometry:}
+ 
+Let   $X,Y$ be two points joined by  a line  length $c$.
+A third point, $Z$, has distances  $a=dist(Z,X)$ and
+$b=dist(Z,Y)$ to $X,Y$, respectively.
+According to the cosine rule,   $Z$ projects onto  $\overline{XY}$
+at distance $x=(a^2 + c^2 - b^2)/(2c)$ from $X$.
+Further, according to Pythagoras' theorem, $Z$ stands at a distance
+$y = \sqrt{a^2 - x^2}$ from the line $\overline{XY}$. See \fig{code1c} for further details.
+
+~\hrule~
+
+{\bf \fig{where}d: feature weighting:}
+
+HERE's feature weighting algorithm
+comes from the CART regression tree learner~\cite{Breiman1984}.
+It sorts independent variables
+ according to how well they can reduce the variance
+of a  numeric objective.
+If we split some column $i$ of independent numeric data  into $N=n_1 + n_2 + ..$ splits,
+then the expected
+value of the objective value of the split  is $w_i = \sum_i v_in_i/N$
+where $v$ is the standard deviation of the objective.
+A recursive procedure can  find those divisions $n_1,n_2,...$ by (a)~sorting a numeric column,
+then split at $\argmin_i w_i$, then recursing into each half.  See \fig{code1d} for further details
+
+~\hrule~
+ 
+\caption{Sub-routines within HOW.}\label{fig:where}
 \end{figure}
 
+\input{code}
 
 
 
-Having  limiting the displacement {\em distance} to no further that
-the nearest  cluster,
-there is still the issue of how to select the displacement 
-{\em direction}. 
-To determine that direction, we reflect on the objective
-scores of each cluster.
-For example:
-\bi 
+Those same regions can be used for instance-based 
+{\em planning}-- but instead of leaving test instances in the regions
+found during training, we {\em displace} them towards regions
+with better objective scores.
+To achieve this, 
+during training, HOW clusters data using the procedure of \fig{where}a,
+then draws lines between the centroids of  clusters $X,Y$ that are nearest
+neighbors.
+By convention, we say that the cluster containing $X$ has the  better objective scores. This means we can say that the line is a useful direction for displacing
+data; i.e.  away from $Y$ and towards $X$.
+Hence,  during testing,  HOW use Pythagoras' theorem
+and \fig{where}c to find the  nearest line to every test instance. That test instance is   then displaced towards the better end
+of that line (towards  $X$).
+
+An important design decision with HOW 
+is how to determine the exact {\em direction} and {\em magnitude} of the
+displacement.  Following on from the discussion around   ISSUE~\#1,
+we note that a design goal of HOW is
+{\em minimal displacements} of project data.
+To implement minimal displacement:
+\bi
+\item
+HOW sorts  the independent variables
+using the procedure of  \fig{where}d. It then only
+displaces the    best $B$\%  of that sort (while leaving the rest untouched).
+In  the experiments shown below,  we explore   $B \in \{25,50,100\}\%$.
+\item
+HOW also  limits displacement
+to very small regions in the space of the training data (never more that the separation
+of the two closest clusters).  HOW's clusterer divides  data into many   small clusters containing
+$\sqrt{N}$ of the population.
+HOW   limits displacement to  \mbox{$0 \le F \le c$}, where
+$c$ is the distance between the two closest clusters. 
+In  the experiments shown below,  we explore
+\mbox{$F\in \{0.25, 0.5, 0.75\}$}.
+\ei
+Turning now to the displacement {\em direction},
+our experiments show that it useful to  carefully reflect on exactly where HOW should  push each test instance.
+HOW replaces each cluster   with one {\em exemplar} that best
+characterizes the data in that cluster. It then displaces the
+test data towards that exemplar, as follows.
+Let $Z_j$ be an independent variable within the
+test instance $Z$. If  $X$ be the exemplar found at training time,
+then we displace $Z$ as follows:
+\[Z_j =  Z_j + F*(X_j - Z_j)\]
+Here, $F$ is the  magnitude controller, discussed above.
+The experiments of this work showed that different kinds of data require
+different kinds of exemplars.
+\bi
 \item
 For the Seigmund data,
-the objective score is the runtime of the test suite of some compiled program;
+the objective score is the runtime of the test suite of a compiled program.
+For this kind of data with numeric objectives,
+the exemplar  is the instance in a cluster
+with  best objective score.
 \item
 For the Jureczko data, the objective score
 is a boolean that is true if defects have been noted
-for that class.
-\ei
-We say that each cluster can be represented by one
-{\em exemplar} that
-holds independent values that best characterize that cluster:
-\bi
-\item
-For
-instances with numeric objectives (e.g. the Seigmund data), 
-the exemplar of a cluster is the instance
-with the best objective score.
-\item
-For instances with discrete objectives (e.g. Jureczko data),
-there is less differentiation between the objective scores.
-Hence, for this kind of the data, the exemplar of a cluster is
+for that class. 
+For this kind of data with discrete objectives,
+the data, 
+has less differentiation between the objective scores
+so we set the exemplar to  
 an instance synthesized from the median values of the instances
 in that cluster.
-\ei
-Given the above, we can now define a {\em plan} to be
-a set of values to be added to a test instance in order
-to reduce the distance between that instance and the exemplar: 
-\[Y_j = Y_j + f*(X_j - Y_j)\]
-In the above, $Y_j$ is an independent variable within the
-test instance $Y$; $X$ is the exemplar found at training time;
-and  $f$ is a constant that controls
-how far we  move an instance (which is tuned for different data
-sets).
+\ei 
 
-A core design principle for HOW was ``minimal change'';
-i.e. make very small changes to the current instance.
-\ei
-There are many ways to find those regions 
-When designing HOW, our premises were:
-
-This is no domain model; (b)~we have some
-labelled data and (b)~we seek minimal
-disrupttion
-HOW divide training into regions where the training
-data has similar properties. Each region is then examined and divided into ``west'' and ``east''
-where the region's ``west'' end has examples with worst performance stores than the east
-end (mnemoc: west starts with ``w'' and is short for ``worst' and east starts with ``e;;]which is shirt
-for excellent).so the ``e'' in 
-
-
-\be
-\item Take  a population $P$ of examples
-\item Separate all $p \in P$ examples into their $n$ independent variables and 
-their $o$ scores;
-\item Find $m \ll n$ lower dimensional approximations for the $n$ independent variables;
-\item Look for the worst and best ends of each $m$  dimension (where the better ends
-have better objective scores);
-\item Find the $q \subseteq P$ subset of the population with ``better'' objective scores;
-\item Generate the next population $P'$ by adjust the independent variables
-of the $q$  examples
-by a random amount (in the direction of  the  better ends of each dimension).
-\item Apply some model to discover all the objective scores of $P'$
-\item Set $P=P'$ and go to step 1
-\ee
-
-
-
-
-
-PCA explores the $e$
-eigenvectors of the correlation matrix between $d$
-variables~\cite{pearson1901}.  
-This is a useful approach since, usually,
-only a few $e \ll d$ eigenvectors are required
-since multiple inter-related variables $i,j,k \subseteq d$ can be represented
-by a single  eigenvector.
-Also, noisy variables from $d$ are
-ignored since they  do not contribute to the signal in the data.
-Further,
-redundant  variables  become (approximately) parallel lines
-in $e$ space. For all such redundancies \mbox{$i,j \in d$}, we
-can ignore $j$
-since effects that change over $j$ also
-change in the same way over $i$.
-
-Algorithms like PDDP~\cite{boley98} use PCA to
-recursively cluster data into smaller regions. Each
-step of that process requires an $O(N^2)$ analysis
-of the data to compute the components~\cite{ilin10}. Worse, it requires an evaluation of every example.
-Using WHERE, competitive results can be achieved
-using an $O(2N)$ analysis.
-WHERE uses a heuristic proposed by
-Faloutsos and Lin~\cite{Faloutsos1995}
-(which
-Platt has
-  shown computes a Nystr\"om
-  approximation to the first component of
-  PCA~\cite{platt05}).
-Initially, WHERE inputs
-$N$
-instances $N_1,N_2,..$. Secondly, WHERE
-picks any
-instance $N_i$ at random. Thirdly, WHERE
-finds the instance  {\em West}~$\in N$ that is
-furthest from $N_i$. Finally,
-if funds the point {\em East}~$\in N$ 
-that is furthest from {\em West}. To computer these distances,
-we use the standard Euclidean measure recommended for
-instance-based reasoning by Aha et al.~\cite{aha91};
-i.e. $\sqrt{\sum_i(x_i-y_i)^2}$ where $x_i,y_i$
-are values normalized 0..1 for the range min..max.
-
-
-\be
-\item Clustering the training data 
-\item 
-(c) finding which end of the cluster has better performance scores.
-(d) find
-\ee
-
-\section{Methodological Comments:\\ from ``Prediction'' to ``Planning''}
-A major  problem with building a planning mechanism in software engineering is ``how to verify the generated
-plans?''. For example,  in the experiments shown below,  HOW comments  on how to reduce
-software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be mnaually adjusted by programmers or (for large scale changes) automatically adjusted using code refactoring
-tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
-
-Some organizations have the resources to 
-run repeated trials to assess the effect of different treatments.
-For example, in one remarkable recent study, Bente et al. report results
-were the same specification was developed into a product by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
-to (say) take a code base, assign it to $N$ different teams, apply
-HOW's plans the code used by  $N/2$ teams, then check in 12 months time
-if those halves of the teams have fewer defects than the other.  
-
-Very few industrial or research groups have access
-to the kinds of resources using by Bente et al. (evidence: in the size years since the
-publication of that work, we know of only one of two similar studies). Hence, it
-we wish to verify HOW's plans, then some other approach is required that is less
-resource intensive.
-
-\subsection{Proposed Framework}
-
-We propose using prediction systems (built by data mining) as a verification
-tool for planners. In domains with data, from which data miners can build
-predictors of adequate performance, then those predictors can assess the value
-of the changes proposed by HOW.
-As shown in \fig{work}, 
-project data is divided into two disjoint sets {\em train} and {\em test}
-(so \mbox{{\em train} $\cup$ {\em test} $=\;\emptyset$}).
-Next, from the train set, we build both a {\em planner} as well
-as a {\em predictor}. Our general framework does not   commit to any particular  choice
-of {\em planner} or {\em predictor}. For the purposes of this discussion 
-our {\em planner}
-will be HOW (discussed below)and our
-our {\em predictors} will be the Random Forest and Random Forest
-Regressor\footnote{Decision tree learners find the attribute whose value's
-select for for sections of the data with least variation in the class
-variable. Decision tree learners then recurse on each selection~\cite{breiman84}. A random forest is a set of decision trees, each built
-from some random subset of the rows and columns. The conclusions
-of the forest are a ``vote'' generated by all the trees~\cite{Breiman2001}. 
-A standard Random Forest predicts for a discrete class variable while
-a Random Forest Regressor generates numeric predictions.} taken from the SciKit
-Learn toolkit~\cite{Pedregosa2012}.
-
-Turning now to the {\em test} data, this is passed to the {\em predictor}
-to generate a baseline {\em before} performance score.
-Note that if our {\em predictors} fail to perform adequately on the test data,
-then we cannot trust them to comment on our plans. Accordingly,
-if that performance is unsatisfactory, we abort.
-Else, we (1)~apply the {\em planner} to alter the {\em test} data;
-then (2)~apply the {\em predictor} to the altered data {\em test'};
-then (3)~return the performance delta.
-
-
-
-
-
+  
+  
 \begin{figure}[!t]
 \small 
 \[
@@ -586,109 +491,161 @@ then (3)~return the performance delta.
 \caption{How to use {\em predictors} for {\em planning}.}\label{fig:work}
 \end{figure}
 
-\subsection{Are These Plans ``Causal''?}
-With one additional stipulation,   this framework can be used to check if the learned
-plans can be said to {\em cause} a change in the domain being explored.
 
-In the literature, there are two main definitions of causality: Hill's H-causality~\cite{Hill1965}
-and Granger's G-casualty~\cite{granger80}. 
-Of the two, Hill's definition is the most strict. An effect
-is H-causal if it satisfies nine criteria including
-{\em  plausibility};
-{\em strength} of the effect;
-{\em 
-specificity}, i.e. locality of the effect
-to specialized groups;
-{\em
-support} by experimental evidence;
-{\em 
-coherence} between cause-effects noted
-in the field and in laboratory samples;
-{\em
-temporally} i.e. the effect has to follow the cause;
-{\em 
-analogy}, i.e.  similar causes have similar effects;
-{\em
-biological gradient}, i.e.  more exposure to the cause leads to more of an
-effect; and
-{\em
-consistency}, i.e.  the same cause-effect pairings have been seen by different persons
-in different places.
 
-It is hard to demonstrate H-causality in software engineering.
-For example, Hill's criteria emphasises repeatability and laboratory studies-- both of which are
-hard to perform in software engineering (e.g. see the continued debate about
-the value of using undergraduate students to surrogates for industrial
-practitioners in software engineering research~\cite{Carver2003}). Also, Hill's requirement
-for consistency is far easier to achieve in studies of small closed systems (e.g. bacteria in a petri dish)
-than in large socio-technical systems (e.g. open source projects). In the latter,
-effects are more {\em probabilistic} than {\em categorical}-- by which we mean that 
-some cause tends to cause some effect at some probability $p$ less that one.
-This in turn means that at some probability $q$ (where $0 \le q < p \le 1$)
-that we will find examples of {\em inconsistency} where some cause does {\em not} lead
-to some effect (thus violating one of Hill's criteria for demonstrating causality).
+\subsection{How to Assess ``HOW''}
+In the experiments shown below,  HOW comments  on how to reduce
+software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be manually adjusted by programmers or (for large scale changes) automatically adjusted using code refactoring
+tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
 
-The  difficulties associated with Hill's criteria lead Granger~\cite{granger80}
-to propose another more practical criteria\footnote{Granger  himself comments that
-his proposal was based on earlier work by Norbert Weiner~\cite{Seth2007}.}.
-\mbox{G-causality} is based on building predictions based on {\em past} data,
-then showing that this works for {\em future} data~\cite{granger80}. 
-In should be noted  that the standard 10-way cross-validation
-procedure used  in data mining does not necessarily demonstrate G-causality.  In a N-way cross-val experiments, the data is divided into $N$ bins.  
-$N-1$ bins are used for learning and the results are tested
-on the  remaining bin.
-This is repeated $N$ times, each time using a different bin for the test set.
-This approach can not be used to demonstrate causality since, if the initial data is collected
-over (say) $N$ months, then it is possible that the test set contains observations collected
-{\em before}   items seen in the training set. 
+Some organizations have the resources to 
+run repeated trials to assess the effect of different treatments.
+For example, in one remarkable recent study, Bente et al. report results
+were the same specification was developed into a product by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
+to (say) take a code base, assign it to $N$ different teams, apply
+HOW's plans the code used by  $N/2$ teams, then check in 12 months time
+if those halves of the teams have fewer defects than the other.  
 
-Jiang et al.~\cite{me11f} and Lumpe et al.~\cite{me11f} propose a modification to cross-validation.
-which lets a researcher
-demonstrate G-causal defect effects in software engineering.
-In this modification, we  divide project data  into $N$ bins, each of with contain data collected at similar times.
-They then sort those bins (on the collection date) and use bins $i,j$ to build models that
-are applied to bin  $k$ where 
-$i<j<k$. Note that this procedure ensures that we are building theories on data seen
-before the test data.
+Very few industrial or research groups have access
+to the kinds of resources using by Bente et al. (evidence: in the size years since the
+publication of that work, we know of only one of two similar studies). Hence, it
+we wish to verify HOW's plans, then some other framework is required that is less
+resource intensive.
+ 
 
-We adapt the work of Jiang,Lumpe et al.  as follows. In  \fig{work}, we demand that the {\em test}
-data is not necessarily collected before the {\em train} data:
-\bi
-\item[\#1:] For data collected from software released in multiple versions, we should hence use  versions  $i,j$ to build models that are applied to version  $k$ where $i<j<k$.
-\item[\#2:] For data collected from Monte Carlo simulations (where inputs are selected at random)
-then as long as simulation $i$ is not used to adjust simulation $j> i$, then any item in that
-data could be generated before any other. For this kind of data, we  can use the first $X\%$
-of the simulation for training, and the remaining data for testing.
-\ee
-In the two case studies of this paper, the Jureczko object-oriented defect data comes from software
-released in multiple versions while the Seigmund configuration data comes from Monte Carlo simulations.
-Hence, we use procedure \#1 for the defect data and procedure \#2 for the configuration data.
 
-With these changes,
-we can reasonably claim that the plan's generating by HOW are G-causal.
 
-\subsection{When Not to Plan: the Problem of Poor Predictors}
+
+We propose using prediction systems (built by data mining) as a verification
+tool for planners. In domains with data, from which data miners can build
+predictors of adequate performance, then those predictors can assess the value
+of the changes proposed by HOW.
+
+As shown in \fig{work}, our proposal divides
+project data  into two disjoint sets {\em train} and {\em test}
+(so \mbox{{\em train} $\cup$ {\em test} $=\;\emptyset$}).
+Next, from the train set, we build both a {\em planner} as well
+as a {  predictor}. Our general framework does not   commit to any particular  choice
+of { planner} or { predictor} but, for the purposes of this paper, 
+our { planner}
+will be HOW  and our
+our { predictors} will be the Random Forest and Random Forest
+Regressor taken from the SciKit
+Learn toolkit~\cite{Pedregosa2012}. The Random Forests procedure is explained in \fig{rr}. 
+
+\begin{figure}[t!]
+\small
+\begin{tabular}{|p{.95\linewidth}|}\hline
+ Decision tree learners find the attribute whose value's
+select for for sections of the data with least variation in the class
+variable. Decision tree learners then recurse on each selection~\cite{breiman84}. 
+
+A random forest is a set of decision trees, each built
+from some random subset of the rows and columns. The conclusions
+of the forest are a ``vote'' generated by all the trees~\cite{Breiman2001}. 
+
+A standard Random Forest predicts for a discrete class variable while
+a Random Forest Regressor generates numeric predictions.\\\hline
+\end{tabular}
+\caption{Random Forests and Random Forest Regressors.}\label{fig:rr}
+\end{figure}
+
+
+Turning now to the {\em test} data, this is passed to the { predictor}
+to generate a baseline {\em before} performance score.
+Note that if our { predictors} fail to perform adequately on the test data,
+then we cannot trust them to comment on our plans. Accordingly,
+if that performance is unsatisfactory, we abort.
+Else, we (1)~apply the { planner} to alter the {\em test} data;
+then (2)~apply the { predictor} to the altered data {\em test'};
+then (3)~return the performance delta.
+
+
+
+
+\begin{figure*}[!t]
+\scriptsize
+   \begin{center}
+   \begin{minipage}{.46\linewidth}
+    \begin{tabular}{r@{~}|l@{~}|r@{~}|l@{~}|r@{~}|r@{~}|} \cline{2-6}
+   & \multicolumn{5}{c|}{ }\\ 
+   
+   & \multicolumn{5}{c|}{ Data set  properties}\\ 
+   & \multicolumn{5}{c|}{  }\\ 
+           & \multicolumn{2}{c|}{training}   & \multicolumn{3}{c|}{testing}      \\ \cline{2-6}
+   data set      & versions           & instances & versions     & instances    & \% defective             \\ \hline
+        jedit    & 3.2, 4.0, 4.1, 4.2 & 1257      & 4.3          & 492          & 2 \\
+        ivy      & 1.1, 1.4           & 352       & 2.0          & 352          & 11 \\
+        camel    & 1.0, 1.2, 1.4      & 1819      & 1.6          & 965          & 19 \\
+        ant      & 1.3, 1.4, 1.5, 1.6 & 947       & 1.7          & 745          & 22 \\
+        synapse  & 1.0, 1.1           & 379       & 1.2          & 256          & 34 \\
+        velocity & 1.4, 1.5           & 410       & 1.6          & 229          & 34 \\
+        lucene   & 2.0, 2.2           & 442       & 2.4          & 340          & 59 \\
+        poi      & 1.5, 2, 2.5        & 936       & 3.0          & 442          & 64 \\
+        xerces   & 1.0, 1.2, 1.3      & 1055      & 1.4          & 588          & 74  \\ 
+        log4j    & 1.0, 1.1           & 244       & 1.2          & 205          & 92   \\
+        xalan    & 2.4, 2.5, 2.6      & 2411      & 2.7          & 909          & 99  \\\hline
+        \multicolumn{6}{c}{~}\\
+        \multicolumn{6}{c}{~}\\
+        \multicolumn{6}{c}{~}\\
+        
+        
+    \end{tabular}\end{minipage}\begin{minipage}{.4\linewidth}
+    \begin{tabular}{|rrr|rrr|rr|l} \cline{1-8}
+      \multicolumn{8}{|c|}{  }\\
+      \multicolumn{8}{|c|}{  Results from learning}\\
+       \multicolumn{8}{|c|}{   }\\
+   \multicolumn{3}{|c|}{untuned} & \multicolumn{3}{c|}{tuned} & \multicolumn{2}{c|}{change}\\
+  \cline{1-8}
+  
+  pd & pf & good? & pd & pf & good? & pd & pf\\\cline{1-8}
+  50 & 27 &   & 64 & 28 & y & 14 & 1&$\star$\\
+  65 & 35 & y & 65 & 25 & y & 0 & -10&$\star$\\
+  50 & 30 &   & 62 & 41 &   & 12 & 11\\
+  66 & 21 & y & 63 & 18 & y & -3 & -3\\
+  45 & 18 &   & 47 & 15 &   & 2 & -3\\
+  79 & 61 &   & 77 & 61 &   & -2 & 0\\
+  55 & 25 &   & 60 & 27 & y & 5 & 2\\
+  51 & 32 &   & 61 & 12 & y & 10 & -20&$\star$\\
+ 30 & 28 &   & 39 & 33 &   & 9 & 5&$\times$\\
+  32 & 6 &   & 30 & 9 &   & -2 & 3&$\times$\\
+  41 & 5 &   & 48 & 0 &   & 7 & -5&\times\\
+\hline
+  \multicolumn{5}{c}{~}    &  & -1 & -4& 25th\\
+\multicolumn{6}{r|}{the percentiles of the changes:}    &   5 & 0 & 50th\\
+ \multicolumn{5}{c}{~}             & & 10 & 3 & 75th\\
+\end{tabular}
+
+\end{minipage}
+\end{center}    
+  
+    \caption{Training and test {\em data set properties} for the Jureczko data sets,
+    sorted in ascending order of \% defective examples.
+    On the right-hand-side, we show the {\em results from learning}.
+    Data is ``good'' if it has   recalls over 60\% and false alarms under 40\%
+(and note that, after tuning, there are more ``good'' than before).
+Data   marked with ``$\star$'' show large improvements in performance, after tuning.
+Data   marked with ``$\times$'' are not ``good'' since their test suites  have so few undefective examples (less than 5\% of the total sample) that it becomes harder to find better data towards which we can displace test data.
+}\label{fig:j}
+\end{figure*}
+
+
+\section{When Not to Plan: \\the Problem of Poor Predictors}
 
 The clear advantage of the approach of \fig{work} is that it can be readily and automatically
 applied to domains with historical data. That said, the obvious drawback with this approach
 is that our assessment of the plans is only as good as the predictor. To 
-mitigate for this {\em problem of poor predictors}, it is hence wise to demand high standards for the {\em
+mitigate for this {\em problem of poor predictors}, it is hence wise to demand certain standards for the {\em
 satisfactory} threshold used in this \fig{work}. 
+ 
 
-How prevalent is the problem of poor planners? 
-In the general case, this is hard to answer. However, as discussed in this section, for the 17 data
-sets explored in this study, only 
-%XXX 
-3 suffer from this problem.
-
-This study's data from two types of domains: the Jureczko   object-oriented data  
+For example, this study's data from two types of domains: the Jureczko   object-oriented data  
 and the Seigmund configuration data. 
 For the Seigmund data, the plans generated by HOW advise on how  to change the   configurations settings within a Makefile
 (in order to make resulting compiled
 code  run faster). Here, performance can be measured in terms of  difference
 between the predicted runtime $p$ of test case items and their actual runtimes $a$
 using  $s= 100*(1- \frac{abs(a - p)}{a})$.
-Using engineering judgement, we define satisfactory $s$ as anything over   70\%. 
 This paper  explores    six Seigmund configuration data sets:  Berkeley DB (Java and Windows versions), Apache, SQLite, LLVM, and
   x264\footnote{Available from the performance prediction section of PROMISE
   http://openscience.us/repo/performance-predict.}. 
@@ -696,31 +653,68 @@ This paper  explores    six Seigmund configuration data sets:  Berkeley DB (Java
   Regressor trained on one half, then applied to the other, achieved nearly perfect scores of
 %issue 24
 \[s=\{99.9, 99.8, 99.4, 99.1, 96,1\}\]
+That is, we can be very confident that the predictors from the Seigmund data can assess
+HOW's plans.
 (Aside: if the reader doubts that such high scores are achievable, we note that these scores are 
 consistent with those achieved by predictors built by Seigmund et al.~\cite{sven12}.)
 
-\begin{figure}
-\input{deltas1}
-\caption{Jureczko data sets, experiments with tuning.}\label{fig:jtune}
-\end{figure}
-For the  Jureczko   object-oriented data,
+Turning now to the Jureczko   OO data sets, we found:
+\bi
+\item
+Most   predictors in this domain were far from      perfect;
+\item 
+But several of these predictors could
+be salvaged using some sampling and optimization methods (see the notes on SMOTE and differential evolution, below).
+\ei
+As shown in \fig{j}, we   explore numerous examples of the Jureczko   object-oriented static code data sets: Ant, Camel, Ivy, Jedit,   Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.}. 
+Given access to $V$ released
+versions, we test on version $V$ and train on the available data from earlier releases (as
+shown in \fig{j}, this means that we are training on hundreds to thousands
+of classes and testing on smaller test suites).
+Note the three bottom rows marked with $\times$: these contain predominately
+defective classes (two-thirds, or more) and in such data sets, it is hard to distinguish
+good from bad (since there are so many bad examples). 
+
+For the  Jureczko   data,
 the plans generated by HOW advise   how to change static code attributes in order to reduce defects in
 Java classes.  Here,
-performance can be measured in terms of recall (percent of faulty classes in
+performance can be measured in terms of:
+\bi
+\item Probability of detection (a.k.a. ``pd'' or recall) which is the percent of faulty classes in
 the test data detected
-by the {\em predictor}). Using engineering judgement, we define satisfactory recall as anything over   70\%. 
-This paper explores 12 of the Jureczko   object-oriented static code data sets: Ant, Camel, Ivy, Jedit, JBeans, Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.}.
-For each of these data sets, we generated  {\em before} scores  by finding the latest
-version $k$, then training  a predictor on versions $k-2$ and $k-1$. As reported below,
-our initial recall scores from this data were unpromising (very low recall values). However,
-after applying certain data pre-processing steps (described below), a Random Forest generated
-on the $k-2,k-1$ versions achieved recalls on version $k$ of
-%issue24
-\[\mathrm{recall}=\{98,88,86,84,82,81,79,78,78,\overbrace{55,23,20}^{\mathrm{JBeans,Poi,Xalan}}\}\]
-From the above, we conclude that all the Seigmund configuration data and most of the Jureczko data
-avoids the problem of poor predictors. Hence, we can use that data for the planning
-experiments described below.
+by the {\em predictor}.
+\item Probability of false alarm (a.k.a. ``pf'') which is the percent of non-fault
+classes that are predicted to be defective.
+\ei 
+The ``untuned'' columns of \fig{j} shows RandomForest's learned {\em pd,pf}
+values generated after learning from the training data, then being applied to the test data.
+If we define ``good'' to mean $\mathit{pd}>60 \wedge \mathit{pf} < 40$\%,
+then only two of our data sets ({\em ivy,ant}) are ``good'' enough. 
+
+The ``tuned'' columns of \fig{j} show that we can salvage some of the data sets
+using two techniques.
+ Pelayo and Dick~\cite{pelayo07} report that defect prediction can be improved via SMOTE~\cite{Chawla2002}; i.e. an over-sampling of minority-class examples.
+ Also, Fu et al.~\cite{fu:ase15} report that an optimization method called differential evolution~\cite{storn97}
+applied to defect predictors can quickly explore the tuning
+options of Random Forest to find better settings for the size of the forest, the termination criteria
+for tree generation, etc.
+The rows marked with $\star$ in \fig{j} show data sets whose performance was improved remarkably by these
+techniques. For example, in {\em poi}, the recall increased by 10\% while the false alarm rate dropped by 20\%).
+However,  as might be expected
+the the three bottom rows remain
+unsalvageable.
+
+In summary, while we cannot trust predictors from some of our data sets,
+we can plan ways to reduce defects in {\em jedit, ivy, ant, lucene} and {\em poi}.
+(Aside: note that this tuning used optimization and sub-sampling   on   {\em only} the
+training instances of \fig{j}
+i.e.
+no clues from the test set were ever used in this tuning process.)
+
+
  
+ 
+
 \section{Experimental Methods}
 
 blah blah data. algorithms. statistics
@@ -792,139 +786,7 @@ We reason that the most informative feature must undergo a larger change as comp
 \label{fig:whatflow}
 \end{figure}
 
-\begin{figure}[!b]
-\begin{python}[left]
-def fastmap(data): 
-  """Project data on a line 
-     between 2 dist points
-  """
-  z          = random.choose(data)
-  east       = furthest(z, data)
-  west       = furthest(east, data)
-  data.poles = (west,east)
-  c          = dist(west,east)     
-  for one in data.members: 
-    one.pos = project(west,east,c,one)
-  data = sorted(data) # sorted by 'pos'
-  return split(data)
 
-def project(west, east, AC, x): 
-  "Project x onto line east to west"
-  AB = dist(x,west)
-  BC = dist(x,east)
-  #cosine rule
-  return (AB$^2$ + AC$^2$ - AB$^2$)/(2*AC) 
-
-def furthest(x,data): 
-  # what is furthest from x?
-  out, max = x,0
-  for y in data:
-    d = dist(x,y)
-    if d > max: out, max = y, d
-  return out
-
-def split(data): # Split at median
-   mid = len(data)/2; 
-  return data[mid:], data[:mid]
-
-def WHERE(data, scores={}, 
-          lvl=10000, prune=True):  
-  "Recursively split data."
-  if lvl < 1: 
-     return data # stop if out of levels
-  leafs      = [] # Empty Set
-  left,right = fastmap(data)
-  west, east = data.poles
-  $\omega=\sqrt{\mu}$ # enough data for recursion
-  goWest = len(left) > $\omega$  
-  goEast = len(right) > $\omega$ 
-  if prune: 
-    if goEast and better(west,east,scores): 
-       goEast = False 
-    if goWest and better(east,west,scores): 
-       goWest = False 
-  if goWest:  
-     leafs += where(left,  lvl - 1, prune)  
-  if goEast:  
-     leafs += where(right, lvl - 1, prune) 
-  return leafs
-
-\end{python}
-\caption{Clustering with WHERE}
-\label{fig:fastmapCode}   
-\end{figure}
-
-
-\begin{figure}[!t]
-\begin{python}[right]
-def envied(leaves):
-  """
-  Returns a single exemplary row from 
-  a cluster.
-  """
-
-def fWeight(train, prune = 0):
-  """
-  Find the feature weights & prune features
-  """
-
-def getContours(train):
-  """
-  Identify the pairs of clusters
-  that can form a contour
-  """
-  contours = []
-  # Clustering with where
-  clusters = WHERE(train) 
-  near = lambda x: knn(x, clusters)[1]
-  for c in clusters:
-    one = envied(c)
-    two = envied(near(one, clusters))
-    contours += [(one, two)]
-  return contours
-
-def project(a, b, test):
-  if score(a) > score(b):
-    good, bad = a,b 
-  else:
-    good, bad = b,a
-  AB = dist(bad,test)
-  BC = dist(good,test)
-  AC = dist(good,bad)
-  # Cosine rule
-  x = (AB$^2$ + AC$^2$ - BC$^2$)/(2*AC)
-  return $\sqrt{AB^2 - x^2}$
-
-def mutate(me, others, weights = None):
-  "Mutate 'me' towards 'others'"
-  if weights:
-    return [my + ext * f * (good - my) for 
-    f, my, good in zip(wights, me, others)]
-  else:
-    return [my + ext * (good - my) 
-    	 for my, good in zip(me, others)]
-
-def nearestContour(contours, instance):
-  "Find the nearest contour to an instance"
-  return sorted(
-        contours,
-        key=lambda F: project(
-        F[0], F[1], instance), 
-        reverse=True)[0]
-        
-def HERE():
-  contours = getContours()
-  weights = fWeight(train)
-  for rows in defectiveRows:
-    vtx = nearestContour(contours, rows)
-    [good, bad] = sorted(vtx
-            , key=lambda F: score(F))
-    new += mutate(rows, good, weights)
-  return new
-\end{python}
-\caption{Instance-based Planning using HERE}
-\label{fig:HERE}   
-\end{figure}
 
 \subsection{Defect Prediction}
 
@@ -1535,7 +1397,9 @@ In this section,
 
 \section{Conclusion}
 % \section*{Acknowledgements}
-\newpage
+ 
+
+\clearpage
 \bibliography{how}{}
 \bibliographystyle{IEEEtran}
 \end{document}

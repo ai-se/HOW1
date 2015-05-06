@@ -1,0 +1,191 @@
+
+
+\begin{figure} 
+\begin{python}[right]
+def HERE(trainingData, testingData):
+  training(trainingData)
+  return [nearest(z).displace(z) 
+          for z in testing]
+
+def training(trainingData):
+  Line.using = what2Use(trainingData)
+  clusters = cluster(trainingData):
+  for cluster in clusters:
+    one = examplar(cluster)
+    two = examplar(nearest(one, clusters))
+    Line(one,two)
+  
+def what2Use(trainingData):
+  second  = lambda lst: lst[1]
+  weights = map(second,
+                sorted(featureWeighting(trainingData)))
+  use    = int(len(weights)*Line.B)
+  return [i for i,_ in enumerate(weights[:use])]
+
+def nearestLine(z):
+  out,least=None,10000
+  for line in Line.all:
+    d = line.dist(z)
+    if d < least: out,least = line,d
+  return out
+\end{python}
+\caption{Instance-based Planning using HERE.
+Testing data is {\em displaced}
+towards   the $X$ point of the nearest {\tt Line} (defined in \fig{line})
+The {\tt geometry} method comes from \fig{code1c}.
+The {\tt featureWeighting} function comes from \fig{code1a}.
+The {\tt cluster} function comes from \fig{fastmapCode}.
+}\label{fig:HERE}   
+\end{figure}
+
+
+
+\begin{figure} 
+\begin{python}[right]
+class Line:
+  "Lines connect a worse cluster Y to a better one X"
+  all   = []
+  using = []
+  F     = 0.5
+  B     = 0.5
+   def __init__(i,x,y):
+    if x.score < y.score:
+      x,y = y,x
+    i.c = dist(x,y) 
+    i.obj = len(x) 
+    Line.all += [i]
+  def displace(i,z):
+    for j,(xj,zj) in enumerate(zip(x,z)):
+      if not j == i.obj and  j in Line.using:
+         z[j] = zj + Line.F*( xj. - zj
+    return z
+  def dist(i,z):
+    _,out = geometry(i.x,i.y,z)
+    return out
+  def exemplar(i,cluster):
+    #Apply the rules at end of section II.B
+\end{python}
+\caption{The primary data structure of HOW
+is the {\tt Line}.
+Training data is converted into a set of {\tt Line}s,
+each of which is defined by a $X,Y$ pair, where $X$
+has better scores than $Y$. }\label{fig:line}
+\end{figure}
+
+
+
+
+\begin{figure} 
+\begin{python}[left]
+def dist(x,y):
+   "See Aha et al. reference [22]. XXX"
+   
+def geometry(x, y, c, z): 
+  a = dist(z,x)
+  b = dist(z,y) 
+  x= $(a^2 + c^2 - b^2)/(2ac)$ 
+  y=  $\sqrt{a^2 - max(x,0)^2)}$
+  return x,y
+  
+def nearest(x,data):
+  return furthest(x,data,best=1000,better=lt)
+ 
+def furthest(x,data, best= -1, better=gt):  
+  out = None
+  for one in data:
+    d = dist(one,x)
+    if gt(d,best): out, best = y, d
+  return out
+\end{python}
+\caption{Some routines for 3 point geometry,  from \fig{where}.c.}\label{fig:code1c}
+\end{figure} 
+
+
+\begin{figure}
+\begin{python}[left]
+def featureWeighting(cols):
+   obj = len(cols[0])
+   return sorted(weight1(col,i,obj) 
+                for i,col in enumerate(cols)
+                if not i == obj)
+
+def weight1(i,obj,col):
+  pairs = sorted([row[i],row[obj] for row in col])
+  n     = length(col)
+  return sum(v*n1/n for v,n1 in recurse(pairs,[])),i
+
+def recurse(this,cuts):
+  cut,sd = divide(this)
+  if cut:
+    recurse(this[:cut],cuts)
+    recurse(this[cut:],cuts)
+  else:
+    cuts += [(sd,len(this)]
+  return cuts
+    
+def divide(this,tiny=2):
+  lhs, rhs = Stats(), Stats(x[1] for x in this)
+  n, least, cut = rhs.n*1.0, rhs.sd(), None
+  for j,x in enumerate(this):
+     if lhs.n > tiny and rhs.n > tiny:
+       tmp = lhs.n/n*lhs.sd() + rhs.n/n * rhs.sd()
+       if tmp < least:
+          cut,least = j,tmp
+     rhs - x[1]
+     lhs + x[1]
+  return cut,least
+  
+class Stats():  
+    def __init__(i,inits=[]):
+      i.n = i.mu = i.m2 = 0.0
+      map(i.__add__,inits)
+    def sd(i) :  
+      return (max(0.0,i.m2)/(i.n - 1))**0.5
+    def __add__(i,x):
+      i.n  += 1
+      delta = x - i.mu
+      i.mu += delta/(1.0*i.n)
+      i.m2 += delta*(x - i.mu) 
+    def __sub__(i,x):
+      i.n  -= 1
+      delta = x - i.mu
+      i.mu -= delta/(1.0*i.n)
+      i.m2 -= delta*(x - i.mu) 
+\end{python}
+\caption{Feature weighting, from \fig{where}.d.}\label{fig:code1a}
+\end{figure}
+
+\begin{figure} 
+\begin{python}[left]
+def cluster(data, n,lvl=100):
+  if lvl < 1: 
+     return data # stop if out of levels
+  leafs = [] # Empty Set
+  x,y,left,right = splitAcross2Points(data) 
+  if len(left) > $\sqrt{n}$:  
+     leafs += cluster(left, n, lvl - 1)  
+  if len(right) > $\sqrt{n}$:  
+     leafs += cluster(right,n,  lvl - 1) 
+  data.has = dict(x=x,y=y,
+                 l=left,r=right,
+                 leafs=leafs)
+  return leafs
+  
+def splitAcross2Points(data): 
+  tmp = random.choose(data)
+  x = furthest(tmp, data)
+  y = furthest(x, data) 
+  c = dist(x,y)  
+  if x.scores < y.scores:
+     x,y = y,x 
+  for one in data.members: 
+    one.pos = geometry(x,y,c,one)
+  data = sorted(data) # sorted by 'pos.x'
+  return x, y, split(data)
+  
+def split(data):   
+  mid = len(data)/2; 
+  return data[mid:], data[:mid]
+\end{python}
+\caption{Clustering. Lines 16,17,18 come from~\cite{fastmap}. }\label{fig:fastmapCode}   
+\end{figure}

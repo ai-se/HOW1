@@ -1,34 +1,7 @@
 
 
 \section{Related Work}
-The connection of HOW to model-based evolutionary programming was discussed above.
-In summary,   model-based tools such as NSGA-III~\cite{deb14} or MOEA/D~\cite{zhang07:TEC}
-use some domain model as part of extensive Monte Carlo studies (augmented with some
-evolution of selected best instances).
-The premise of HOW is that we have access to domain data, but not a domain model.
-Also, the results shown above were obtained without evolving/updating some current population
-multiple times.
 
-
-Planning with HERE is somewhat different to the recommendor systems.
-As described by Robillard and Walker~\cite{rob14}, recommendor systems
-in software engineering
-are less {\em directive} and more    {\em collaborative} than policy
-generators:
-\bi
-\item
-Directive systems such as HERE tell developers exactly what to do
-(e.g. ``use these settings in a Makefile'') 
-\item
-The collaborative systems discussed by Robillard and Walker
-are more suggestive guides that
-help (e.g.) programmers focus on very small sets
-with  very large libraries of code of documentation.
-\ei
-One difference between directive and collaborative systems is that
-the latter may not presume to suggest exactly what to do next.
-However, planning systems like HOW are much more ardent: then make precise recommendations
-of how to change all items in the test suite.
  
 
 HOW is more a data mining method than a model-based optimizer. It represents our next attempt
@@ -110,3 +83,69 @@ Note that the above response surface methods and local search operators cannot b
 since, unlike HOW, they assume the presence of some model that can evaluate generations of newly mutated
 instances. Recall from the above that the goal of HOW is to offer an optimization method without
 using the evolutionary methods that make extensive demands on an underlying domain model.
+
+
+
+ 
+ \subsubsection{Aside: Can We Call These Plans ``Causal''?}
+With one additional stipulation,   this framework can be used to check if the learned
+plans can be said to {\em cause} a change in the domain being explored.
+
+In the literature, there are two main definitions of causality: Hill's H-causality~\cite{Hill1965}
+and Granger's G-casualty~\cite{granger80}. 
+An effect
+is H-causal if it satisfies nine criteria\footnote{Hill's criteria for
+demonstrating causality:
+{\em  plausibility};
+{\em strength} of the effect;
+{\em 
+specificity}, i.e. locality of the effect
+to specialized groups;
+{\em
+support} by experimental evidence;
+{\em 
+coherence} between cause-effects noted
+in the field and in laboratory samples;
+{\em
+temporally} i.e. the effect has to follow the cause;
+{\em 
+analogy}, i.e.  similar causes have similar effects;
+{\em
+biological gradient}, i.e.  more exposure to the cause leads to more of an
+effect; and
+{\em
+consistency}, i.e.  the same cause-effect pairings have been seen by different persons
+in different places.}
+It is hard to demonstrate H-causality in software engineering.
+For example, Hill's criteria emphasises repeatability and laboratory studies-- both of which are
+hard to perform in software engineering (e.g. see the continued debate about
+the value of using undergraduate students to surrogates for industrial
+practitioners in software engineering research~\cite{Carver2003}). Also, Hill's requirement
+for consistent results is far easier to achieve in studies of small closed systems (e.g. bacteria in a petri dish)
+than in large socio-technical systems (e.g. open source projects). In the latter,
+effects are more {\em probabilistic} than {\em categorical}-- by which we mean that 
+some cause tends to cause some effect at some probability $p$ less that one.
+This in turn means that at some probability $q$ (where $0 \le q < p \le 1$)
+that we will find examples of {\em inconsistency} where some cause does {\em not} lead
+to some effect (thus violating one of Hill's criteria for demonstrating causality).
+
+The  difficulties associated with Hill's criteria lead Granger~\cite{granger80}
+to propose another more practical criteria\footnote{Granger  himself comments that
+his proposal was based on earlier work by Norbert Weiner~\cite{Seth2007}.}.
+\mbox{G-causality} is based on building predictions based on {\em past} data,
+then showing that this works for {\em future} data~\cite{granger80}. 
+ In  \fig{work}, we demand that the {\em test}
+data is not necessarily collected before the {\em train} data:
+\bi
+\item[\#1:] For data collected from software released in multiple versions, we should hence use  versions  $i,j$ to build models that are applied to version  $k$ where $i<j<k$.
+\item[\#2:] For data collected from Monte Carlo simulations (where inputs are selected at random)
+then as long as simulation $i$ is not used to adjust simulation $j> i$, then any item in that
+data could be generated before any other. For this kind of data, we  can use the first $X\%$
+of the simulation for training, and the remaining data for testing.
+\ee
+In the two case studies of this paper, the Jureczko object-oriented defect data comes from software
+released in multiple versions while the Seigmund configuration data comes from Monte Carlo simulations.
+Hence, we use procedure \#1 for the defect data and procedure \#2 for the configuration data.
+
+With these changes,
+we can reasonably claim that the plan's generating by HOW are G-causal.

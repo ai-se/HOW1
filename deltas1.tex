@@ -2,18 +2,20 @@
 \begin{tabular}{r|rrr|rrr|rr|l}
   & \multicolumn{3}{c|}{untuned} & \multicolumn{3}{c|}{tuned} & \multicolumn{2}{c|}{change}\\
   \cline{2-9}
-data set & pd & pf & use? & pd & pf & use? & pd & pf\\\cline{1-9}
-ant & 66 & 21 & y & 63 & 18 & y & -3 & -3\\
-camel & 50 & 30 &   & 62 & 41 &   & 12 & 11\\
+  
+data set & pd & pf & good? & pd & pf & good? & pd & pf\\\cline{1-9}
+jedit & 50 & 27 &   & 64 & 28 & y & 14 & 1&$\star$\\
 ivy & 65 & 35 & y & 65 & 25 & y & 0 & -10\\
-jedit & 50 & 27 &   & 64 & 28 & y & 14 & 1&$\star\star$\\
-log4j & 32 & 6 &   & 30 & 9 &   & -2 & 3\\
-lucene & 55 & 25 &   & 60 & 27 & y & 5 & 2&$\star$\\
-poi & 51 & 32 &   & 61 & 12 & y & 10 & -20&$\star\star\star$\\
+camel & 50 & 30 &   & 62 & 41 &   & 12 & 11\\
+ant & 66 & 21 & y & 63 & 18 & y & -3 & -3\\
 synapse & 45 & 18 &   & 47 & 15 &   & 2 & -3\\
 velocity & 79 & 61 &   & 77 & 61 &   & -2 & 0\\
-xalan & 41 & 5 &   & 48 & 0 &   & 7 & -5\\
-xerces & 30 & 28 &   & 39 & 33 &   & 9 & 5\\\hline
+lucene & 55 & 25 &   & 60 & 27 & y & 5 & 2\\
+poi & 51 & 32 &   & 61 & 12 & y & 10 & -20&$\star$\\
+xerces & 30 & 28 &   & 39 & 33 &   & 9 & 5&$\times$\\
+log4j & 32 & 6 &   & 30 & 9 &   & -2 & 3&$\times$\\
+xalan & 41 & 5 &   & 48 & 0 &   & 7 & -5&\times\\
+\hline
   \multicolumn{5}{c}{~} &    &  & -1 & -4& 25th\\
 \multicolumn{7}{r|}{the percentiles of the changes:}      & 5 & 0 & 50th\\
  \multicolumn{5}{c}{~}  &            & & 10 & 3 & 75th\\
