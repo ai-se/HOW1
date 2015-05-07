@@ -24,10 +24,9 @@ class Line:
  def __init__(i,x,y):
     if x.score < y.score:
       x,y = y,x      # x must have best score
-    i.c = dist(x,y) 
+    i.x, i.y, i.c = x, y, dist(x,y) 
     i.obj = len(x) 
     Line.all += [i]  # remember this line
-
 
   def displace(i,z):
     for j,(xj,zj) in enumerate(zip(x,z)):
