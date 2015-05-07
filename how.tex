@@ -10,7 +10,6 @@
 \usepackage{color, colortbl}
 \usepackage{graphicx}
 \usepackage{algorithmicx}
-
 \usepackage[running]{lineno}
 \usepackage{program}
 \usepackage{cite}
@@ -27,11 +26,13 @@
 \usepackage{stfloats}
 \usepackage{multirow}
 \usepackage{listings}
-\usepackage{amsmath} 
-\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{amsmath}  
 \DeclareMathOperator*{\argmin}{arg\,min} 
 \DeclareMathOperator*{\argmax}{arg\,max} 
 
+
+\usepackage{color}
+\newcommand{\colorrule}[1]{\begingroup\color{#1}\hrule\endgroup}
 
 \definecolor{darkgreen}{rgb}{0,0.3,0}
 
@@ -77,8 +78,9 @@
 \lstnewenvironment{python}[1][]{
 \lstset{
 mathescape,
-numbers=none,
+numbers=right,
 numberstyle=\scriptsize,
+stepnumber=1,
 numbersep=0.5em,
 xleftmargin=0em,
 framextopmargin=2em,
@@ -101,12 +103,13 @@ morecomment=[s][\color{Strings}]{'''}{'''},
 morekeywords={[1]import,from,class,def,for,while,if,is,in,elif,else,not,and,or,print,break,continue,return,True,False,None,access,as,,del,except,exec,finally,global,import,lambda,pass,print,raise,try,assert, dot, norm, zip, sorted},
 keywordstyle={[1]\color{Code}\bfseries},
 % additional keywords
-morekeywords={[3]fastmap, project, furthest, split, WHERE,clusterer, getContours, envied, fWeight, nearestContour, projection, mutate, HERE, knn},
+morekeywords={[3]fastmap, Line,bPruning,clister,train, exemplar,nearestLine,dist,displace,geometry,splitAcross2Points,How,nearest,bPruning,Stats,divide,recurse,weight1,project, furthest, split, WHERE,clusterer, getContours, envied, fWeight, nearestContour, projection, mutate, HERE, knn},
 keywordstyle={[3]\color{Keywords}\bfseries},
 morekeywords={[2]@invari},
 keywordstyle={[2]\color{Decorators}\slshape},
 emph={self},
 emphstyle={\color{self}\slshape},
+firstnumber=last
 %
 }}{}
  
@@ -336,7 +339,7 @@ Next, project each instance $Z$
 onto a line that  runs between $X,Y$ using the cosine
 rule of \fig{where}b. After that,  split the data at the median $x$ value of all instances and
 recurses on each half  (stopping when
-one half has less  than $\sqrt{N}$ of the original population). See \fig{code1d} for further details.
+one half has less  than $\sqrt{N}$ of the original population). For more details. \fig{howcode}, line~76, 
 
 ~\hrule~
  
@@ -349,7 +352,7 @@ i.e. $\sqrt{\sum_iw_i(X_i-Y_i)^2}$ where $X_i,Y_i$
 where values are  normalized 0..1 for the range min..max and 
 $w_i$ is some importance weight given to attribute $i$.
 Usually, $w_i=1$ but it can be adjusted using, say,
-the feature weighting methods of \fig{where}d.
+the feature weighting methods of \fig{where}d. 
  
  ~\hrule~
  
@@ -361,7 +364,7 @@ $b=dist(Z,Y)$ to $X,Y$, respectively.
 According to the cosine rule,   $Z$ projects onto  $\overline{XY}$
 at distance $x=(a^2 + c^2 - b^2)/(2c)$ from $X$.
 Further, according to Pythagoras' theorem, $Z$ stands at a distance
-$y = \sqrt{a^2 - x^2}$ from the line $\overline{XY}$. See \fig{code1c} for further details.
+$y = \sqrt{a^2 - x^2}$ from the line $\overline{XY}$. For more details, see  \fig{howcode}, line~59.
 
 ~\hrule~
 
@@ -377,7 +380,7 @@ then the expected
 value of the objective value of the split  is $w_i = \sum_i v_in_i/N$
 where $v$ is the standard deviation of the objective.
 A recursive procedure can  find those divisions $n_1,n_2,...$ by (a)~sorting a numeric column,
-then split at $\argmin_i w_i$, then recursing into each half.  See \fig{code1d} for further details
+then split at $\argmin_i w_i$, then recursing into each half.  For more details, see  \fig{howcode}, line~109.
 
 ~\hrule~
  
@@ -394,13 +397,12 @@ found during training, we {\em displace} them towards regions
 with better objective scores.
 To achieve this, 
 during training, HOW clusters data using the procedure of \fig{where}a,
-then draws lines between the centroids of  clusters $X,Y$ that are nearest
+then draws {\tt Line}s between the centroids of  clusters $X,Y$ that are nearest
 neighbors.
-By convention, we say that the cluster containing $X$ has the  better objective scores. This means we can say that the line is a useful direction for displacing
-data; i.e.  away from $Y$ and towards $X$.
-Hence,  during testing,  HOW use Pythagoras' theorem
-and \fig{where}c to find the  nearest line to every test instance. That test instance is   then displaced towards the better end
-of that line (towards  $X$).
+By convention, we say that the cluster containing $X$ has the  better objective scores. This means we can say that the {\tt Line} is a useful direction for displacing
+data; i.e.  away from $Y$ and towards $X$ (for an implementation of such a {\tt Line} class, see \fig{howcode}, line~1).
+ During testing,  HOW   finds the  nearest {\tt Line} to every test instance. That  test instance is   then displaced towards the better end
+of that line; i.e. towards  $X$ (see \fig{howcode}, line 53).
 
 An important design decision with HOW 
 is how to determine the exact {\em direction} and {\em magnitude} of the
@@ -412,13 +414,14 @@ To implement minimal displacement:
 \item
 HOW sorts  the independent variables
 using the procedure of  \fig{where}d. It then only
-displaces the    best $B$\%  of that sort (while leaving the rest untouched).
+displaces the    best $B$\%  of that sort, while leaving the rest untouched
+(see \fig{howcode}, line 38).
 In  the experiments shown below,  we explore   $B \in \{25,50,100\}\%$.
 \item
 HOW also  limits displacement
 to very small regions in the space of the training data (never more that the separation
 of the two closest clusters).  HOW's clusterer divides  data into many   small clusters containing
-$\sqrt{N}$ of the population.
+$\sqrt{N}$ of the population (using the {\tt cluster} function, \fig{howcode}, line 76).
 HOW   limits displacement to  \mbox{$0 \le F \le c$}, where
 $c$ is the distance between the two closest clusters. 
 In  the experiments shown below,  we explore
@@ -428,9 +431,9 @@ Turning now to the displacement {\em direction},
 our experiments show that it useful to  carefully reflect on exactly where HOW should  push each test instance.
 HOW replaces each cluster   with one {\em exemplar} that best
 characterizes the data in that cluster. It then displaces the
-test data towards that exemplar, as follows.
-Let $Z_j$ be an independent variable within the
-test instance $Z$. If  $X$ be the exemplar found at training time,
+test data towards that exemplar, as shown in \fig{howcode}, line 19. In summary, 
+If  $Z_j$ is an independent variable within the
+test instance $Z$ and  $X$ is the exemplar found at training time,
 then we displace $Z$ as follows:
 \[Z_j =  Z_j + F*(X_j - Z_j)\]
 Here, $F$ is the  magnitude controller, discussed above.
@@ -481,7 +484,7 @@ in that cluster.
             \begin{array}{l}
                 \mathit{test'} = \mathrm{planner}(\mathit{test})\\
                 \mathit{after} =\mathrm{predictor}(\mathit{test'})\\ 
-                \mathrm{{\bf return}\;} \mathit{after} /  \mathit{before}
+                \mathrm{{\bf return}\;} \mathit{before} /  \mathit{after}
             \end{array}
           \right.
    \end{array}\right.
@@ -609,7 +612,7 @@ then (3)~return the performance delta.
   51 & 32 &   & 61 & 12 & y & 10 & -20&$\star$\\
  30 & 28 &   & 39 & 33 &   & 9 & 5&$\times$\\
   32 & 6 &   & 30 & 9 &   & -2 & 3&$\times$\\
-  41 & 5 &   & 48 & 0 &   & 7 & -5&\times\\
+  41 & 5 &   & 48 & 0 &   & 7 & -5&$\times$\\
 \hline
   \multicolumn{5}{c}{~}    &  & -1 & -4& 25th\\
 \multicolumn{6}{r|}{the percentiles of the changes:}    &   5 & 0 & 50th\\
@@ -630,7 +633,7 @@ Data   marked with ``$\times$'' are not ``good'' since their test suites  have s
 \end{figure*}
 
 
-\section{When Not to Plan: \\the Problem of Poor Predictors}
+\section{When Not to Plan: the Problem of Poor Predictors}
 
 The clear advantage of the approach of \fig{work} is that it can be readily and automatically
 applied to domains with historical data. That said, the obvious drawback with this approach
@@ -658,185 +661,6 @@ HOW's plans.
 (Aside: if the reader doubts that such high scores are achievable, we note that these scores are 
 consistent with those achieved by predictors built by Seigmund et al.~\cite{sven12}.)
 
-Turning now to the Jureczko   OO data sets, we found:
-\bi
-\item
-Most   predictors in this domain were far from      perfect;
-\item 
-But several of these predictors could
-be salvaged using some sampling and optimization methods (see the notes on SMOTE and differential evolution, below).
-\ei
-As shown in \fig{j}, we   explore numerous examples of the Jureczko   object-oriented static code data sets: Ant, Camel, Ivy, Jedit,   Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.}. 
-Given access to $V$ released
-versions, we test on version $V$ and train on the available data from earlier releases (as
-shown in \fig{j}, this means that we are training on hundreds to thousands
-of classes and testing on smaller test suites).
-Note the three bottom rows marked with $\times$: these contain predominately
-defective classes (two-thirds, or more) and in such data sets, it is hard to distinguish
-good from bad (since there are so many bad examples). 
-
-For the  Jureczko   data,
-the plans generated by HOW advise   how to change static code attributes in order to reduce defects in
-Java classes.  Here,
-performance can be measured in terms of:
-\bi
-\item Probability of detection (a.k.a. ``pd'' or recall) which is the percent of faulty classes in
-the test data detected
-by the {\em predictor}.
-\item Probability of false alarm (a.k.a. ``pf'') which is the percent of non-fault
-classes that are predicted to be defective.
-\ei 
-The ``untuned'' columns of \fig{j} shows RandomForest's learned {\em pd,pf}
-values generated after learning from the training data, then being applied to the test data.
-If we define ``good'' to mean $\mathit{pd}>60 \wedge \mathit{pf} < 40$\%,
-then only two of our data sets ({\em ivy,ant}) are ``good'' enough. 
-
-The ``tuned'' columns of \fig{j} show that we can salvage some of the data sets
-using two techniques.
- Pelayo and Dick~\cite{pelayo07} report that defect prediction can be improved via SMOTE~\cite{Chawla2002}; i.e. an over-sampling of minority-class examples.
- Also, Fu et al.~\cite{fu:ase15} report that an optimization method called differential evolution~\cite{storn97}
-applied to defect predictors can quickly explore the tuning
-options of Random Forest to find better settings for the size of the forest, the termination criteria
-for tree generation, etc.
-The rows marked with $\star$ in \fig{j} show data sets whose performance was improved remarkably by these
-techniques. For example, in {\em poi}, the recall increased by 10\% while the false alarm rate dropped by 20\%).
-However,  as might be expected
-the the three bottom rows remain
-unsalvageable.
-
-In summary, while we cannot trust predictors from some of our data sets,
-we can plan ways to reduce defects in {\em jedit, ivy, ant, lucene} and {\em poi}.
-(Aside: note that this tuning used optimization and sub-sampling   on   {\em only} the
-training instances of \fig{j}
-i.e.
-no clues from the test set were ever used in this tuning process.)
-
-
- 
- 
-
-\section{Experimental Methods}
-
-blah blah data. algorithms. statistics
-
-\section{Releated Work}
-
-Our prior work in generating policies relied upon a Monte Carlo
-analysis of an underlying model~\cite{me07f}. This approach had three major problems.
-Firstly, enough domain knowledge had to be collected to build that model
-and this can take a long time. For example, in our previous work we used three software process models from
-the Unviersity of Southern California that were initially
-developed and updated for nearly two decades from 1981~\cite{boehm81} to 2000~\cite{boehm00b}.
-
-Secondly, there is the computational cost of running those models.
-While 
-
-~\cite{}-- which suffered from the problem of (a)~the effort required to collect the domain knowledge to build
-problem in certifying the underlying model;
- (b)~the computational problem of running that model enough
-times to learn patterns in that data; and (c)~ requrearea used large scale simulations or large
-
-
-While
-our case studies are defect and runtime reduction, HERE is a general
-purpose algorithm that could be applied to any table of data with at least
-one column whose values can be sorted from ``desired'' to ``undesired''.
-
-
-
-{\bf RQ1: Can Instance-based Learning techniques be used to create Planning tools that can better analyse software defect?} 
-
-
-{\bf RQ2: Can lessons learnt from local policy generators be useful for generating solutions that can be used to mitigate defects in software systems?} 
-
-{\bf RQ3: Can such instance-based planners be applied to other software engineering paradigms?}
-We check if the proposed instance-based planner is applicable to performance prediction.
-
-\section{Motivating Example}
-\section{Background}
-\section{Instance Based Learning}
-
-Assessing the quality of solutions to a real-world problem can be extremely hard~\cite{menzies2005xomo}. In several software engineering applications, researchers have models that can emulate the problem, for instance there is the COCOMO effort model~\cite[p29-57]{boehm2009software}, the COQUALMO defect model~\cite[p254-268]{boehm2009software}, Madachy’s schedule risk model~\cite[p284-291]{boehm2009software}, to name a few. Using these models it is possible to examine several scenarios in a short period of time, and this can be done in a reproducible manner. However, models aren't always the solution, as we shall see. 
-
-There exist several problems where models are hard to obtain, or the input and output are related by complex connections that simply cannot be modeled in a reliable manner, or generation of reliable models take prohibitively long ~\cite{Ludewig2003}. Software defect prediction is an excellent example of such a case. Models that incorporate all the intricate issues that may lead defects in a product is extremely hard to come by. Moreover, it has been shown that models for different regions within the same data can have very different properties \cite{localvsglobal}. This makes it extremely hard for one to design planning systems that are capable of mitigating these defects.
-
-An alternative approach would be to make use of an instance based approach, an example of case based reasoning strategy, in place of the conventional model based approach. Instance based approaches have been used extensively by the effort estimation community, see~\cite{keung2008analogy, 6600685, walkerden1999empirical, shepperd1997estimating, kocaguneli2010use}. 
-
-This approach has been proposed as an alternative to closed form mathematical models or other modeling methods such as regression \cite{keung2008analogy}. There are several other reasons for instance based approaches being a useful tool, see~\cite{6600685}. As pointed out by~\cite{walkerden1999empirical} it can be used with partial knowledge of the target project at an early stage which could be a very useful tool in preventing software defects. Instance based approaches are also rather robust in handling cases with sparse samples \cite{1438374}. All these features are desirable and suggest that instance-based approach is a useful adjunct to traditional model based approach. 
-
-In this paper the instance based learning principle is used to first cluster the training data and then create contours in the data. These contours can then be used by test cases to infer meaningful information in order to improve it. The entire process is described in greater detail in the following sections. We would like to stress that the purpose of our work is not to promote instance-based planning over model based analytics, rather it is to suggest an alternative when model based approaches cannot be used.
-
-\subsection{Spectral Learning using WHERE}
-The algorithm uses WHERE to recursively cluster the input data to identify subsets in the training data that a test instance can learn from. WHERE is a spectral learner which uses the FastMap heuristic to estimate the first principal component. It then recursively partitions the data into two halves along the Median point of the projection on the first principal component, terminating when a half has less than $\sqrt{N}$ items.   
-
-\subsection{Planning changes using HERE}
-We propose the HERE algorithm as a tool to plan changes in the original test data. Figure~\ref{fig:what} highlights the procedure by which HERE operates. It begins by creating clusters which are generated using the WHERE algorithm discussed above. Following this, a nearest neighbour scheme is applied to identify pairs of nearby clusters. A contour is constructed with these clusters at the vertices to characterize the cluster pairs.
-
-The mutation policy works by projecting the test instance onto the contours and identifying the the contour on which the test instance has the largest scalar projection. The planner then reflects over the vertices of the chosen contour, identifying the \textit{better} vertex among the two. Now, a new instance is generated by \textit{mutating the attributes} of the test instance towards the better vertex and away from the worse vertex. This process is repeated for all the test instances that are considered defective by the defect prediction scheme, discussed below.
-
-\subsection{Feature Weighting} \label{fwt}
-The algorithm also allows for a feature weighting and pruning scheme. We have employed a simple (and fast) attribute ranking method where the features are sorted based on their ability to find meaningful splits in the dependent class of the data, see ~\cite{hall03}. Features that can find splits with the \textit{lesser variance} in the dependent variable are \textit{ranked higher} than features that don't. 
-
-We reason that the most informative feature must undergo a larger change as compared to other features. Therefore, when feature weighting is employed, the higher ranked features are mutated by a larger extent. Additionally, we have also included information pruning. Here we mutate only the top X\% of the features in each test instance. The remaining features remain unaltered. 
-
-\begin{figure}
-\centering
-\includegraphics[width=\linewidth]{_figs/WHAT-Clusters2.pdf}
-\caption{HERE}
-\label{fig:whatflow}
-\end{figure}
-
-
-
-\subsection{Defect Prediction}
-
-To validate the treatments that have been suggested by our planner, we need to have defect predictors that capable of identifying if a certain module may (or may not) have a defect. A recent IEEE TSE paper by Lessmann et al.~\cite{lessmann} compared 21 different learners for software defect prediction: 
-\bi
-\item
-{\em Statistical classifiers:}
-Linear    discrimin analysis,
-Quadratic discrimin analysis,
-Logistic regression,
-Naive Bayes,
-Bayesian networks,
-Least-angle regression,
-Relevance vector machine,
-
-\item
-{\em Nearest neighbor methods:}
-k-nearest neighbor,
-K-Star
-
-\item
-{\em Neural networks:}
-Multi-Layer Perceptron,
-Radial bias functions,
-
-\item
-{\em Support vector machine-based classifiers:}
-Support vector machine,
-Lagrangian SVM
-Least squares SVM,
-Linear programming,
-Voted perceptron,
-
-\item
-{\em Decision-tree approaches:}
-C4.5,
-CART,
-Alternating DTs
-\item
-{\em Ensemble methods:}
-\textbf{Random Forest},
-Logistic Model Tree.
-\ei
-
-They concluded that Random Forrest was the best method, CART being the worst.
-
-Random Forest is an ensemble learning scheme that constructs a number of decision trees at the training time, for a test instance it outputs the mode of the classes of individual tree. It's patent from how random forest operates that the prediction will suffer if there is an imbalance in classes during the training. Unfortunately, the data sets explored here do suffer from severe skewness, as highlighted in~\ref{fig:classimb}. A study conducted by Pelayo and Dick~\cite{smote2} inspected this issue. They showed that the SMOTE technique~\cite{smote} can be used to improve recognition of defect-prone modules. 
-
-In short, SMOTE works by under-sampling the majority class and oversampling all the minority classes in the training data. We use a similar approach with one minor addition to the original algorithm. In our implementation of SMOTE we have introduced an additional step called \textit{resampling}, wherein we ensure that after we do the over/under sampling, the new training data does not have any of the original rows. The new training data merely resembles the original data. This is done as a precautionary measure, so as not to have HERE and Random Forest train on the same training data. 
-%Its worth noting that both HERE and Random Forest require some data to train. In order to prevent the two from using the same data to train, we run SMOTE by  \textit{resampling} the classes. Re-sampling 
 
 \begin{figure*}[htbp!]
   \renewcommand{\baselinestretch}{0.8}\begin{center}
@@ -896,37 +720,76 @@ class. \\\hline
     post-release bug-tracking system).}\label{fig:ck}
 \end{figure*}
 
-\begin{figure}[!tb]
-  \renewcommand{\baselinestretch}{0.8}\begin{center}
-{\scriptsize
-\begin{tabular}{l@{~~~}l@{~~~}l@{~~~}l@{~~~}l@{~~~}l@{~~~}l@{~~}}
-  \hline
-  \rowcolor{lightgray}
-  Data & Symbol & Training & Testing & Training Samples& Defective &\% Defective \\\hline
+Turning now to the Jureczko   OO data sets, we found:
+\bi
+\item
+Most   predictors in this domain were far from      perfect;
+\item 
+But several of these predictors could
+be salvaged using some sampling and optimization methods (see the notes on SMOTE and differential evolution, below).
+\ei
+As shown in \fig{j}, we   explore numerous examples of the Jureczko   object-oriented static code data sets: Ant, Camel, Ivy, Jedit,   Log4, Lucene, Poi, Synapse, Velocity, Xalan, Xerces\footnote{Available from the object-oriented defects section of the PROMISE respository openscience.us/repo/defect/ck.}. 
+Given access to $V$ released
+versions, we test on version $V$ and train on the available data from earlier releases (as
+shown in \fig{j}, this means that we are training on hundreds to thousands
+of classes and testing on smaller test suites).
+Note the three bottom rows marked with $\times$: these contain predominately
+defective classes (two-thirds, or more) and in such data sets, it is hard to distinguish
+good from bad (since there are so many bad examples). 
 
-Ant & ant & 1.5, 1.6  &1.7 & 644&124&19.25\\
+For the  Jureczko   data,
+the plans generated by HOW advise   how to change static code attributes in order to reduce defects in
+Java classes.  Here,
+performance can be measured using:
+\bi
+\item Probability of detection (a.k.a. ``pd'' or recall):  the percent of faulty classes in
+the test data detected
+by the {\em predictor}.
+\item Probability of false alarm (a.k.a. ``pf''): the percent of non-fault
+classes that are predicted to be defective.
+\ei 
+The ``untuned'' columns of \fig{j} shows RandomForest's learned {\em pd,pf}
+values generated after learning from the training data, then being applied to the test data.
+If we define ``good'' to mean $\mathit{pd}>60 \wedge \mathit{pf} < 40$\%,
+then only two of our data sets ({\em ivy,ant}) are ``good'' enough. 
 
-Camel & cam & 1.2, 1.4 & 1.6 & 1480&361 & 24.39\\
+The ``tuned'' columns of \fig{j} show that we can salvage some of the data sets
+using two techniques.
+ Pelayo and Dick~\cite{pelayo07} report that defect prediction can be improved via SMOTE~\cite{Chawla2002}; i.e. an over-sampling of minority-class examples.
+ Also, Fu et al.~\cite{fu:ase15} report that an optimization method called differential evolution~\cite{storn97}
+applied to defect predictors can quickly explore the tuning
+options of Random Forest to find better settings for the size of the forest, the termination criteria
+for tree generation, etc.
+The rows marked with $\star$ in \fig{j} show data sets whose performance was improved remarkably by these
+techniques. For example, in {\em poi}, the recall increased by 10\% while the false alarm rate dropped by 20\%.
+However,  as might be expected
+the data sets in the  three bottom rows remain
+unsalvageable.
 
-Ivy & ivy & 1.1, 1.4 & 2.0  & 352 & 79 & 22.44\\
+In summary, while we cannot trust predictors from some of our defect data sets,
+we can plan ways to reduce defects in {\em jedit, ivy, ant, lucene} and {\em poi}.
+(Aside: note that this tuning used optimization and sub-sampling   on   {\em only} the
+training instances of \fig{j}
+i.e.
+no clues from the test set were ever used in this tuning process.)
 
-Jedit & jed & 4.1, 4.2 & 4.3 & 679 & 127 & 18.70\\
 
-Log4j & log & 1.0, 1.1 & 1.2 & 244 & 71 & 29.09\\
+ 
 
-Lucene & luc & 2.0, 2.2 & 2.4 & 442 & 235 & 53.16\\
+\section{Experimental Methods}
 
-Poi & poi & 2.0, 2.5 & 3.0 & 699 & 285 & 40.77\\
+To assess HOW, we applied its plans to all the Seigmund data, and the five ``good''
+  Jureczko   data sets.
+  The training and tests used for Jurecko were display in \fig{j}. For Siegmind,
+  25 times, 
+  we randomized the order of the data, trained on the first half, then tested on the second half.
+  
+  \fig{ck} shows the attributes in the Jureczko data.
+  The Seigmund data sets are far more varied (every configuration option in the Makefiles
+  for BerkeleyDB-- the Java  and  Windows  versions,  Apache,  SQLite,  LLVM,and x264).
+  \fig{cpm} lists the size of Seigmund attribute sets.
 
-Synapse & syn & 1.0, 1.1 & 1.2 & 379 & 76 & 20.05\\
-
-Velocity & vel & 1.4, 1.5 & 1.6 & 410& 289 & 70.48\\
-
-Xalan & xal &2.5, 2.6 &2.7 & 1688 & 798 & 47.27\\\hline
-\end{tabular}}
-\end{center}
-\caption{Attributes of the defect datasets}\label{fig:ck}
-\end{figure}
+ 
 
 \begin{figure}[!hbp]
   \renewcommand{\baselinestretch}{1}\begin{center}
@@ -957,67 +820,40 @@ x264 & Video Enc. & C& 45,743 & 16 & 1152\\\hline
 
 
 
-\begin{figure}[tbp!]
+%\begin{figure}[tbp!]
 % \subfloat[\label{oracle}]{\includegraphics[width=\linewidth]{{_figs//Oracle}}\\
-\includegraphics[width=\linewidth]{_figs/WHAT}
-\caption{Experimental Rig}
-\label{fig:rig}
+%\includegraphics[width=\linewidth]{_figs/WHAT}
+%\caption{Experimental Rig}
+%\label{fig:rig}
   
   
 %   \subfloat[Experimental Rig for Defect Prediction]{  \includegraphics[width=\linewidth]{_figs/HERE}
 %   \label{fig:rig2}}
 
-\end{figure}
+%\end{figure}
 
 %involves two key components. Firstly, there is the oracle (Random Forest with SMOTE) which is used to make predictions. Then we have the 
-\section{Data sets}
 
-The following section describes the experimental rig and the experiments used to measure the performance of HERE on 10 defect data sets and 6 performance prediction data sets.
-
-\subsection{Defect Data Set}
-The data was obtained from the PROMISE repository\footnote{Promise Repository: \url{openscience.us/repo}}. For the defect data we investigated 32 releases from 11 open source Java projects defined by the metrics highlighted in figure ~\ref{fig:ck}: \kw{Apache Ant} (1.5 -- 1.7), \kw{Apache Camel} (1.2 -- 1.6), \kw{Apache Ivy} (1.1 -- 2.0), \kw{JEdit} (4.1 -- 4.3), \kw{Apache Log4j} (1.0 -- 1.2), \kw{Apache Lucene} (2.0 -- 2.2), \kw{PBeans} (1.0 and 2.0), \kw{Apache POI} (2.0 -- 3.0), \kw{Apache Synapse} (1.0 -- 1.2), \kw{Apache Velocity} (1.4 -- 1.6), and \kw{Apache Xalan-Java} (2.5 -- 2.7). 
-
-Given the empirical nature of the data, it is import to design an experiment such that the planning phase uses only the \kw{past} data to learn trends which can then be applied to the \kw{future} data. Thus for our experiment we use data sets that have at least two consecutive releases. 
-\begin{itemize}
-\item To generate recommendations for a release $i$, the planner uses releases releases $(i-1)$ and $(i-2)$.
-\item The predictor also uses releases $(i-1)$ and $(i-2)$. However, we use SMOTE with re-sampling in order to handle the class imbalance in the data and to prevent the predictor from using the same training data as the planner.
-\end{itemize}
-
-\subsection{Performance Prediction Data Set}
-
-{\bfseries RQ3} asks if the aforementioned method can be expanded to other kinds of data. To answer this, we have used the performance prediction data set collected by Siegmund et al. for their ICSE '12 paper~\cite{sven12}. The data sets have been deployed as a part of the \textsc{SPLConqueror} tool\footnote{\url{fosd.de/SPLConqueror}}. This data set contains six examples of real world configurable systems that cover a broad spectrum of scenarios, see figure \ref{fig:cpm} for a summary. The systems have different characteristics (lines of code: 40 thousand to 300 thousand; Valid configurations: 192 to about 3.9 million), different implementation languages (C, C++, and Java), different mechanism (conditional compilation, configuration files, and command-line options), and different domains (Web servers, compilers, encoders, and databases). The data contains a measurement of all the configurations that are invoked by the benchmarking tool. The measurements were conducted 5 to 20 times and the mean of all measurements for each configuration was recoded.
-
-For our experiments, we randomly split the data sets into two equal halves, one for training and the other for testing. The planning phase learns configuration settings from the training half and plans for changes in the test half aiming to optimize the performance of the test instances. We repeat our measurements 20 to 25 times to overcome measurement bias.
-\section{Experimental Design}
-
-\subsection{The Rig}
-
-The experimental rig for defect prediction is shown in Figure \ref{fig:rig}. It works as follows: 
-\bi
-\item We use an {oracle} (Random Forest + SMOTE) to determine whether a certain test case is defective or not. 
-\item If the oracle suggests that an instance is defective, then we use HERE to apply the recommendations to that test instance. 
-\item The oracle is then used to predict the attributes in the modified instance.
-\item The statistical significance of the changes are verified using the cliffs delta measure described below.
-\ei
-
-For run time optimization, we use a similar rig. The oracle is Random Forest, and it predicts for run times of specific configuration. HERE is used to generate a recommended configuration to reduce the run times. The run time is measured by the oracle. The reduction of run times are expressed as fractions of the original (also referred to as baseline) run time.
-
-Note that we report the performance scores as a comparison between the oracle's prediction \textit{before} and that \textit{after}. We refrain from using the \textit{actual} defects in the data sets to perform the same comparison. This is because the oracle is limited in its ability to predict defects, there are instances that are inherently misclassified. These misclassifications however are not affected by the planner. Therefore, by comparing the defect counts before and after applying the planner and doing so with a the same oracle would give us an accurate albeit relativistic measure of performance.
+ 
+We  assess the performance of HOW  by measuring the gain, given by $\frac{Before}{After}$. Since
+our goal is to reduce all our objective scores (defects and runtimes of the compiled systems).
+the gain takes a value larger than 1 if the run times have been reduced, a value of 1 if there is no change, and a value less than 1 if run times have increased after applying the recommended changes. 
 
 
-\subsection{Performance Assessment}
-
-In order to assess the performance of the planner for the defect data set, we use the Cliffs Delta score to measure the probability that the number of bugs in test data before applying the planner is larger than after doing so. In other words, we use the delta score to measure the ability of the planner to effective reduce the number of defects. Given the untreated test instance labeled \textit{Before} of length \textit{M} and the treated instances labeled \textit{After}, the delta score is obtained as follows:
+Second, we summarizes all our runs using some visualizations and some statistical tests.
+In those statistical tests, in  order to avoid any parametric bias,
+we use the Cliffs Delta score to measure the probability that the number of bugs in test data before applying the planner is larger than after doing so. In other words, we use the delta score to measure the ability of the planner to effective reduce the number of defects. Given the untreated test instance labeled \textit{Before} of length \textit{M} and the treated instances labeled \textit{After}, the delta score is obtained as follows:
 \begin{equation}
 \delta = \frac{\#(Before<After) - \#(Before>After)}{M^2}
 \label{eq:cliffs}
 \end{equation}
 
-In the context of our application, the $\delta$ attains a value of -1 if the number of defects after applying the treatments has reduced to zero. On the other hand $\delta$ will be 0 if there is no change at all. Thus, most of the values reported will lie between 0 and -1. It needs to be highlighted that although $\delta$ can lie between -1 and +1, the in our application the range is limited to -1 and 0. And this is because we only apply the treatments to defective cases. 
+A $\delta$ of  0 implies no change at all. 
 
-For the performance prediction data set on the other hand, Cliff's delta measure is not directly applicable. We therefore assess the performance by measuring the gain, given by $\frac{Before}{After}$. The gain takes a value larger than 1 if the run times have been reduced, a value of 1 if there is no change, and a value less than 1 if run times have increased after applying the recommended changes. 
+For the performance prediction data set on the other hand, Cliff's delta measure is not directly applicable.
 
-In addition to the above, we rank the different various of the planning scheme to identify the best approach. We make use of the Scott-Knott procedure, recommended by Mittas \& Angelis in their 2013 IEEE TSE paper~\cite{sk}, to compute the ranks. It works as follows: A list of treatments \textit{l} is sorted by the Median score. The list \textit{l} is then split into sub-lists m, n in order to maximize the expected value of the differences in the observed performance before and after division. A statistical hypothesis test \textit{H} is applied on the splits \textit{m, n} to check if they are statistically different. If so, Skott-Knott then recurses on each division. 
+
+In addition to the above, we rank the different various of the planning scheme to identify the best approach. We make use of the Scott-Knott procedure, recommended by Mittas \& Angelis in their 2013 IEEE TSE paper~\cite{sk}, to compute the ranks. It works as follows. A list of treatments \textit{l} is sorted by their median score. The list \textit{l} is then split into sub-lists $m, n$ in order to maximize the expected value of the differences in the observed performance before and after division. A statistical hypothesis test \textit{H} is applied on the splits \textit{m, n} to check if they are statistically different. If so, Skott-Knott then recurses on each division. 
 
 The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\cite{kampenes07} and Kocaguenli et al.~\cite{}, highlighted that an ``effect size'' in lieu of a mere hypothesis test is required in order to verfiy if two populations are ``significly'' different. An ICSE'11 paper by Arcuri~\cite{} endorsed the use of Vargha and Delaney's A12 effect size for reporting results in software engineering. Thus, for hypothesis testing H in Skott-Knott, we use the A12 test and a non-parametric bootstrap sampling~\cite{}.
 
