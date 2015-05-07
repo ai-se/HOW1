@@ -484,7 +484,7 @@ in that cluster.
             \begin{array}{l}
                 \mathit{test'} = \mathrm{planner}(\mathit{test})\\
                 \mathit{after} =\mathrm{predictor}(\mathit{test'})\\ 
-                \mathrm{{\bf return}\;} \mathit{before} /  \mathit{after}
+                \mathrm{{\bf return}\;} \mathit{before},\mathit{after}
             \end{array}
           \right.
    \end{array}\right.
@@ -496,7 +496,7 @@ in that cluster.
 
 
 
-\subsection{How to Assess ``HOW''}
+\subsection{How to Assess ``HOW''}\label{sect:assess}
 In the experiments shown below,  HOW comments  on how to reduce
 software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be manually adjusted by programmers or (for large scale changes) automatically adjusted using code refactoring
 tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
@@ -561,7 +561,7 @@ then we cannot trust them to comment on our plans. Accordingly,
 if that performance is unsatisfactory, we abort.
 Else, we (1)~apply the { planner} to alter the {\em test} data;
 then (2)~apply the { predictor} to the altered data {\em test'};
-then (3)~return the performance delta.
+then (3)~return data on the {\em before,after} predictions.
 
 
 
@@ -587,10 +587,7 @@ then (3)~return the performance delta.
         poi      & 1.5, 2, 2.5        & 936       & 3.0          & 442          & 64 \\
         xerces   & 1.0, 1.2, 1.3      & 1055      & 1.4          & 588          & 74  \\ 
         log4j    & 1.0, 1.1           & 244       & 1.2          & 205          & 92   \\
-        xalan    & 2.4, 2.5, 2.6      & 2411      & 2.7          & 909          & 99  \\\hline
-        \multicolumn{6}{c}{~}\\
-        \multicolumn{6}{c}{~}\\
-        \multicolumn{6}{c}{~}\\
+        xalan    & 2.4, 2.5, 2.6      & 2411      & 2.7          & 909          & 99  \\\hline 
         
         
     \end{tabular}\end{minipage}\begin{minipage}{.4\linewidth}
@@ -613,10 +610,7 @@ then (3)~return the performance delta.
  30 & 28 &   & 39 & 33 &   & 9 & 5&$\times$\\
   32 & 6 &   & 30 & 9 &   & -2 & 3&$\times$\\
   41 & 5 &   & 48 & 0 &   & 7 & -5&$\times$\\
-\hline
-  \multicolumn{5}{c}{~}    &  & -1 & -4& 25th\\
-\multicolumn{6}{r|}{the percentiles of the changes:}    &   5 & 0 & 50th\\
- \multicolumn{5}{c}{~}             & & 10 & 3 & 75th\\
+\hline 
 \end{tabular}
 
 \end{minipage}
@@ -776,18 +770,24 @@ no clues from the test set were ever used in this tuning process.)
 
  
 
-\section{Experimental Methods}
+\section{Results}
 
+\subsection{Data}
 To assess HOW, we applied its plans to all the Seigmund data, and the five ``good''
-  Jureczko   data sets.
-  The training and tests used for Jurecko were display in \fig{j}. For Siegmind,
-  25 times, 
-  we randomized the order of the data, trained on the first half, then tested on the second half.
+  Jureczko   data sets {\em jedit, ivy, ant, lucene} and {\em poi}.
+  The training and tests used for Jurecko were display in \fig{j}. For these data
+  sets, training was managed by a Random Forest (tuned in the SMOTED training data using differential
+  evolution). \fig{ck} shows the attributes in the Jureczko data.
   
-  \fig{ck} shows the attributes in the Jureczko data.
-  The Seigmund data sets are far more varied (every configuration option in the Makefiles
+  The Seigmund data sets are far more varied than the Jurecko data (since they contain every configuration option in the Makefiles
   for BerkeleyDB-- the Java  and  Windows  versions,  Apache,  SQLite,  LLVM,and x264).
-  \fig{cpm} lists the size of Seigmund attribute sets.
+  \fig{cpm} lists the size of Seigmund attribute sets. For the Siegmind data, 
+  25 times, 
+  we randomized the order of the data, trained on the first half (using
+  Random Forest Regressor), then tested on the second half.
+  
+  
+  
 
  
 
@@ -815,7 +815,7 @@ x264 & Video Enc. & C& 45,743 & 16 & 1152\\\hline
 { \footnotesize $^*$ Dataset contains 4, 553 configurations for prediction modeling and 100 additional random configurations for prediction evaluation, see \cite{vapp}.}
 \end{center}
 
-\caption{Attributes of the Performance Prediction data sets}\label{fig:cpm}
+\caption{Seigmund data sets: details on the data sets}\label{fig:cpm}
 \end{figure}
 
 
@@ -834,62 +834,125 @@ x264 & Video Enc. & C& 45,743 & 16 & 1152\\\hline
 
 %involves two key components. Firstly, there is the oracle (Random Forest with SMOTE) which is used to make predictions. Then we have the 
 
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=\linewidth]{_figs/histograms.pdf}
+\caption{Jureczko object-oriented defect data sets. 
+Comparisons of predictions of defects in the Jureczko data sets before and after planning.}
+\label{fig:bugs}
+\end{figure}
+
+\subsection{Visualisations of Changes}
+
+In this section, we show some sample results. In the next section, we conduct a statistical
+analysis of all   results.
+
+\fig{bugs} shows the effects of planning on the five good Jureczko data sets. Note that:
+\bi
+\item
+The number of defects predicted in the ``after'' set is always less than ``before'';
+\item
+The reduction can be quite large: e.g. see the over 50\% reduction in the {\em ant} data set.
+\ei
+
+ \begin{figure*}[htbp!]
+\centering
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/Apache.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/BDBJ.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/BDBC.pdf}
+\end{minipage}
+
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/LLVM.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/SQL.pdf}
+\end{minipage}
+\begin{minipage}{0.30\linewidth}
+\includegraphics[width=\linewidth]{_figs/X264.pdf}
+\end{minipage}
+\caption{Run time optimization using HERE . Blue curve represents a mutation probability of 0.75 with feature weighting and information pruning; Red curve represents a mutation probability of 0.25 with feature weighting, but no information pruning; Black curve represents the raw test data used as baseline for the comparison.}
+\label{fig:pp}
+\end{figure*}
+
+\fig{pp} shows the effects of planning on the Seigmund data sets. The black, red %XXX
+curves show the
+runtimes as predicted in the test sets before/after our planning.  While some of the differences
+are small (eg. LLVM and SQL), some of the others are very large indeed (e.g. the Apache and   BD*).
  
-We  assess the performance of HOW  by measuring the gain, given by $\frac{Before}{After}$. Since
-our goal is to reduce all our objective scores (defects and runtimes of the compiled systems).
-the gain takes a value larger than 1 if the run times have been reduced, a value of 1 if there is no change, and a value less than 1 if run times have increased after applying the recommended changes. 
+This visual samples of HOW's planning results look promising-- but they need to be confirmed by a
+ more rigorous statistical analysis.
+ 
+\subsection{Statistical Analysis}
+
+HOW's performance can be adjusted in numerous ways:
+\bi
+\item The $F$ variable controls the size of the displacement;
+\item The $B$ variable controls how many of the attributes are displaced;
+\item The $w_i$ weight inside our distance calcylation controls how important are each variable in computing
+     the space between instances. A standard default is $w_i=1$ but this can be adjusted via
+     the {\tt featureWeighting} procedure of \fig{howcode}.
+\ei
+
+To understand how much (if at all) these variables change the planning results, 
+this study ranks methods using the Scott-Knott
+procedure recommended by Mittas \& Angelis in their 2013
+IEEE TSE paper~\cite{mittas13}.  This method
+sorts a list of $l$ treatments with $ls$ measurements by their median
+score. It then
+splits $l$ into sub-lists $m,n$ in order to maximize the expected value of
+ differences  in the observed performances
+before and after divisions. E.g. for lists $l,m,n$ of size $ls,ms,ns$ where $l=m\cup n$:
+ $E(\Delta)=\frac{ms}{ls}abs(m.\mu - l.\mu)^2 + \frac{ns}{ls}abs(n.\mu - l.\mu)^2$.
+Scott-Knott then applies some statistical hypothesis test $H$ to check
+if $m,n$ are significantly different. If so, Scott-Knott then recurses on each division.
+ 
+For this study, our hypothesis test $H$ was a
+conjunction of the A12 effect size test of  a
+non-parametric bootstrap sampling; i.e. our
+Scott-Knott divided the data if {\em both}
+bootstrapping and an effect size test agreed that
+the division was statistically significant (99\%
+confidence) and not a ``small'' effect ($A12 \ge
+0.6$).
+For a justification of the use of non-parametric
+bootstrapping, see Efron \&
+Tibshirani~\cite[p220-223]{efron93}.
+For a justification of the use of effect size tests
+see Shepperd\&MacDonell~\cite{shepperd12a}; Kampenes~\cite{kampenes07}; and
+Kocaguenli et al.~\cite{kocharm13}. These researchers
+warn that even if an
+hypothesis test declares two populations to be
+``significantly'' different, then that result is
+misleading if the ``effect size'' is very small.
+Hence, to assess 
+the performance differences 
+we first must rule out small effects.
+This test was recently 
+endorsed by Arcuri and Briand
+at ICSE'11~\cite{arcuri11}.
+
+ 
+  
 
 
-Second, we summarizes all our runs using some visualizations and some statistical tests.
-In those statistical tests, in  order to avoid any parametric bias,
-we use the Cliffs Delta score to measure the probability that the number of bugs in test data before applying the planner is larger than after doing so. In other words, we use the delta score to measure the ability of the planner to effective reduce the number of defects. Given the untreated test instance labeled \textit{Before} of length \textit{M} and the treated instances labeled \textit{After}, the delta score is obtained as follows:
+
+To get an overall count of the   in  order to avoid any parametric bias,
+we use the Cliffs Delta score to measure the probability that performance has been changed
+by the planner.   Given the untreated test data labeled \textit{Before} of length \textit{M} and the treated instances labeled \textit{After}, the delta score is obtained as follows:
 \begin{equation}
 \delta = \frac{\#(Before<After) - \#(Before>After)}{M^2}
 \label{eq:cliffs}
 \end{equation}
 
-A $\delta$ of  0 implies no change at all. 
-
-For the performance prediction data set on the other hand, Cliff's delta measure is not directly applicable.
-
-
-In addition to the above, we rank the different various of the planning scheme to identify the best approach. We make use of the Scott-Knott procedure, recommended by Mittas \& Angelis in their 2013 IEEE TSE paper~\cite{sk}, to compute the ranks. It works as follows. A list of treatments \textit{l} is sorted by their median score. The list \textit{l} is then split into sub-lists $m, n$ in order to maximize the expected value of the differences in the observed performance before and after division. A statistical hypothesis test \textit{H} is applied on the splits \textit{m, n} to check if they are statistically different. If so, Skott-Knott then recurses on each division. 
-
-The research conducted by Shepperd and MacDonell~\cite{shepperd12a}, Kampenes~\cite{kampenes07} and Kocaguenli et al.~\cite{}, highlighted that an ``effect size'' in lieu of a mere hypothesis test is required in order to verfiy if two populations are ``significly'' different. An ICSE'11 paper by Arcuri~\cite{} endorsed the use of Vargha and Delaney's A12 effect size for reporting results in software engineering. Thus, for hypothesis testing H in Skott-Knott, we use the A12 test and a non-parametric bootstrap sampling~\cite{}.
-
-\section{Experimental Results}
-
-\subsection{Defect Data Set}
-This sections explores \textbf{RQ2: Can lessons learnt from local policy generators be useful for generating solutions that can be used to mitigate defects in software systems?}
-
-Figure \ref{fig:bugs} compares the number of defects before and after applying "HERE". The graphs represent the median scores, with the inter-quartile ranges represented by the error bars. The results seem to show that in all data sets under consideration, the number of defects have reduced, some more so than others. Large differences were notice in certain data sets namely, \textit{ant}, \textit{camel}, \textit{jedit}, \textit{poi,} and \textit{xalan}, on close examination it was noticed that these data sets had comparatively large training data, which translates to more samples for the planner to learn from.
-
-In addition to this, to study the statistical significance of the changes, the results were statistically verified using the Skott-Knott procedure. In order to do this we computed the Cliff's Delta score. As highlighted previously, HERE is applied only for test instances that are considered defective by the oracle. Using \eq{cliffs} we can expect to see the following results:
-
-\bi
-\item $\lt$ 0 if defects have been suppressed.
-\item = 0 if no change has been made.
-\item $\gt$ 0 if new defects have been introduced. This is not applicable to our case because we only apply HERE to defective cases; either the defects are suppressed or they remain unaltered, introduction of new defects is not possible.
-\ei
-
-
-\begin{figure}[tbp]
-\centering
-\includegraphics[width=\linewidth]{_figs/histograms.pdf}
-\caption{Comparison of defects before and after planning.}
-\label{fig:bugs}
-\end{figure}
-With this in mind, it is easy to note that lower cliffs delta score translates to better the performance. 
-
- 
-The results are tabulated in figure \ref{tab:ant}. For the sake of completeness, we have introduced three basic configurations in HERE: 
-\bi
-\item \textit{Extent of Mutation:} Denotes the extent by which a test instant is \textit{mutated} towards the best cluster in the contour. It is a fraction that lies between 0 and 1. The baseline study requires no change be made, and thus extent of mutation is set to zero.
-\item \textit{Feature Weighting:} The importance of feature weighting has already been discussed in section \ref{fwt}. It is a fraction that lies between 0 and 1, with 0 being the least important and 1 the most important feature. The extent of mutation is multiplied by this fraction to determine how much a specific feature changes by. Generally, we would like to make the largest change to the most crucial feature.
-\item \textit{Information Pruning:} In addition to the weighting the features, we explored the possibility of mutating only the most important features. The feature weights are already known to us, we sort the features in descending order of their weights and mutate only the first X\%.
-\ei
-It is to be noted however that 
-
+A $\delta$ of  0 implies no change at all and, according to Romano et al.~\cite{romano06}, a value less
+that 14]7\% is a ``small'' (i.e. negliable) effect.
 
 \begin{figure*}[htbp!]
 
@@ -1083,30 +1146,6 @@ It is to be noted however that
 
 
 
-\begin{figure*}[htbp!]
-\centering
-\begin{minipage}{0.30\linewidth}
-\includegraphics[width=\linewidth]{_figs/Apache.pdf}
-\end{minipage}
-\begin{minipage}{0.30\linewidth}
-\includegraphics[width=\linewidth]{_figs/BDBJ.pdf}
-\end{minipage}
-\begin{minipage}{0.30\linewidth}
-\includegraphics[width=\linewidth]{_figs/BDBC.pdf}
-\end{minipage}
-
-\begin{minipage}{0.30\linewidth}
-\includegraphics[width=\linewidth]{_figs/LLVM.pdf}
-\end{minipage}
-\begin{minipage}{0.30\linewidth}
-\includegraphics[width=\linewidth]{_figs/SQL.pdf}
-\end{minipage}
-\begin{minipage}{0.30\linewidth}
-\includegraphics[width=\linewidth]{_figs/X264.pdf}
-\end{minipage}
-\caption{Run time optimization using HERE. Blue curve represents a mutation probability of 0.75 with feature weighting and information pruning; Red curve represents a mutation probability of 0.25 with feature weighting, but no information pruning; Black curve represents the raw test data used as baseline for the comparison.}
-\label{fig:pp}
-\end{figure*}
 
 
 \subsection{Performance Prediction Data set}
@@ -1228,7 +1267,52 @@ In this section,
 
 % \section{Discussion}
 \section{Threats to validity}
-\input{related}
+
+ 
+
+As with any empirical study, biases can affect the final results. Therefore, any
+conclusions made from this work must be considered with the following issues in
+mind.
+
+{\em 1. Sampling bias} threatens any data mining experiment; i.e., what matters
+there may not be true here. For example, the data sets used here comes from two sources
+(Seigmund et al. and Jureczko et al.) and any biases in their selection procedures
+threaten the validity of these results. 
+That said,
+the best we can do is define our methods and publicize our data and code so that other researchers can
+try to repeat our results and, perhaps, point out a previously unknown bias
+in our analysis. Hopefully, other researchers will emulate our methods in
+order to repeat, refute, or improve our results. 
+
+{\em 2. Learner bias: } For building the defect predictors in this study, we elected
+to use  Random Forest  .
+We chose Random Forest based on its reputation for having the better  performance of 
+21 other learners for defect prediction~\cite{lessmann}.
+Data mining is a
+large and active field and any single study can only use a small
+subset of the known classification algorithms.  
+
+{\em 3. Evaluation bias:} The issue was discussed above in \tion{assess} where
+we asserted that plans can be assessed via predictors-- with the all important
+priviso that the predictors are not performing poorly.
+ 
+%%\footnote{LL: It seems to me that $privacy$ in LACE approach could be compromised in the case of extremes if I had some knowledge of the parties. Consider a case where you know that a bunch of startups and Microsoft contributed to a private cache. Even with the random perturbation in MORPH, it will be REALLY obvious which defect data came from Windows vs. all of the others because Windows will have LOC orders of magnitude greater than anyone else, right?}
+ 
+%XXXX everytime it says LACE, do you mean LACE2
+
+%{\em 4. Comparison bias:}
+%There are many privacy algorithms~\cite{Fung2010survey} and it would be difficult to 
+%compare their performances (especially with various ways to measure privacy).
+%In this work, we use LACE.
+
+%{\em 5. Other Evaluation Bias:}
+%The utility of  obfuscated data can be measured
+%semantically (where the workload is unknown) or empirically (known workload
+%e.g., classification or aggregate query answering). In this work we measure
+%utility empirically for defect prediction only.
+
+
+%\input{related}
 
 
 \section{Conclusion}

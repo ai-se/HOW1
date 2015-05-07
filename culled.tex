@@ -178,3 +178,30 @@ Given the empirical nature of the data, it is import to design an experiment suc
 \item To generate recommendations for a release $i$, the planner uses releases releases $(i-1)$ and $(i-2)$.
 \item The predictor also uses releases $(i-1)$ and $(i-2)$. However, we use SMOTE with re-sampling in order to handle the class imbalance in the data and to prevent the predictor from using the same training data as the planner.
 \end{itemize}
+
+
+section{Experimental Results}
+
+\subsection{Defect Data Set}
+This sections explores \textbf{RQ2: Can lessons learnt from local policy generators be useful for generating solutions that can be used to mitigate defects in software systems?}
+
+Figure \ref{fig:bugs} compares the number of defects before and after applying "HERE". The graphs represent the median scores, with the inter-quartile ranges represented by the error bars. The results seem to show that in all data sets under consideration, the number of defects have reduced, some more so than others. Large differences were notice in certain data sets namely, \textit{ant}, \textit{camel}, \textit{jedit}, \textit{poi,} and \textit{xalan}, on close examination it was noticed that these data sets had comparatively large training data, which translates to more samples for the planner to learn from.
+
+In addition to this, to study the statistical significance of the changes, the results were statistically verified using the Skott-Knott procedure. In order to do this we computed the Cliff's Delta score. As highlighted previously, HERE is applied only for test instances that are considered defective by the oracle. Using \eq{cliffs} we can expect to see the following results:
+
+\bi
+\item $\lt$ 0 if defects have been suppressed.
+\item = 0 if no change has been made.
+\item $\gt$ 0 if new defects have been introduced. This is not applicable to our case because we only apply HERE to defective cases; either the defects are suppressed or they remain unaltered, introduction of new defects is not possible.
+\ei
+
+With this in mind, it is easy to note that lower cliffs delta score translates to better the performance. 
+
+ 
+The results are tabulated in figure \ref{tab:ant}. For the sake of completeness, we have introduced three basic configurations in HERE: 
+\bi
+\item \textit{Extent of Mutation:} Denotes the extent by which a test instant is \textit{mutated} towards the best cluster in the contour. It is a fraction that lies between 0 and 1. The baseline study requires no change be made, and thus extent of mutation is set to zero.
+\item \textit{Feature Weighting:} The importance of feature weighting has already been discussed in section \ref{fwt}. It is a fraction that lies between 0 and 1, with 0 being the least important and 1 the most important feature. The extent of mutation is multiplied by this fraction to determine how much a specific feature changes by. Generally, we would like to make the largest change to the most crucial feature.
+\item \textit{Information Pruning:} In addition to the weighting the features, we explored the possibility of mutating only the most important features. The feature weights are already known to us, we sort the features in descending order of their weights and mutate only the first X\%.
+\ei
+It is to be noted however that 
