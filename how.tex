@@ -103,7 +103,7 @@ morecomment=[s][\color{Strings}]{'''}{'''},
 morekeywords={[1]import,from,class,def,for,while,if,is,in,elif,else,not,and,or,print,break,continue,return,True,False,None,access,as,,del,except,exec,finally,global,import,lambda,pass,print,raise,try,assert, dot, norm, zip, sorted},
 keywordstyle={[1]\color{Code}\bfseries},
 % additional keywords
-morekeywords={[3]fastmap, Line,bPruning,clister,train, exemplar,nearestLine,dist,displace,geometry,splitAcross2Points,How,nearest,bPruning,Stats,divide,recurse,weight1,project, furthest, split, WHERE,clusterer, getContours, envied, fWeight, nearestContour, projection, mutate, HERE, knn},
+morekeywords={[3]fastmap, Line,bPruning,clister,train,leafs,weightedFeatures, exemplar,nearestLine,dist,displace,geometry,splitAcross2Points,leaves,How,nearest,bPruning,Stats,divide,recurse,weight1,project, furthest, split, WHERE,clusterer, getContours, envied, fWeight, nearestContour, projection, mutate, HERE, knn},
 keywordstyle={[3]\color{Keywords}\bfseries},
 morekeywords={[2]@invari},
 keywordstyle={[2]\color{Decorators}\slshape},
@@ -373,7 +373,7 @@ $y = \sqrt{a^2 - x^2}$ from the line $\overline{XY}$. For more details, see  \fi
 HERE's feature weighting algorithm
 comes from the CART regression tree learner~\cite{Breiman1984}.
 It sorts independent variables
- according to how well they can reduce the variance
+ according to how well they can reduce the variability
 of a  numeric objective.
 If we split some column $i$ of independent numeric data  into $N=n_1 + n_2 + ..$ splits,
 then the expected
@@ -866,7 +866,7 @@ The reduction can be quite large: e.g. see the over 50\% reduction in the {\em a
 \end{minipage}
 \begin{minipage}{0.30\linewidth}
 \includegraphics[width=\linewidth]{_figs/BDBC.pdf}
-\end{minipage}
+\end{minipage}\\[0.25cm]
 
 \begin{minipage}{0.30\linewidth}
 \includegraphics[width=\linewidth]{_figs/LLVM.pdf}
@@ -1294,8 +1294,9 @@ subset of the known classification algorithms.
 
 {\em 3. Evaluation bias:} The issue was discussed above in \tion{assess} where
 we asserted that plans can be assessed via predictors-- with the all important
-priviso that the predictors are not performing poorly.
- 
+proviso that the planning should {\em not} be attempted if the predictors
+are performing poorly.
+
 %%\footnote{LL: It seems to me that $privacy$ in LACE approach could be compromised in the case of extremes if I had some knowledge of the parties. Consider a case where you know that a bunch of startups and Microsoft contributed to a private cache. Even with the random perturbation in MORPH, it will be REALLY obvious which defect data came from Windows vs. all of the others because Windows will have LOC orders of magnitude greater than anyone else, right?}
  
 %XXXX everytime it says LACE, do you mean LACE2

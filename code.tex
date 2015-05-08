@@ -2,21 +2,19 @@
 
 \begin{figure*} 
 ~\hrule~
-\begin{minipage}{.45\linewidth}
-\small
+\begin{minipage}[t]{.45\linewidth}
+\scriptsize\vspace{1mm}
+{\bf The Line class (as described in \tion{mm}):}
 
-~\\
-
-{\bf The Line class (as described in \tion{mm}:}
-Note that this is the primary data structure of HOW.
-Training data is converted into a set of {\tt Line}s,
-each of which is defined by a $X,Y$ pair, where $X$
-has better scores than $Y$.
  
 \begin{python}[left]
 class Line:
-  "Lines connect a worse cluster Y to a better one X"
+  """The central data structure of HOW. Training data 
+  is converted into a set of Lines, each of which is 
+  defined by a 'X,Y' pair, where 'X'
+  has better scores than 'Y'."""
   all   = []    # where to store all the lines
+  weights=[]    # (weight,feature) pairs, sorted
   using = []    # what columns to use
   F     = 0.5   # magnitude control parameter
   B     = 50    # ratio of how many columns to displace
@@ -25,13 +23,11 @@ class Line:
     if x.score < y.score:
       x,y = y,x      # x must have best score
     i.x, i.y, i.c = x, y, dist(x,y) 
-    i.obj = len(x) 
     Line.all += [i]  # remember this line
 
   def displace(i,z):
-    for j,(xj,zj) in enumerate(zip(x,z)):
-      if j in Line.using and not j == i.obj:  
-        z[j] = zj + Line.F*( xj - zj)
+    for j in Line.using:
+      z[j] = z[j] + Line.F*(x[j] - z[j])
     return z
 
   def dist(i,z):
@@ -41,16 +37,18 @@ class Line:
 
 ~\colorrule{gray}~
 
-
-
 {\bf Main loop, of the  HOW  instance-based planner:}
-Testing data is {\em displaced}
-towards   the $X$ point of the nearest {\tt Line}.
+
 \begin{python}[left]
-def HOW(training, testing):
+def HOW(training, testing, b = Line.b):
+  """ Testing data is displaced towards
+  the X point of the nearest Line."""
   def train(data):
-    Line.using = bPruning(data)
-    clusters   = cluster(data,len(data)):
+    Line.weights= weightedFeatures(data)
+    b           = int(len(Line.weights)*B/100)
+    Lines.using = Line.weights[:b])
+    clusters    = [k for k in 
+                   leafs(cluster(data,len(data)))]
     for cluster in clusters:
       one = exemplar(cluster)
       two = exemplar(nearest(one, clusters))
@@ -58,43 +56,35 @@ def HOW(training, testing):
  
    def exemplar(cluster):
     "Apply the rules at end of section II.B"
-
-     
-   def bPruning(data,  b = Line.B):
-    "Return the indexes of the 'b' best columns" 
-    enough  = int(len(weights)*b/100)
-    return featureWeighting(data)[:enough]
-
+ 
   def nearestLine(z):
     out,least=None,10000
     for line in Line.all:
       d = line.dist(z)
       if d < least: out,least = line,d
     return out
-   
-  #---------------------------------
-  # begin main code for  'HOW'
+  # ---- begin main code for  'HOW' ---------------
   train(training)
   return [nearestLine(z).displace(z) for z in testing]
 \end{python}
 
 ~\colorrule{gray}~
 
-{\bf Code for geometry (as described in \fig{where}c):}
+{\bf Misc utilities; e.g. code for geometry (as described in \fig{where}c):}
 
  
 \begin{python}[left]
-def dist(x,y):
-   "See Aha et al. reference [22]. XXX"
- 
-   
 def geometry(x, y, c, z): 
   a = dist(z,x)
   b = dist(z,y) 
   x= $(a^2 + c^2 - b^2)/(2c)$ 
   y=  $\sqrt{(a^2 - max(x,0))^2}$
   return x,y
-  
+
+def dist(x,y):
+   tmp = sum(w*(x[j] - y[j])**2 for w,j in Line.using) 
+   return tmp**0.5 / len(Line.using)**2
+   
 def nearest(x,data):
   return furthest(x,data,best=1000,
                     better=lambda j,k:j < k)
@@ -106,15 +96,23 @@ def furthest(x,data, best= -1,
     d = dist(one,x)
     if gt(d,best): out, best = y, d
   return out
+
+def leafs(data):
+  leaf = True
+  for more in data.leafs:
+    if more:
+       leaf = False
+       for one in leafs(more):
+         yield one
+  if leaf: 
+    yield data
 \end{python}
- \end{minipage}~~~~~~~~~\begin{minipage}{.45\linewidth} 
-\small
-
-~\\
-
+ \end{minipage}~~~~~~~~~\begin{minipage}[t]{.45\linewidth} 
+\scriptsize\vspace{1mm}
 {\bf Clustering (as described in \fig{where}a):}
 \begin{python}[right]
 def cluster(data, n,lvl=100):
+
   def splitAcross2Points(data): 
     tmp = random.choose(data)
     x = furthest(tmp, data)
@@ -131,8 +129,7 @@ def cluster(data, n,lvl=100):
     mid = len(data)/2; 
     return data[mid:], data[:mid]
     
-  # --------------------------------------
-  # begin main code for  'cluster'
+  # --- begin main code for  'cluster' --------
   if lvl < 1: 
      return data # stop if out of levels
   leafs = [] # Empty Set
@@ -141,12 +138,8 @@ def cluster(data, n,lvl=100):
      leafs += cluster(left, n, lvl - 1)  
   if len(right) > $\sqrt{n}$:  
      leafs += cluster(right,n,  lvl - 1) 
-  data.has = dict(x=x,y=y,
-                 l=left,r=right,
-                 leafs=leafs)
+  date.leafs = leafs
   return leafs
-  
-
 \end{python} 
 
 ~\colorrule{gray}~
@@ -154,20 +147,25 @@ def cluster(data, n,lvl=100):
 {\bf Feature weighting  (as described in \fig{where}d):}
 
 \begin{python}[right]
-def featureWeighting(cols):
+def weightedFeatures(cols):
   "Returns col indexes, sorted by their weight."
+  
   class Stats():  
     """Utility class. Handles incremental update of
        n, mean, standard dev."""
     def __init__(i,inits=[]):
       i.n = i.mu = i.m2 = 0.0
       map(i.__add__,inits)
-    def sd(i) :  return (max(0.0,i.m2)/(i.n - 1))**0.5
+      
+    def sd(i) :  
+      return (max(0.0,i.m2)/(i.n - 1))**0.5
+      
     def __add__(i,x):
       i.n  += 1
       delta = x - i.mu
       i.mu += delta/(1.0*i.n)
       i.m2 += delta*(x - i.mu) 
+      
     def __sub__(i,x):
       i.n  -= 1
       delta = x - i.mu
@@ -203,11 +201,9 @@ def featureWeighting(cols):
     w     = sum(v*n1/n for v,n1 in recurse(pairs,[]))
     return w,i
     
-  #---------------------------------
-  # begin main code for  'featureWeighting'
+  # ---- begin main code for 'featureWeighting' -----
   obj = len(cols[0]) - 1 
-  return map(lambda k:k[1],
-             sorted(weight1(col,i,obj) 
+  return sorted(weight1(col,i,obj) 
                     for i,col in enumerate(cols)
                     if not i == obj))
 \end{python}
