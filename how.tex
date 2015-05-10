@@ -185,7 +185,8 @@ making?''. That is, these panelists are more interested in the interpretations
 and follow-up
 that occurs {\em after} the mining, rather than just  the mining itself. For example:
 \bi
-\item Instead of just accepting  {\em predictions} on how many 
+\item 
+Instead of just accepting  {\em predictions} on how many 
  software defects
 to expect,  business users might now demand a {\em plan} to
 reduce the likelihood of those defects;
@@ -193,83 +194,39 @@ reduce the likelihood of those defects;
 time of their software, business users might now demand
 a {\em plan} to reduce that runtime.
 \ei
-In these two points, we say that a ``plan'' is a  set of proposed changes in order to better achieve some goal. 
-Generating {\em plans} is a  very different task the standard
-data mining tasks of {\em predicting} some discrete or numeric class.
-Predictors
-and classifiers only tell us what {\em is} while planners 
-  tell us {\em what to change}. For the kind of business user
-discussed above, planners are the preferred to mere prediction systems
-since, as one gruff user once shouted at us:
-\begin{quote}
-{\em ``Don't tell me what \underline{is};
-tell me what to \underline{change}.''}
-\end{quote}
-Generating plans is also differed to the recommender systems. 
-discussed by Robillard and Walker~\cite{rob14}.  Recommendor systems
-in software engineering
-are less {\em directive} and more    {\em collaborative} than plan generators:
-\bi
-\item
-Directive systems (such as those discussed in this paper) tell developers exactly what to do;
-e.g. ``use these settings in a Makefile''. 
-\item
-On the other hand, the collaborative systems discussed by Robillard and Walker
-are more suggestive guides that
-help (e.g.) programmers focus on very small sets
-with  very large libraries of code of documentation.
-\ei
-This paper presents HOW, a novel planner for learning actionable analytics.
-In the experiments shown below, we see that HOW's plans can
-significantly reduce the expected
-value of:
-\bi
-\item The software defects found in  the object-oriented JAVA systems explored in 2010 by Jureczko et al.~\cite{jureczko10};
-\item The runtime of the  software systems whose configurations
-are explored in 2013 by Seigmund et al.~\cite{sven12};
-\ei
-In summary, this paper makes five contributions that are significantly different to
-prior work:
-\be
-\item The HOW  instance-based planner of this paper has not been presented before.
-\item The experiments of this paper show that HOW planner is useful for real-world tasks;
-e.g. reducing the
-expected values of the Jureczko software defects and the Seigmund software runtimes.
-\item Apart from HOW, we  also offers a general framework for using  predictive system to build planners;
-\item Further, we offer a  test to recognizes  when we should {\em not}  plan: specifically,
-planning is
-not recommended in domains with  poorly performing predictors;
-\item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
-\ee
-The rest of this paper is structured as follows.
-HOW's instance-based reasoning  makes its conclusions by
-studying the space of examples. As discussed in \tion{mm},
-this is a very different approach to
-{\em model-based planners} that use the model
-as sub-routine within a Monte Carlo simulation~\cite{me07f} or the evolutionary 
-programming methods explored by the search-based software
-engineering community~\cite{krall14,harman12dec}.  
- 
- 
-
-\section{HOW: Motivation and Methods}\label{sec:mm}
- 
- \subsection{Motivation: Why ``HOW''?}
-HOW was inspired by two     business issues raised about the  GALE optimizer~\cite{krall14}. 
-A well-known effect in machine learning (and, in computer vision
-and compression~\cite{levina04}) is that the $n$ dimensions of a data set can be represented by a  much
-lower-dimensional approximation. GALE finds those $m \ll n$ dimensions then mutates examples
-towards the better end of each dimension $m_i$. Since it explores $m \ll n$ dimensions,
-GALE terminates much faster than standard optimiser (e.g. for one large model, 4 minutes versus 7 hours~\cite{krall14}).
-Better yet, GALE's rapdily generated  solutions are competitive (or better) than those found by 
-slower optimizers.
-
-When GALE executes, it searches for better examples of data
- by (a)~inputting an initial population of data; then (b)~making
- extensive mutation to that data. In practice, GALE makes
-100s to 100,000s of mutations. Each of these mutations
+In this paper, we say   a ``plan'' is a  set of changes
+proposed  in order to better achieve some goal. 
+Specifically, for every $Z$  that requests a plan $\delta$, we want
+to adjust the attributes $Z_j$ as follows:
+\begin{equation}\label{eq:one}
+Z_j = Z_j + \delta_j
+\end{equation}
+The usual way such plans are generated in the SE literature
+is via some search-based method. Recently, we have made  some progress
+in this area with the  GALE optimizer~\cite{krall14}. 
+Like other search-based algorithms,
+ GALE executes by proposing multiple $\delta$s
+ (one for each generation in an evolutionary program).
+ In practice, GALE makes
+ extensive changes to initial sample of project data
+ (perhaps 
+100s to 100,000s of mutations). Each of these mutations
 is reassessed using some domain model.
-For certain users,this approach raises some issues.  One such user commented:
+GALE runs faster than standard search-based SE tools~\cite{deb00a,zit02} since
+it explores  the principle components
+ of the project data (rather than   the raw data). Since it explores
+ a smaller space, it also
+ terminates much faster than standard optimiser; e.g. for one large model, 4 minutes versus 7 hours~\cite{krall14}. 
+
+When presented to some  users, the GALE approach was challenged by
+two business users.   Note that the following issues
+challenge not just GALE, but also  any  optimization algorithm  that makes
+extensive use of mutation  and domain models such as
+NSGA-II, NSGA-III, SPEA2, IBEA, particle swarm optimization, MOEA/D, etc.~\cite{deb00a,zit02,zit04,%
+deb14,Cui2005a,zhang07:TEC}.
+
+
+One  user asked:
 \begin{quote}
 ISSUE~\#1: {\em ``What if I only want the minimum useful change, not
 the maximum possible?''}
@@ -285,31 +242,55 @@ This also is a legitimate issue.
 Building and certifying a model  can  takes  long time, especially in software engineering. For  example, in previous work~\cite{me07f} we used models
 developed by Boehm's group at the University of Southern California.
 Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}). 
-
 Also, even when there is an existing model, they can require
 constant  maintenance lest they become out-dated. Elsewhere, we have described our
 extensions to the USC models to enable reasoning about agile software developments. 
 It took many months to implement and certify those extensions~\cite{me09i,me09j}.
 The problem of model maintenance is another
 motivation to look for alternate methods that can be automatically updated whenever new data arrives.
-
 Further, sometimes  it is easier to access instances of a model's behaviour than the model
 itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
 Laboratory~\cite{fea02a},  our research partner could not share a
 propriety model from within the NASA firewalls. However, they could share 
 logs of the input/output of that model.
+
+
+Every challenge is an opportunity to explore  a new approach.
+If we  restrict $\delta$ to very small changes, then any 
+predictive data miner applied to the original data could also be used
+to assessed the mutated data (proviso: we have to guarantee that
+the mutations do not leave the space of examples present in the original data).
+Note that this approach addresses ISSUE~\#1 since it only uses minimal changes.
+It also addresses  ISSUE~\#2 since, when lack a domain model, we automatically
+create one (via data mining).
+
  
-These two issues are not just problems for GALE, but also for every
-other model-based optimization algorithm  that makes
-extensive use of mutation  and domain models such as
-NSGA-II, NSGA-III, SPEA2, IBEA, PSO, DE, MOEA/D, etc.~\cite{deb00a,zit02,zit04,%
-deb14,Cui2005a,storn97,zhang07:TEC}. Accordingly, this paper seeks
-an optimization methods that make minimal changes to instances,
-while avoiding the problem of models that are missing, slow
-to build, hard to maintain, or difficult to access.
+This paper presents HOW, a novel planner for learning actionable analytics via
+minimal changes. 
+In the experiments shown below, we see that HOW's plans  can significantly
+reduce the  expected
+value of:
+\bi
+\item The software defects found in  the object-oriented JAVA systems explored in 2010 by Jureczko et al.~\cite{jureczko10};
+\item The runtime of the  software systems whose configurations
+are explored in 2013 by Seigmund et al.~\cite{sven12};
+\ei
+This paper makes five contributions:
+\be
+\item The HOW  instance-based planner (which has not been presented before).
+\item The experiments of this paper show that HOW planner is useful for real-world tasks;
+e.g. reducing the
+expected values of the Jureczko software defects and the Seigmund software runtimes.
+\item Apart from HOW, we  also offers a general framework for using  predictive system to build planners;
+\item Further, we offer a  test to recognizes  when we should {\em not}  plan: specifically,
+planning is
+not recommended in domains with  poorly performing predictors;
+\item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
+\ee 
 
-\subsection{Methods: How to Build ``HOW''?}
+\section{How to Build ``HOW''?}\label{sec:mm}
 
+\subsection{Design}
 A general model for {\em predictors} is as follows. 
 During testing, each test instance gains a prediction 
 by finding which region of the data it falls into.
@@ -436,26 +417,29 @@ If  $Z_j$ is an independent variable within the
 test instance $Z$ and  $X$ is the exemplar found at training time,
 then we displace $Z$ as follows:
 \[Z_j =  Z_j + F*(X_j - Z_j)\]
-Here, $F$ is the  magnitude controller, discussed above.
+Here, $F$ is the  magnitude controller, discussed above. Note that this
+this equations satisfies our definition of a ``plan'' as offered in
+\eq{one} in the {\em Introduction}
+
 The experiments of this work showed that different kinds of data require
 different kinds of exemplars.
 \bi
-\item
-For the Seigmund data,
-the objective score is the runtime of the test suite of a compiled program.
-For this kind of data with numeric objectives,
-the exemplar  is the instance in a cluster
-with  best objective score.
 \item
 For the Jureczko data, the objective score
 is a boolean that is true if defects have been noted
 for that class. 
 For this kind of data with discrete objectives,
 the data, 
-has less differentiation between the objective scores
-so we set the exemplar to  
+has very little to  differentiate between the objective scores
+so we just set the exemplar to  
 an instance synthesized from the median values of the instances
 in that cluster.
+\item
+For the Seigmund data,
+the objective score is the runtime of the test suite of a compiled program.
+For this kind of data with numeric objectives,
+the exemplar  is the instance in a cluster
+with  best objective score.
 \ei 
 
   
@@ -496,7 +480,7 @@ in that cluster.
 
 
 
-\subsection{How to Assess ``HOW''}\label{sect:assess}
+\subsection{Assessment}\label{sect:assess}
 In the experiments shown below,  HOW comments  on how to reduce
 software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be manually adjusted by programmers or (for large scale changes) automatically adjusted using code refactoring
 tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
@@ -627,7 +611,7 @@ Data   marked with ``$\times$'' are not ``good'' since their test suites  have s
 \end{figure*}
 
 
-\section{When Not to Plan: the Problem of Poor Predictors}
+\subsection{When Not to Plan: the Problem of Poor Predictors}
 
 The clear advantage of the approach of \fig{work} is that it can be readily and automatically
 applied to domains with historical data. That said, the obvious drawback with this approach
@@ -770,7 +754,7 @@ no clues from the test set were ever used in this tuning process.)
 
  
 
-\section{Results}
+\section{Experiments}
 
 \subsection{Data}
 To assess HOW, we applied its plans to all the Seigmund data, and the five ``good''
@@ -954,199 +938,120 @@ by the planner.   Given the untreated test data labeled \textit{Before} of lengt
 A $\delta$ of  0 implies no change at all and, according to Romano et al.~\cite{romano06}, a value less
 that 14]7\% is a ``small'' (i.e. negliable) effect.
 
-\begin{figure*}[htbp!]
+\begin{figure}[htbp!]
 
 \noindent\begin{minipage}{0.5\textwidth}
-  {\scriptsize \textbf{Ant}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
+  {\scriptsize \textbf{Ant}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~~}c@{}r}}
       \arrayrulecolor{darkgray}
-      \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & 0.75 &    -0.63  &  0.08 & \quart{2}{7}{5}{144} \\
-  1 & 0.75, weighting &    -0.6  &  0.2 & \quart{0}{16}{8}{144} \\
-\hline  2 & 0.5, weighting &    -0.42  &  0.11 & \quart{17}{10}{23}{144} \\
-  2 & 0.5 &    -0.42  &  0.11 & \quart{19}{9}{23}{144} \\
-  2 & 0.75, weighting, Prune=50\% &    -0.4  &  0.11 & \quart{20}{9}{25}{144} \\
-\hline  3 & 0.25 &    -0.28  &  0.09 & \quart{31}{7}{35}{144} \\
-  3 & 0.25, weighting &    -0.28  &  0.08 & \quart{31}{7}{35}{144} \\
-\hline  4 & 0.5, weighting, Prune=50\% &    -0.25  &  0.06 & \quart{35}{5}{38}{144} \\
-\hline  5 & 0.25, weighting, Prune=50\% &    -0.19  &  0.05 & \quart{41}{4}{43}{144} \\
-\hline  6 & Baseline &    -0.11  &  0.03 & \quart{47}{2}{49}{144} \\
+      \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} && \textbf{Bugs}\\
+  1 &  0.75-weight &    0.71  &  0.19 & \quart{0}{25}{10}{49} & 62\\
+  1 &         0.75 &    0.72  &  0.14 & \quart{6}{19}{12}{49} & 64\\
+\hline  2 &          0.5 &    0.86  &  0.08 & \quart{25}{11}{31}{49} & 77 \\
+  2 &   0.5-weight &    0.88  &  0.14 & \quart{20}{19}{33}{49} & 77\\
+\hline  3 & 0.5-weight-B=50\% &    0.91  &  0.08 & \quart{32}{11}{37}{49} & 80\\
+  3 & 0.75-weight-B=50\% &    0.92  &  0.09 & \quart{31}{12}{39}{49} & 82\\
+  3 &  0.25-weight &    0.92  &  0.04 & \quart{36}{5}{39}{49} & 81\\
+\hline  4 &         0.25 &    0.93  &  0.05 & \quart{37}{7}{40}{49} & 83\\
+  4 & 0.75-weight-B=25\% &    0.94  &  0.09 & \quart{36}{12}{41}{49} & 82\\
+\hline  5 & 0.25-weight-B=50\% &    0.97  &  0.03 & \quart{44}{4}{45}{49} & 86\\
+  5 & 0.5-weight-B=25\% &    0.98  &  0.06 & \quart{40}{8}{47}{49} & 86 \\
+\hline  6 & 0.25-weight-B=25\% &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 87\\
+\hline  7 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 90\\
 \hline \end{tabular}}
-\end{minipage}
-\noindent\begin{minipage}{0.5\textwidth}
-  \flushleft
-  {\scriptsize \textbf{Camel}\\}
-{\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
-\arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 &  0.75, weighting, Prune=50\% &    -0.41  &  0.1 & \quart{2}{14}{9}{205} \\
-  1 &  0.75 &    -0.41  &  0.23 & \quart{1}{32}{9}{205} \\
-  1 &  0.75, weighting &    -0.39  &  0.16 & \quart{0}{22}{12}{205} \\
-\hline  2 &  0.5, weighting, Prune=50\% &    -0.27  &  0.09 & \quart{19}{12}{29}{205} \\
-  2 &  0.5 &    -0.26  &  0.12 & \quart{20}{17}{30}{205} \\
-  2 &  0.5, weighting &    -0.24  &  0.09 & \quart{24}{13}{33}{205} \\
-\hline  3 &  0.25, weighting, Prune=50\% &    -0.2  &  0.05 & \quart{36}{7}{38}{205} \\
-  3 &  0.25, weighting &    -0.19  &  0.07 & \quart{36}{9}{40}{205} \\
-  3 &  0.25 &    -0.17  &  0.06 & \quart{37}{8}{43}{205} \\
-\hline  4 &  Baseline &    -0.15  &  0.06 & \quart{41}{8}{45}{205} \\
-\hline \end{tabular}}
-\end{minipage}
+\end{minipage}\\[0.1cm] 
 
 \noindent\begin{minipage}{0.5\textwidth}
   \flushleft
-  {\scriptsize \textbf{Ivy}\\[-0.05cm]}
-{\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
+  {\scriptsize \textbf{Ivy}\\[0.1cm]}
+{\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 &     0.75 &    -0.57  &  0.17 & \quart{0}{16}{6}{163} \\
-  1 &   0.75, weighting &    -0.55  &  0.11 & \quart{3}{11}{8}{163} \\
-\hline  2 &   0.75, weighting, Prune=50\% &    -0.38  &  0.11 & \quart{19}{11}{25}{163} \\
-  2 &    0.5, weighting &    -0.36  &  0.12 & \quart{23}{12}{27}{163} \\
-  2 &   0.5 &    -0.33  &  0.11 & \quart{25}{11}{30}{163} \\
-\hline  3 &   0.5, weighting, Prune=50\% &    -0.27  &  0.08 & \quart{30}{8}{36}{163} \\
-\hline  4 &   0.25, weighting &    -0.2  &  0.07 & \quart{41}{7}{43}{163} \\
-  4 &     0.25 &    -0.16  &  0.04 & \quart{43}{4}{47}{163} \\
-  4 &     Baseline &    -0.16  &  0.0 & \quart{47}{0}{47}{163} \\
-\hline  5 &   0.25, weighting, Prune=50\% &    -0.15  &  0.04 & \quart{45}{4}{48}{163} \\
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
+  1 &  0.75-weight &    0.75  &  0.18 & \quart{0}{29}{8}{49} & 50\\
+  1 &         0.75 &    0.79  &  0.12 & \quart{8}{20}{14}{49} & 53\\
+\hline  2 &          0.5 &    0.84  &  0.1 & \quart{18}{16}{23}{49} & 56\\
+  2 &   0.5-weight &    0.84  &  0.08 & \quart{14}{14}{23}{49} & 56\\
+  2 & 0.75-weight-B=50\% &    0.84  &  0.09 & \quart{18}{15}{23}{49} & 56 \\
+\hline  3 & 0.5-weight-B=50\% &    0.91  &  0.05 & \quart{29}{9}{34}{49} & 61\\
+\hline  4 & 0.25-weight-B=50\% &    0.96  &  0.01 & \quart{43}{1}{43}{49} & 64\\
+  4 & 0.75-weight-B=25\% &    0.96  &  0.05 & \quart{39}{9}{43}{49} & 65\\
+  4 &         0.25 &    0.97  &  0.01 & \quart{43}{1}{44}{49} & 65\\
+  4 &  0.25-weight &    0.97  &  0.05 & \quart{39}{9}{44}{49} & 65 \\
+  4 & 0.5-weight-B=25\% &    0.97  &  0.03 & \quart{43}{5}{44}{49} & 65 \\
+\hline  5 & 0.25-weight-B=25\% &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 66\\
+\hline  
+6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 67\\
 \hline \end{tabular}}
-\end{minipage}
-\noindent\begin{minipage}{0.5\textwidth}
-  \flushleft
-  {\scriptsize \textbf{Jedit}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
-\arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 &  0.75, weighting, Prune=50\% &    -0.41  &  0.18 & \quart{0}{20}{8}{172} \\
-  1 &  0.75 &    -0.35  &  0.26 & \quart{0}{30}{15}{172} \\
-\hline  2 &  0.75, weighting &    -0.25  &  0.17 & \quart{16}{20}{26}{172} \\
-  2 &  0.5, weighting, Prune=50\% &    -0.21  &  0.1 & \quart{23}{11}{31}{172} \\
-\hline  3 &   0.5 &    -0.17  &  0.08 & \quart{32}{9}{36}{172} \\
-  3 &  0.5, weighting &    -0.14  &  0.09 & \quart{31}{10}{39}{172} \\
-\hline  4 &  0.25, weighting, Prune=50\% &    -0.12  &  0.06 & \quart{39}{7}{41}{172} \\
-\hline  5 &  0.25 &    -0.08  &  0.05 & \quart{43}{5}{46}{172} \\
-  5 &  0.25, weighting &    -0.08  &  0.06 & \quart{43}{6}{46}{172} \\
-\hline  6 &  Baseline &    -0.06  &  0.01 & \quart{47}{1}{48}{172} \\
-\hline \end{tabular}}
-\end{minipage}
-
+\end{minipage}\\[0.1cm] 
 
 \noindent\begin{minipage}{0.5\textwidth}
   \flushleft
-  {\scriptsize \textbf{Log4j}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
+  {\scriptsize \textbf{Jedit}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 &  0.75, weighting, Prune=50\% &    -0.19  &  0.13 & \quart{0}{28}{15}{273} \\
-\hline  2 &  0.75 &    -0.13  &  0.06 & \quart{23}{13}{28}{273} \\
-  2 &  0.5, weighting, Prune=50\% &    -0.13  &  0.05 & \quart{23}{11}{28}{273} \\
-  2 &  0.75, weighting &    -0.12  &  0.1 & \quart{15}{21}{30}{273} \\
-\hline  3 &  0.5, weighting &    -0.1  &  0.03 & \quart{28}{6}{34}{273} \\
-\hline  4 &   0.5 &    -0.1  &  0.07 & \quart{28}{15}{34}{273} \\
-  4 &  0.25 &    -0.09  &  0.04 & \quart{34}{9}{36}{273} \\
-  4 &  0.25, weighting, Prune=50\% &    -0.09  &  0.04 & \quart{34}{9}{36}{273} \\
-  4 &  0.25, weighting &    -0.06  &  0.04 & \quart{34}{9}{43}{273} \\
-\hline  5 &  Baseline &    -0.06  &  0.03 & \quart{43}{6}{43}{273} \\
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\\hline
+  1 &         0.75 &    0.64  &  0.28 & \quart{0}{27}{14}{49} & 110\\
+\hline  2 &  0.75-weight &    0.76  &  0.21 & \quart{13}{21}{26}{49}& 131 \\
+  2 &   0.5-weight &    0.76  &  0.16 & \quart{20}{16}{26}{49} & 130\\
+  2 &          0.5 &    0.79  &  0.17 & \quart{19}{17}{29}{49} & 137\\
+\hline  3 & 0.75-weight-B=50\% &    0.85  &  0.12 & \quart{30}{12}{35}{49} & 146\\
+  3 &  0.25-weight &    0.87  &  0.07 & \quart{34}{7}{37}{49} & 152\\
+\hline  4 &         0.25 &    0.93  &  0.09 & \quart{37}{9}{43}{49} & 161\\
+  4 & 0.5-weight-B=50\% &    0.93  &  0.05 & \quart{41}{5}{43}{49} & 162\\
+\hline  5 & 0.25-weight-B=50\% &    0.97  &  0.03 & \quart{45}{3}{47}{49} & 167\\
+  5 & 0.75-weight-B=25\% &    0.97  &  0.02 & \quart{46}{2}{47}{49} & 168\\
+\hline  6 & 0.5-weight-B=25\% &    0.98  &  0.02 & \quart{47}{2}{48}{49} & 170\\
+  6 & 0.25-weight-B=25\% &    0.98  &  0.01 & \quart{48}{1}{48}{49} & 171\\
+\hline  7 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 175\\
 \hline \end{tabular}}
-\end{minipage}
-\noindent\begin{minipage}{0.5\textwidth}
-  \flushleft
-  {\scriptsize \textbf{Lucene}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
-\arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 &  0.75, weighting &    -0.15  &  0.09 & \quart{0}{29}{9}{393} \\
-  1 &  0.75 &    -0.13  &  0.09 & \quart{0}{29}{16}{393} \\
-  1 &  0.75, weighting, Prune=50\% &    -0.12  &  0.08 & \quart{6}{27}{19}{393} \\
-\hline  2 &  Baseline &    -0.1  &  0.03 & \quart{26}{10}{26}{393} \\
-  2 &  0.5, weighting, Prune=50\% &    -0.1  &  0.03 & \quart{23}{10}{26}{393} \\
-\hline  3 &  0.5, weighting &    -0.08  &  0.06 & \quart{23}{20}{33}{393} \\
-  3 &  0.25, weighting, Prune=50\% &    -0.07  &  0.03 & \quart{33}{10}{36}{393} \\
-  3 &  0.5 &    -0.07  &  0.05 & \quart{29}{17}{36}{393} \\
-\hline  4 &  0.25, weighting &    -0.04  &  0.04 & \quart{36}{13}{46}{393} \\
-  4 &  0.25 &    -0.04  &  0.02 & \quart{39}{7}{46}{393} \\
-\hline \end{tabular}}
-\end{minipage}
+\end{minipage}\\[0.1cm] 
 
 \noindent\begin{minipage}{0.5\textwidth}
   \flushleft
-  {\scriptsize \textbf{Poi}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
+  {\scriptsize \textbf{Lucene}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
+  1 &  0.75-weight &    0.66  &  0.2 & \quart{0}{21}{13}{49} & 97 \\
+\hline  2 & 0.75-weight-B=50\% &    0.7  &  0.1 & \quart{14}{10}{17}{49} & 103 \\
+\hline  3 &         0.75 &    0.77  &  0.3 & \quart{9}{33}{24}{49} & 113\\
+  3 & 0.75-weight-B=25\% &    0.8  &  0.09 & \quart{21}{10}{28}{49} & 117\\
+  3 &   0.5-weight &    0.81  &  0.09 & \quart{26}{9}{29}{49} & 119\\
+  3 &          0.5 &    0.84  &  0.1 & \quart{26}{10}{32}{49} & 123\\
+\hline  4 & 0.5-weight-B=50\% &    0.88  &  0.07 & \quart{34}{8}{36}{49} & 128\\
+  4 & 0.25-weight-B=25\% &    0.89  &  0.07 & \quart{36}{8}{38}{49} & 130 \\
+  4 &  0.25-weight &    0.92  &  0.04 & \quart{39}{4}{41}{49} & 133 \\
+  4 &         0.25 &    0.93  &  0.07 & \quart{36}{8}{42}{49} & 136 \\
+\hline  5 & 0.25-weight-B=50\% &    0.95  &  0.04 & \quart{42}{4}{44}{49} & 139 \\
+  5 & 0.5-weight-B=25\% &    0.96  &  0.03 & \quart{43}{3}{45}{49} &141 \\
+\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 146\\
+\hline \end{tabular}}
+\end{minipage}\\[0.1cm] 
+
+\noindent\begin{minipage}{0.5\textwidth}
+  \flushleft
+  {\scriptsize \textbf{Poi}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
       \arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & 0.75, weighting &    -0.45  &  0.1 & \quart{6}{10}{11}{162} \\
-  1 &  0.75 &    -0.44  &  0.23 & \quart{0}{23}{12}{162} \\
-\hline  2 & 0.5, weighting &    -0.32  &  0.23 & \quart{12}{24}{24}{162} \\
-  2 & 0.5 &    -0.26  &  0.23 & \quart{18}{24}{31}{162} \\
-  2 & 0.75, weighting, Prune=50\% &    -0.25  &  0.19 & \quart{17}{20}{32}{162} \\
-\hline  3 & 0.5, weighting, Prune=50\% &    -0.19  &  0.09 & \quart{34}{9}{38}{162} \\
-  3 &  0.25 &    -0.19  &  0.11 & \quart{32}{11}{38}{162} \\
-  3 & 0.25, weighting &    -0.17  &  0.14 & \quart{30}{14}{40}{162} \\
-\hline  4 & 0.25, weighting, Prune=50\% &    -0.12  &  0.09 & \quart{40}{9}{45}{162} \\
-\hline  5 &  Baseline &    -0.09  &  0.03 & \quart{46}{3}{48}{162} \\
-\hline \end{tabular}}
-\end{minipage}
-\noindent\begin{minipage}{0.5\textwidth}
-  \flushleft
-  {\scriptsize \textbf{Synapse}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
-\arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & 0.75, weighting &    -0.56  &  0.2 & \quart{7}{18}{11}{148} \\
-  1 & 0.75 &    -0.48  &  0.34 & \quart{0}{29}{18}{148} \\
-\hline  2 & 0.5 &    -0.4  &  0.27 & \quart{14}{24}{25}{148} \\
-  2 & 0.5, weighting &    -0.37  &  0.17 & \quart{21}{15}{28}{148} \\
-\hline  3 & 0.25 &    -0.23  &  0.16 & \quart{31}{14}{40}{148} \\
-  3 & 0.25, weighting &    -0.23  &  0.1 & \quart{38}{9}{40}{148} \\
-  3 & 0.75, weighting, Prune=50\% &    -0.19  &  0.08 & \quart{40}{7}{43}{148} \\
-\hline  4 & 0.25, weighting, Prune=50\% &    -0.17  &  0.08 & \quart{42}{7}{45}{148} \\
-  4 & Baseline &    -0.15  &  0.0 & \quart{47}{0}{47}{148} \\
-  4 & 0.5, weighting, Prune=50\% &    -0.15  &  0.11 & \quart{40}{9}{47}{148} \\
-\hline \end{tabular}}
-\end{minipage}
-
-\noindent\begin{minipage}{0.50\textwidth}
-  \flushleft
-  {\scriptsize \textbf{Velocity}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
-\arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & 0.75, weighting &    -0.19  &  0.22 & \quart{1}{34}{21}{207} \\
-  1 & 0.75, weighting, Prune=50\% &    -0.15  &  0.13 & \quart{14}{20}{28}{207} \\
-  1 & 0.75 &    -0.14  &  0.23 & \quart{0}{35}{29}{207} \\
-\hline  2 & 0.5 &    -0.13  &  0.11 & \quart{23}{17}{31}{207} \\
-\hline  3 & 0.5, weighting &    -0.1  &  0.08 & \quart{29}{13}{35}{207} \\
-  3 & 0.5, weighting, Prune=50\% &    -0.07  &  0.07 & \quart{32}{11}{40}{207} \\
-\hline  4 & Baseline &    -0.05  &  0.04 & \quart{43}{6}{43}{207} \\
-  4 & 0.25, weighting &    -0.05  &  0.03 & \quart{40}{5}{43}{207} \\
-  4 & 0.25 &    -0.04  &  0.02 & \quart{43}{3}{45}{207} \\
-  4 & 0.25, weighting, Prune=50\% &    -0.01  &  0.04 & \quart{43}{6}{49}{207} \\
-\hline \end{tabular}}
-\end{minipage}
-\noindent\begin{minipage}{0.50\textwidth}
-  \flushleft
-  {\scriptsize \textbf{Xalan}\\}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c}}
-\arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & 0.75 &    -0.36  &  0.12 & \quart{0}{16}{9}{198} \\
-  1 & 0.75, weighting &    -0.3  &  0.17 & \quart{4}{23}{18}{198} \\
-  1 &    0.5 &    -0.3  &  0.12 & \quart{9}{17}{18}{198} \\
-\hline  2 & 0.5, weighting &    -0.28  &  0.09 & \quart{16}{13}{20}{198} \\
-\hline  3 & 0.25, weighting &    -0.23  &  0.1 & \quart{20}{14}{27}{198} \\
-  3 & 0.25 &    -0.23  &  0.12 & \quart{20}{17}{27}{198} \\
-\hline  4 & 0.25, weighting, Prune=50\% &    -0.14  &  0.07 & \quart{36}{9}{40}{198} \\
-  4 & 0.75, weighting, Prune=50\% &    -0.14  &  0.07 & \quart{33}{10}{40}{198} \\
-  4 & 0.5, weighting, Prune=50\% &    -0.12  &  0.06 & \quart{37}{8}{43}{198} \\
-\hline  5 & Baseline &    -0.08  &  0.02 & \quart{47}{2}{48}{198} \\
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
+  1 &  0.75-weight &    0.72  &  0.26 & \quart{0}{29}{18}{49} & 173\\
+  1 &         0.75 &    0.74  &  0.18 & \quart{12}{20}{20}{49} & 178\\
+\hline  2 & 0.75-weight-B=50\% &    0.79  &  0.15 & \quart{14}{17}{26}{49} & 190\\
+  2 &          0.5 &    0.81  &  0.15 & \quart{22}{17}{28}{49} & 195\\
+  2 &   0.5-weight &    0.81  &  0.14 & \quart{21}{16}{28}{49} & 195\\
+\hline  3 & 0.5-weight-B=50\% &    0.9  &  0.11 & \quart{30}{13}{38}{49} & 217\\
+  3 &         0.25 &    0.91  &  0.07 & \quart{35}{8}{39}{49} & 219\\
+  3 &  0.25-weight &    0.91  &  0.05 & \quart{36}{6}{39}{49} & 219\\
+\hline  4 & 0.75-weight-B=25\% &    0.94  &  0.05 & \quart{39}{6}{43}{49} & 226\\
+  4 & 0.25-weight-B=50\% &    0.94  &  0.06 & \quart{39}{7}{43}{49} & 226\\
+\hline  5 & 0.25-weight-B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
+  5 & 0.5-weight-B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
+\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 240 \\
 \hline \end{tabular}}
 \end{minipage}
 \caption{Cliffs Delta Scores for the defect data set. The Treatment column, has 3 possible configurations, the first (0.25, 0.50, and 0.75) represents the extent of mutation; weighting represents feature weighting; Prune represents the extent of information pruning.}
 \label{tab:ant}
-\end{figure*}
-
-
-
-
+\end{figure}
 
 \subsection{Performance Prediction Data set}
 
@@ -1157,17 +1062,16 @@ In this section,
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{~~~~}r@{~~~~}r@{~~~~}c}}
       \arrayrulecolor{darkgray}
       \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & 75, weighting, Prune=25\% &    0.77  &  0.05 & \quart{0}{9}{3}{49} \\
-  1 &   75 &    0.79  &  0.08 & \quart{1}{16}{7}{49} \\
-\hline  2 & 75, weighting &    0.85  &  0.07 & \quart{9}{14}{19}{49} \\
-  2 & 50, weighting, Prune=25\% &    0.85  &  0.04 & \quart{15}{8}{19}{49} \\
-  2 &  50 &    0.85  &  0.05 & \quart{17}{10}{19}{49} \\
-\hline  3 & 50, weighting &    0.91  &  0.05 & \quart{25}{10}{31}{49} \\
-  3 &  25 &    0.92  &  0.04 & \quart{29}{8}{33}{49} \\
-  3 & 25, weighting, Prune=25\% &    0.93  &  0.02 & \quart{33}{4}{35}{49} \\
-\hline  4 & 25, weighting &    0.96  &  0.03 & \quart{37}{6}{41}{49} \\
-\hline  5 & baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
-\hline \end{tabular}}
+  1 & 0.75-weight-B=25\% &    0.77  &  0.05 & \quart{0}{14}{5}{74}\\
+  1 &  0.75 &    0.79  &  0.08 & \quart{2}{24}{11}{74}\\
+\hline  2 & 0.75-weight &    0.85  &  0.07 & \quart{14}{21}{29}{74}\\
+  2 & Apache\_50\_w\_iP(25) &    0.85  &  0.04 & \quart{23}{12}{29}{74}\\
+  2 &  Apache\_50 &    0.85  &  0.05 & \quart{26}{15}{29}{74}\\
+\hline  3 & Apache\_50\_w &    0.91  &  0.05 & \quart{38}{15}{47}{74}\\
+\hline  4 &  Apache\_25 &    0.92  &  0.04 & \quart{44}{12}{50}{74}\\
+  4 & Apache\_25\_w\_iP(25) &    0.93  &  0.02 & \quart{50}{6}{53}{74}\\
+\hline  5 & Apache\_25\_w &    0.96  &  0.03 & \quart{56}{9}{62}{74}\\
+\hline  6 & Apache\_baseline &    1.0  &  0.0 & \quart{74}{0}{74}{74}\\\hline \end{tabular}}
 \end{minipage}
 \noindent\begin{minipage}{0.5\textwidth}
   \flushleft

@@ -19,7 +19,7 @@ class Line:
   F     = 0.5   # magnitude control parameter
   B     = 50    # ratio of how many columns to displace
 
- def __init__(i,x,y):
+  def __init__(i,x,y):
     if x.score < y.score:
       x,y = y,x      # x must have best score
     i.x, i.y, i.c = x, y, dist(x,y) 
@@ -40,13 +40,13 @@ class Line:
 {\bf Main loop, of the  HOW  instance-based planner:}
 
 \begin{python}[left]
-def HOW(training, testing, b = Line.b):
+def HOW(training, testing, b = Line.B):
   """ Testing data is displaced towards
   the X point of the nearest Line."""
   def train(data):
     Line.weights= weightedFeatures(data)
     b           = int(len(Line.weights)*B/100)
-    Lines.using = Line.weights[:b])
+    Lines.using = Line.weights[:b]
     clusters    = [k for k in 
                    leafs(cluster(data,len(data)))]
     for cluster in clusters:
@@ -54,7 +54,7 @@ def HOW(training, testing, b = Line.b):
       two = exemplar(nearest(one, clusters))
       Line(one,two)
  
-   def exemplar(cluster):
+  def exemplar(cluster):
     "Apply the rules at end of section II.B"
  
   def nearestLine(z):
@@ -77,8 +77,8 @@ def HOW(training, testing, b = Line.b):
 def geometry(x, y, c, z): 
   a = dist(z,x)
   b = dist(z,y) 
-  x= $(a^2 + c^2 - b^2)/(2c)$ 
-  y=  $\sqrt{(a^2 - max(x,0))^2}$
+  x = (a**2 + c**2 - b**2)/(2*c) 
+  y = (a**2 - max(x,0))**0.5
   return x,y
 
 def dist(x,y):
@@ -134,9 +134,9 @@ def cluster(data, n,lvl=100):
      return data # stop if out of levels
   leafs = [] # Empty Set
   x,y,left,right = splitAcross2Points(data) 
-  if len(left) > $\sqrt{n}$:  
+  if len(left) > sqrt(n):  
      leafs += cluster(left, n, lvl - 1)  
-  if len(right) > $\sqrt{n}$:  
+  if len(right) > sqrt(n):
      leafs += cluster(right,n,  lvl - 1) 
   date.leafs = leafs
   return leafs
@@ -191,21 +191,22 @@ def weightedFeatures(cols):
       recurse(this[:cut],cuts)
       recurse(this[cut:],cuts)
     else:
-      cuts += [(sd,len(this)]
+      cuts += [(sd,len(this))]
     return cuts  
     
   def weight1(i,obj,col):
     "Returns weight of column 'i'."
-    pairs = sorted([row[i],row[obj] for row in col])
+    pairs = sorted((row[i],row[obj]) for row in col)
     n     = length(col)
     w     = sum(v*n1/n for v,n1 in recurse(pairs,[]))
     return w,i
     
   # ---- begin main code for 'featureWeighting' -----
   obj = len(cols[0]) - 1 
-  return sorted(weight1(col,i,obj) 
-                    for i,col in enumerate(cols)
-                    if not i == obj))
+  return sorted(weight1(col,i,obj)
+                for i,col in enumerate(cols) 
+                if not i == obj)
+
 \end{python}
 \end{minipage}
 ~\hrule~
