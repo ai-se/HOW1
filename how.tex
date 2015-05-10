@@ -1,4 +1,9 @@
- \documentclass[conference]{IEEEtran}
+\documentclass[conference]{IEEEtran}
+%related work (gentling them in)
+%future work: local patch operator
+%complexity
+% planning in ai
+
 \usepackage{subfig}
 \usepackage{wrapfig}
  \usepackage{amsmath}
@@ -128,15 +133,15 @@ firstnumber=last
 %
 % 1st. author
 Rahul Krishna, Tim Menzies, Xipeng Shen\\
-       \affaddr{Computer Science, NcState, USA}\\
-       \{i.m.ralk, tim.menzies, xipengshen\}@gmail.com
+        Computer Science, NcState, USA\\
+       \{i.m.ralk, tim.menzies, xipengshen\}\@gmail.com
 % 3rd. author
  % use '\and' if you need 'another row' of author names
 % 4th. author
 \and
  Andrian Marcus\\
-       \affaddr{Computer Science, UtDallas, USA}\\
-       {amarcus@utdallas.edu} }
+       Computer Science, UtDallas, USA \\
+       amarcus\@utdallas.edu }
 
 
   \pagestyle{plain}
@@ -239,20 +244,9 @@ Later in that discussion, another business user asked:
 ISSUE~\#2: {\em ``But what if I do not have a domain model of my business?''}
 \end{quote}
 This also is a legitimate issue.
-Building and certifying a model  can  takes  long time, especially in software engineering. For  example, in previous work~\cite{me07f} we used models
-developed by Boehm's group at the University of Southern California.
-Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}). 
-Also, even when there is an existing model, they can require
-constant  maintenance lest they become out-dated. Elsewhere, we have described our
-extensions to the USC models to enable reasoning about agile software developments. 
-It took many months to implement and certify those extensions~\cite{me09i,me09j}.
-The problem of model maintenance is another
-motivation to look for alternate methods that can be automatically updated whenever new data arrives.
-Further, sometimes  it is easier to access instances of a model's behaviour than the model
-itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
-Laboratory~\cite{fea02a},  our research partner could not share a
-propriety model from within the NASA firewalls. However, they could share 
-logs of the input/output of that model.
+As discussed below,
+building (or accessing) and certifying and maintaining a 
+trust-worthy model  can  takes  long time, especially in software engineering. 
 
 
 Every challenge is an opportunity to explore  a new approach.
@@ -287,6 +281,35 @@ planning is
 not recommended in domains with  poorly performing predictors;
 \item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
 \ee 
+
+\section{Related Work}
+\subsection{Accessing a Trustworthy model}
+The premise of this work is that we do {\em not} have
+a ready-to-use 
+
+In some domains, there is ready access to 
+trustworthy domain model that can offer an assessment
+of newly generated examples. For example, in other work
+we have used executing source code as the ``model'' to check
+if our mutations to test suites
+  minimize
+test suite size while maximizing the number of statements covered~\cite{}
+
+
+For  example, in previous work~\cite{me07f} we used models
+developed by Boehm's group at the University of Southern California.
+Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}). 
+Also, even when there is an existing model, they can require
+constant  maintenance lest they become out-dated. Elsewhere, we have described our
+extensions to the USC models to enable reasoning about agile software developments. 
+It took many months to implement and certify those extensions~\cite{me09i,me09j}.
+The problem of model maintenance is another
+motivation to look for alternate methods that can be automatically updated whenever new data arrives.
+Further, sometimes  it is easier to access instances of a model's behaviour than the model
+itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
+Laboratory~\cite{fea02a},  our research partner could not share a
+propriety model from within the NASA firewalls. However, they could share 
+logs of the input/output of that model.
 
 \section{How to Build ``HOW''?}\label{sec:mm}
 
@@ -368,12 +391,12 @@ then split at $\argmin_i w_i$, then recursing into each half.  For more details,
 \caption{Sub-routines within HOW.}\label{fig:where}
 \end{figure}
 
-\input{code}
+\input{_tex/code}
 
 
 
 Those same regions can be used for instance-based 
-{\em planning}-- but instead of leaving test instances in the regions
+{\em planning}. However,  instead of leaving test instances in the regions
 found during training, we {\em displace} them towards regions
 with better objective scores.
 To achieve this, 
