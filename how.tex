@@ -282,10 +282,8 @@ not recommended in domains with  poorly performing predictors;
 \item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
 \ee 
 
-\section{Related Work}
-\subsection{Accessing a Trustworthy model}
-The premise of this work is that we do {\em not} have
-a ready-to-use 
+\section{Background and Related Work}
+\subsection{Accessing Trustworthy Models}
 
 In some domains, there is ready access to 
 trustworthy domain model that can offer an assessment
@@ -293,23 +291,74 @@ of newly generated examples. For example, in other work
 we have used executing source code as the ``model'' to check
 if our mutations to test suites
   minimize
-test suite size while maximizing the number of statements covered~\cite{}
+test suite size while maximizing the number of statements covered~\cite{me09m,andrews07,andrews10}.
 
-
+However, not all domains come with ready-to-use models.
+In fact, our experience has been that accessing and/or commissioning
+a model can be a labor-intensive process.
 For  example, in previous work~\cite{me07f} we used models
 developed by Boehm's group at the University of Southern California.
 Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}). 
+
 Also, even when there is an existing model, they can require
 constant  maintenance lest they become out-dated. Elsewhere, we have described our
 extensions to the USC models to enable reasoning about agile software developments. 
 It took many months to implement and certify those extensions~\cite{me09i,me09j}.
 The problem of model maintenance is another
 motivation to look for alternate methods that can be automatically updated whenever new data arrives.
+
 Further, sometimes  it is easier to access instances of a model's behaviour than the model
-itself. For example, in prior work with Martin  Feather from the Jet Propulsion 
+itself. For example, in prior work with Martin  Feather from the Jet Propulsion
 Laboratory~\cite{fea02a},  our research partner could not share a
 propriety model from within the NASA firewalls. However, they could share 
 logs of the input/output of that model.
+
+In summary, for domains with readily accessible models, we recommend
+the kinds of tools that are widely used in the search-based
+software engineering community such as NSGA-II, NSGA-III, SPEA2, IBEA, particle swarm optimization, MOEA/D, etc.~\cite{deb00a,zit02,zit04,%
+deb14,Cui2005a,zhang07:TEC} or our own GALE tool~\cite{krall14}. However,
+when those models are not available, we recommend tools like HOW.
+
+\subsection{Planning and AI}
+Planning, in the classical AI sense, is a logical procedure
+that seeks an ordering on {\em operators} to take some domain
+{\em state} from a {\em start} state to a {\em goal} state.
+This classical logical approach is known to suffer from
+computational bottlenecks~\cite{Bylander1994}. Hence,
+like this paper,
+many researchers take a probabilistic approach.
+That said, the commitment to minimal displacement and the fully-automated
+modeling approach of this paper makes it stand apart from, say,
+  the Bayesian/Markov chain approach to planning of Dean et al.~\cite{dean1995planning}.
+
+\subsection{Instance-based Reasoning}
+Another  connection to AI is case-based reasoning, or CBR
+(a.k.a. reasoning via anology or instance-based reasoning).
+CBR seeks to emulate human recollection and adaptation
+of past experiences in order to find solutions to current
+problems. According to 
+Kolodner~\cite{Kolodner1992} and Shank~\cite{Schank1977},
+humans do not base their decisions
+on complex reductive analysis, but on an instantaneous survey of past experiences.
+To put that claim another way, according to CBR theory, 
+{\em humans  don’t
+think,  they remember.}
+
+CBR is purely based on this direct
+adaptation of previous cases based on the similarity of
+those cases with the current situation. That is, 
+CBR based system have no explicit world model such as the Markov
+chains used by, say, Dean et al.~\cite{dean1995planning}).
+farming.
+Rather, that model is implicit within  the available past
+cases in the case cache. 
+
+One  advantage of CBR is that
+when this  cache is  updated and appended with additional cases, then a CBR system is instantly updated
+to the latest findings.
+
+
+
 
 \section{How to Build ``HOW''?}\label{sec:mm}
 
