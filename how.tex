@@ -1,8 +1,6 @@
 \documentclass[conference]{IEEEtran}
-%related work (gentling them in)
 %future work: local patch operator
 %complexity
-% planning in ai
 
 \usepackage{subfig}
 \usepackage{wrapfig}
@@ -174,15 +172,17 @@ Rahul Krishna, Tim Menzies, Xipeng Shen\\
  This paper uses  HOW to learn methods
  to reduce defects and decrease program runtime.
  For the test data of this paper, those improvements   reduce
- defect counts and  runtimes by   
- (25,33)\% (median)   to (37,78)\% (max) of
- their original values.
+ the expected values of defect counts and  runtimes to    
+ 72\%,75\%  (median) and 66\%,20\% (best case) of the initial values.
   \end{abstract}
   \begin{IEEEkeywords}
 Defect prediction, configuration, prediction, planning, case-based reasoning.
   \end{IEEEkeywords}
   
 \section{Introduction}
+Suppose someone suggests a change to your project. How might you assess the effectiveness of that change?
+
+This is an open and pressing issue.
 Business  users   now demand   data mining tools
 that  support a  business-level
 interpretation of that data. For example,
@@ -192,7 +192,7 @@ and software engineering~\cite{menzies12a}. Panelists commented that
 ``prediction is all well and good, but what about decision
 making?''. That is, these panelists are more interested in the interpretations
 and follow-up
-that occurs {\em after} the mining, rather than just  the mining itself. For example:
+that occurs {\em after} the mining, rather than just  the mining itself; e.g.
 \bi
 \item 
 Instead of just accepting  {\em predictions} on how many 
@@ -203,94 +203,77 @@ reduce the likelihood of those defects;
 time of their software, business users might now demand
 a {\em plan} to reduce that runtime.
 \ei
-In this paper, we say   a ``plan'' is a  set of changes
+How to assess such {\em plans}?
+Some organizations have the resources to 
+run repeated trials to assess  different treatments.
+For example, in one remarkable recent study, Bente et al. report results
+were the same specification was developed into a product by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
+to (say) take a code base, assign it to $N$ different teams, apply
+HOW's plans the code used by  $N/2$ teams, then check in 12 months time
+if those halves of the teams have fewer defects than the other.  
+
+Very few industrial or research groups have access
+to the kinds of resources using by Bente et al. (evidence: in the size years since the
+publication of that work, we know of only one of two similar studies). Also, given the
+diversity of modern software projects, it might be unreasonable to demand that all
+proposed changes for all projects are always evaluated by something like the Bente et al. study.
+
+This paper proposes another, less resource intensive,  method for assessing the effectiveness of proposed
+changes to a project.  
+We propose using prediction systems (built by data mining) as a verification
+tool for planners. In domains where  data miners can build
+predictors of adequate performance, then those predictors can assess the value
+of proposed changes.
+ 
+The planner explored in this paper is the ``HOW'' case-based planner.
+HOW's  ``plans'' are  set of changes
 proposed  in order to better achieve some goal. 
-Specifically, for every $Z$  that requests a plan $\delta$ to
+Specifically, for every test case $Z$, HOW proposes a  plan $\delta$ to
   adjust   attributes $Z_j$:
 \begin{equation}\label{eq:one}
 Z_j = Z_j + \delta_j
 \end{equation}
-The usual way such plans are generated in the SE literature
-is via some search-based method. Recently, we have made  some progress
-in this area with the  GALE optimizer~\cite{krall14}. 
-Like other search-based algorithms,
- GALE executes by proposing multiple $\delta$s
- (one for each generation in an evolutionary program).
- In practice, GALE makes
- extensive changes to initial sample of project data
- (perhaps 
-100s to 100,000s of mutations). Each of these mutations
-is reassessed using some domain model.
-GALE uses an eigenvector technique to find better mutants faster than standard search-based SE tools~\cite{deb00a,zit02}.
+For example, to simplify a  large bug-prone  method, HOW might suggest
+to a developer to reduce its size (i.e.  refactor that code by, say, splitting it across
+two simpler functions).
 
-When presented to some  software project managers, the GALE approach was challenged by
-two business users. Note that the   issues they raise are
-challenges not just  about GALE, but also  about any     optimization algorithm  that  
- make extensive use of mutation  and domain models.
-One  user asked:
-\begin{quote}
-ISSUE~\#1: {\em ``What if I only want the minimum useful change, not
-the maximum possible?''}
+HOW's  plans displace the test case into some region
+of the training data. This is important since we will use that training data
+to build a predictor to assess the impact of that plan.
+To put that another way, when a novel test case is presented,
+HOW says 
+\begin{quote}{\em ``I may not know too much about that, but once you change into something like
+what I've already seen, then I can suggest how to change it''.}
 \end{quote}
-Here, the business user is asking for solutions  that do not require extensive 
-changes to their current  approaches. 
-
-Later in that discussion, another business user asked:
-\begin{quote}
-ISSUE~\#2: {\em ``But what if I do not have a domain model of my business?''}
-\end{quote}
-This also is a legitimate issue.
-As discussed below,
-building (or accessing) and certifying and maintaining a 
-trust-worthy model  can  takes  long time, especially in software engineering. 
-
-This paper addresses  ISSUE~\#1 and ISSUE~\#2 using case-based reasoning.
-CBR  is purely based on the direct
-adaptation of previous cases based on the similarity of
-those cases with the current situation. That is, 
-CBR based system have no explicit world model.
-Rather, that model is implicit within  the available past
-cases in the case cache. 
-
-This paper presents a novel CBR tool called ``HOW''. This tool  restricts test data $\delta$s to {\em minimal
-displacements} (very small changes to a subset of the attributes)
-thereby addressing ISSUE \#1. 
-HOW ensures that the   $\delta$ displaces test data towards some region in the training data.
-This is important since we address ISSUES~\#2 via some data mining
-tool that train  a predictor from the training  data. Since we are pushing test data
-into regions of the training data,  we can use the predictor to assess
-the effectiveness of the $\delta$.
-This paper shows that  that HOW's plans can be very effective indeed.
-In the experiments shown below, HOW's plans
-reduced the  expected
+This paper shows experimentally  that   HOW's plans can be quite effective and 
+ significantly reduce the  predicted
 value of:
 \bi
 \item The  defects found  in Jureczko et al.'s    object-oriented JAVA systems~\cite{jureczko10}.
 \item The runtime of the  software systems   configured by  Seigmund et al.~\cite{sven12}.
 \ei 
-In summary, this paper makes five contributions:
-\be
-\item The HOW  case-based planner (which has not been presented before).
-\item The experiments of this paper showing that HOW planner is useful for real-world tasks;
-e.g. reducing the
-expected values of the Jureczko software defects and the Seigmund software runtimes.
-\item Apart from HOW, we  also offers a general framework for using  predictive system to build planners;
-\item Further, we offer a  test to recognizes  when we should {\em not}  plan: specifically,
-planning is
-not recommended in domains with  poorly performing predictors;
-\item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
-\ee 
+The rest of this paper presents the background to this work in Section~2; the design of HOW in Section~3;
+then our experimental results  in Section~4. Those experiments show that HOW can   reduce the expected
+value of defects in Jureczko   data sets by 72\% to 66\%  (median,best).
+Also, in the Seigmund data sets, HOW can   reduce the expected value of the runtimes by  75\% to 20\% (median,best).
 
-\section{Background and Related Work}
-\subsection{Search-based Software Engineering (SBSE)} CPUs are becoming
-faster and cloud computing enables access to more CPUs. Hence, it is now pratical
-to solve large problems in SBSE via 
-genetic algorithms  that build multiple generations by  mutating  an existing population,  
-the combine the best mutants to fond the next population~\cite{Harman2009,Harman2011}. Examples of these algorithms include GALE, NSGA-II, NSGA-III, SPEA2, IBEA, particle swarm optimization, MOEA/D, etc.~\cite{krall14,deb00a,zit02,zit04,%
+
+\section{Background}
+\subsection{Search-based Software Engineering (SBSE)}
+One way to propose changes to software artifacts
+is   via some search-based method~\cite{Harman2009,Harman2011}. Such SBSE methods are   evolutionary programs that 
+make
+ extensive changes to  some initial sample of project data
+ (perhaps 
+100s to 100,000s of mutations). Each of these mutations
+is reassessed using some domain model.
+Examples of these algorithms include GALE, NSGA-II, NSGA-III, SPEA2, IBEA, particle swarm optimization, MOEA/D, etc.~\cite{krall14,deb00a,zit02,zit04,%
 deb14,Cui2005a,zhang07:TEC}.
 
-SBSE methods can make extensive mutations to the data they are exploring. Hence, these methods
+
+These SBSE methods can make extensive mutations to the data they are exploring. Hence, these methods
 require some domain model that can assess new and highly novel examples.
+ 
 
 \subsection{Accessing Trustworthy Models}
 
@@ -389,21 +372,11 @@ Researchers have found that, in some domains, they are competitive with  closed 
 CBR is also useful when dealing with spare data sets~\cite{1438374} of with 
 partial knowledge  at, for example,  an early stage of a project)~\cite{walkerden1999empirical}. 
 
- HOW    is very different
-to the above CBR systems.
-Firstly, HOW is a {\em planner} while the above
-CBR methods are all {\em prediction} algorithms\footnote{The disctiniction being that
-predictions systems tell you ``what is'', while planners tell you ``what to do''.}.
-Secondly, all the above CBR tools explore the nearest ``k'' neighors,
-HOW, on the other hand,  explores the {\em gradient between the scores of pairs of nearest neighbors}. 
-To put that
-another way,   the above CBR methods explore {\em points} while
-HOW explores the slope {\em between} points.
- 
 \subsection{Prior Work}
+
 HOW is the third
-generation of our experiments with planning and CBR.
-Generation one of that work resulted in
+generation of our exploration of  planning and CBR and software engineering.
+Generation one  resulted in
  W2, a CBR planner that reflected over the delta of raw  attributes~\cite{6600685}. It suffered from all-too-frequent {\em optimization failure}; i.e. when its plans were applied the resulting observed
 performances {\em increased} in up to $\frac{1}{3}$rd of test cases.
 
@@ -423,12 +396,19 @@ over IDEA (and W2) since, as shown by the following results, HOW's plans {\em ne
 those performance improvements were an order of magnitude larger than those seen
 with IDEA.
 
-
-
-
-
-
 \section{How to Build ``HOW''?}\label{sec:mm}
+
+HOW is very different to other CBR systems. Firstly, HOW is a {\em planner} while many
+CBR methods in software engineering explore  {\em prediction} algorithms\footnote{The distinction being that
+predictions systems tell you ``what is'', while planners tell you ``what to do''.}.
+Secondly, all the above CBR tools explore the nearest ``k'' neighors,
+HOW, on the other hand, explores the {\em gradient between the scores of pairs of nearest neighbors}. 
+To put that another way, the above CBR methods explore {\em points} while
+HOW explores the slope {\em between} points.
+
+\fig{howcode}, line~1, shows  an implementation of such a {\tt Slope} class and
+the rest
+of this section  details   {\tt Slope}'s role within the HOW system.
 
 \subsection{Design}
 A general model for {\em predictors} is as follows. 
@@ -443,7 +423,7 @@ process
 directly by some clustering algorithm. 
 
 
-\begin{figure}[t!]
+\begin{figure}[b!]
 \small
 ~\hrule~
 
@@ -521,14 +501,19 @@ during training, HOW clusters data using the procedure of \fig{where}a,
 then draws {\tt Slope}s between the centroids of  clusters $X,Y$ that are nearest
 neighbors.
 By convention, we say that the cluster containing $X$ has the  better objective scores. This means we can say that the {\tt Slope} is a useful direction for displacing
-data; i.e.  away from $Y$ and towards $X$ (for an implementation of such a {\tt Slope} class, see \fig{howcode}, line~1).
+data; i.e.  away from $Y$ and towards $X$. 
  During testing,  HOW   finds the  nearest {\tt Slope} to every test case. That  test case is   then displaced towards the better end
 of that {\tt Slope}; i.e. towards  $X$ (see \fig{howcode}, line 51).
 
  HOW needs to  determine the  exact {\em direction} and {\em magnitude} of 
-displacement.  To address  ISSUE~\#1,
+displacement.   
 HOW uses two techniques to result in 
-{\em minimal displacements} of project data. Firstly,
+{\em minimal displacements} of project data. Those techniques are described below. Note
+ that the net result of these techniques is to drive the test case into some region of the training 
+ set (this is important since we will use a predictor learned from that training data to assess
+ the effectiveness of HOW's plans).
+ 
+ Firstly,
 HOW sorts  the independent variables
 using the procedure of  \fig{where}d. It then only
 displaces the    best $B$\%  of that sort, while leaving the rest untouched
@@ -551,11 +536,9 @@ characterizes the data in that cluster. It then displaces the
 test data towards that exemplar, as shown in \fig{howcode}, line 20. In summary, 
 If  $Z_j$ is an independent variable within the
 test case $Z$ and  $X$ is the exemplar found at training time,
-then we displace $Z$ as follows:
+then we displace $Z_j$ as follows:
 \[Z_j =  Z_j + F*(X_j - Z_j)\]
-Here, $F$ is the  magnitude controller, discussed above. Note that this
-this equations satisfies our definition of a ``plan'' as offered in
-\eq{one} in the  Introduction.
+Here, $F$ is the  magnitude controller, discussed above. 
 
 Different kinds of data require
 different policies for exemplar generation.
@@ -576,7 +559,7 @@ of the Makefiles used in Berkely DB. The other two curves shows the predictions 
 \item The  case with the \textcolor{green}{\bf  best}  objective score. 
 \ei
 Note that using the best as the exemplar does better than useing the mean.
-The pattern shown in \fig{pp} has been seen in all the Seigmund data sets;
+The general pattern shown of \fig{pp} has been seen in all the Seigmund data sets;
 i.e. for data sets with continuous classes,
 best results come from using exemplars formed from the best instance (and not the mean). 
 
@@ -646,76 +629,6 @@ the   \textcolor{black}{\bf  baseline} curve; the
 
 
 
-
-\subsection{Assessment}\label{sect:assess}
-In the experiments shown below,  HOW comments  on how to reduce
-software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be manually adjusted by programmers or (for large scale changes) automatically adjusted using code refactoring
-tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
-
-Some organizations have the resources to 
-run repeated trials to assess the effect of different treatments.
-For example, in one remarkable recent study, Bente et al. report results
-were the same specification was developed into a product by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
-to (say) take a code base, assign it to $N$ different teams, apply
-HOW's plans the code used by  $N/2$ teams, then check in 12 months time
-if those halves of the teams have fewer defects than the other.  
-
-Very few industrial or research groups have access
-to the kinds of resources using by Bente et al. (evidence: in the size years since the
-publication of that work, we know of only one of two similar studies). Hence, it
-we wish to verify HOW's plans, then some other framework is required that is less
-resource intensive.
- 
-
-
-
-
-We propose using prediction systems (built by data mining) as a verification
-tool for planners. In domains with data, from which data miners can build
-predictors of adequate performance, then those predictors can assess the value
-of the changes proposed by HOW.
-
-As shown in \fig{work}, our proposal divides
-project data  into two disjoint sets {\em train} and {\em test}
-(so \mbox{{\em train} $\cup$ {\em test} $=\;\emptyset$}).
-Next, from the train set, we build both a {\em planner} as well
-as a {  predictor}. Our general framework does not   commit to any particular  choice
-of { planner} or { predictor} but, for the purposes of this paper, 
-our { planner}
-will be HOW  and our
-our { predictors} will be the Random Forest~\cite{Breiman2001} and Random Forest
-Regressor taken from the SciKit
-Learn toolkit~\cite{Pedregosa2012}.  
-%\begin{figure}[t!]
-%\small
-%\begin{tabular}{|p{.95\linewidth}|}\hline
-% Decision tree learners find the attribute whose value's
-%select for for sections of the data with least variation in the class
-%variable. Decision tree learners then recurse on each selection~\cite{breiman84}. 
-%
-%A random forest is a set of decision trees, each built
-%from some random subset of the rows and columns. The conclusions
-%of the forest are a ``vote'' generated by all the trees~\cite{Breiman2001}. 
-%
-%A standard Random Forest predicts for a discrete class variable while
-%a Random Forest Regressor generates numeric predictions.\\\hline
-%\end{tabular}
-%\caption{Random Forests and Random Forest Regressors.}\label{fig:rr}
-%\end{figure}
-
-
-Turning now to the {\em test} data, this is passed to the { predictor}
-to generate a baseline {\em before} performance score.
-Note that if our { predictors} fail to perform adequately on the test data,
-then we cannot trust them to comment on our plans. Accordingly,
-if that performance is unsatisfactory, we abort.
-Else, we (1)~apply the { planner} to alter the {\em test} data;
-then (2)~apply the { predictor} to the altered data {\em test'};
-then (3)~return data on the {\em before,after} predictions.
-
-
-
-
 \begin{figure*}[!t]
 \scriptsize
    \begin{center}
@@ -777,7 +690,55 @@ Data   marked with ``$\times$'' are not ``good'' since their test suites  have s
 \end{figure*}
 
 
-\subsection{When Not to Plan: the Problem of Poor Predictors}
+
+
+\subsection{Assessment}\label{sect:assess}
+In the experiments shown below,  HOW comments  on how to reduce
+software defects by adjusting certain static code parameters of the code\footnote{Such parameters can be manually adjusted by programmers or (for large scale changes) automatically adjusted using code refactoring
+tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently by Mkaouer et al. in 2015~\cite{Mkaouer15}.}. How are we to verify that HOW's recommendations actually work? 
+
+
+As shown in \fig{work}, our proposal divides
+project data  into two disjoint sets {\em train} and {\em test}
+(so \mbox{{\em train} $\cup$ {\em test} $=\;\emptyset$}).
+Next, from the train set, we build both a {\em planner} as well
+as a {  predictor}. Our general framework does not   commit to any particular  choice
+of { planner} or { predictor} but, for the purposes of this paper, 
+our { planner}
+will be HOW  and our
+our { predictors} will be the Random Forest~\cite{Breiman2001} and Random Forest
+Regressor taken from the SciKit
+Learn toolkit~\cite{Pedregosa2012}.  
+%\begin{figure}[t!]
+%\small
+%\begin{tabular}{|p{.95\linewidth}|}\hline
+% Decision tree learners find the attribute whose value's
+%select for for sections of the data with least variation in the class
+%variable. Decision tree learners then recurse on each selection~\cite{breiman84}. 
+%
+%A random forest is a set of decision trees, each built
+%from some random subset of the rows and columns. The conclusions
+%of the forest are a ``vote'' generated by all the trees~\cite{Breiman2001}. 
+%
+%A standard Random Forest predicts for a discrete class variable while
+%a Random Forest Regressor generates numeric predictions.\\\hline
+%\end{tabular}
+%\caption{Random Forests and Random Forest Regressors.}\label{fig:rr}
+%\end{figure}
+
+
+Turning now to the {\em test} data, this is passed to the { predictor}
+to generate a baseline {\em before}  score.
+If our { predictors} fail to perform adequately on the test data,
+then we cannot trust them to comment on our plans. Accordingly,
+if that performance is unsatisfactory, we abort.
+Else, we (1)~apply the { planner} to alter the {\em test} data;
+then (2)~apply the { predictor} to the altered data {\em test'};
+then (3)~return data on the {\em before,after} predictions.
+
+
+
+\subsection{When Not to Plan: the Problem of Poor Predictors}\label{sec:notplan}
 
 The clear advantage of the approach of \fig{work} is that it can be readily and automatically
 applied to domains with historical data. That said, the obvious drawback with this approach
@@ -898,16 +859,15 @@ If we define ``good'' to mean $\mathit{pd}>60 \wedge \mathit{pf} < 40$\%,
 then only two of our data sets ({\em ivy,ant}) are ``good'' enough. 
 
 The ``tuned'' columns of \fig{j} show that we can salvage some of the data sets.
- Pelayo and Dick~\cite{pelayo07} report that defect prediction can be improved via SMOTE~\cite{Chawla2002}; i.e. an over-sampling of minority-class examples.
+ Pelayo and Dick~\cite{pelayo07} report that defect prediction is improved by SMOTE~\cite{Chawla2002}; i.e. an over-sampling of minority-class examples.
  Also, Fu et al.~\cite{fu:ase15} report that parameter tuning with differential evolution~\cite{storn97}
-applied to defect predictors can quickly explore the tuning
-options of Random Forest to find better settings for the size of the forest, the termination criteria
+can quickly explore the tuning
+options of Random Forest to find better settings for the (e.g.) size of the forest, the termination criteria
 for tree generation, etc.
 The rows marked with $\star$ in \fig{j} show data sets whose performance was improved remarkably by these
 techniques. For example, in {\em poi}, the recall increased by 10\% while the false alarm rate dropped by 20\%.
-However,  as might be expected
-the data sets in the  three bottom rows remain
-unsalvageable.
+However,  as might have been  expected
+we could not salvage the data sets in the  three bottom rows.
 
 In summary, while we cannot trust predictors from some of our defect data sets,
 we can plan ways to reduce defects in {\em jedit, ivy, ant, lucene} and {\em poi}.
@@ -923,16 +883,17 @@ we took care that no clues from the test set were ever used in this tuning proce
 \section{Experiments}
 
 \subsection{Data}
-To assess HOW, we applied its plans to all the Seigmund data, and the five ``good''
+We applied HOW's plans to all  Seigmund data, and the five ``good''
   Jureczko   data sets {\em jedit, ivy, ant, lucene} and {\em poi}.
   The training and tests used for Jurecko were display in \fig{j}. For these data
   sets, training was managed by a Random Forest (tuned in the SMOTED training data using differential
-  evolution). \fig{ck} shows the attributes in the Jureczko data.
+  evolution). \fig{ck} shows Jureczko data attributes.
   
-  The Seigmund data sets are far more varied than the Jurecko data.
-  These contain the results of applying a large number of mutators
-  to the configuration options of the Makefiles of  BerkeleyDB (the Java  and  Windows  versions),  Apache,  SQLite,  LLVM, and x264. For details on those datasets, see \fig{cpm}.
-  
+   \fig{cpm} shows the  Seigmund data attributes.
+   There were more diverse than the 
+    Jurecko data since they
+   contain the results of applying many  mutators
+  to the configuration options of the Makefiles of  BerkeleyDB (the Java  and  Windows  versions),  Apache,  SQLite,  LLVM, and x264.  
 
 
  
@@ -956,6 +917,50 @@ For SQLite, the data  contains 4,553 configurations for prediction modeling and 
 \end{figure}
 
 
+
+
+
+   \subsection{Procedures}
+  \fig{work} showed how to   build and test HOW's plans.
+The    Seigmund and Jureczko data sets have continuous and discrete classes (respectively).
+Hence, when building a predictor, we used (1)~Random Forest Regressors for the Seigmund data and (2)~Random Forests
+for the Jureczko data.
+
+   For both the Siegmind and Jureczko, we designed a procedure such we had at least
+   20 samples from the \fig{work} procedure for  each data set (the value of 20 was choosen as the minimum use sample size via the central limit theorem):
+   \bi
+   \item
+  For the Siegmind data, 
+  25 times, 
+  we randomized the order of the data, trained on one half (via
+  Random Forest Regressor), then tested on the other.
+  \item
+  For the Jureczko, if we just  used the training and test sets of  \fig{j}, that would only
+  give us sample per data set. Such a singleton sample could hide important details since the methods
+  used for parameter tuning (SMOTE and differential evolution) use some stochastic sub-routines.
+  Hence, for each  of the training sets of \fig{j}, we ran SMOTE+differential evolution 25 times to learn
+  parameters for Random Forests.
+  \ei
+\fig{where} defined two control parameters for HOW:
+\bi
+\item  $F$   controls the size of the displacement;
+\item   $B$   controls how many  attributes are displaced.
+\ei
+The   25 repeats defined above were executed for various values of $F,B$.
+A Scott-Knott procedure was used to test for statistically significant differences in the results.
+The Scott-Knott
+procedure recommended by Mittas \& Angelis in their 2013
+IEEE TSE paper~\cite{mittas13}.  This method
+sorts a list of $l$ treatments with $ls$ measurements by their median
+score. It then
+splits $l$ into sub-lists $m,n$ in order to maximize the expected value of
+ differences  in the observed performances
+before and after divisions. E.g. for lists $l,m,n$ of size $ls,ms,ns$ where $l=m\cup n$:
+ $E(\Delta)=\frac{ms}{ls}abs(m.\mu - l.\mu)^2 + \frac{ns}{ls}abs(n.\mu - l.\mu)^2$.
+Scott-Knott  applies an  hypothesis test $H$ to check
+if $m,n$ are significantly different. If so, Scott-Knott  recurses on the splits.
+ 
+ 
 
 %\begin{figure}[tbp!]
 % \subfloat[\label{oracle}]{\includegraphics[width=\linewidth]{{figs//Oracle}}\\
@@ -1001,25 +1006,142 @@ For SQLite, the data  contains 4,553 configurations for prediction modeling and 
 %This visual samples of HOW's planning results look promising-- but they need to be confirmed by a
 % more rigorous statistical analysis.
  
+\begin{figure*}[!t]
+\begin{center}
+\begin{minipage}{.44\linewidth}
+%\noindent\begin{minipage}{0.5\textwidth}
+  {\scriptsize \textbf{Apache}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{llrrc}}
+      \arrayrulecolor{darkgray}
+      \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
+  1 & F=0.75, B=25 &    0.79  &  0.06 & \quart{0}{11}{7}{49} \\
+\hline  2 & F=0.75, B=50 &    0.82  &  0.07 & \quart{7}{14}{13}{49} \\
+\hline  3 &  F=0.75, B=100  &    0.85  &  0.06 & \quart{11}{12}{19}{49} \\
+  3 & F=0.5, B=25 &    0.87  &  0.03 & \quart{19}{6}{23}{49} \\
+  3 & F=0.5, B=50 &    0.87  &  0.07 & \quart{17}{14}{23}{49} \\
+\hline  4 &   F=0.5, B=100  &    0.91  &  0.07 & \quart{21}{14}{31}{49} \\
+\hline  5 & F=0.25, B=25 &    0.92  &  0.05 & \quart{29}{10}{33}{49} \\
+  5 & F=0.25, B=50 &    0.94  &  0.04 & \quart{35}{8}{37}{49} \\
+  5 &  F=0.25,B=100   &    0.95  &  0.04 & \quart{35}{8}{39}{49} \\
+\hline  6 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+
+\vspace{2mm}\noindent {\scriptsize \textbf{BDBC}\\[0.1cm]}
+{\scriptsize  \begin{tabular}{{llrrc}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
+  1 & F=0.75, B=50 &    0.2  &  0.03 & \quart{0}{1}{1}{49} \\
+  1 & F=0.75, B=25 &    0.2  &  0.05 & \quart{0}{3}{1}{49} \\
+\hline  2 &  F=0.75, B=100  &    0.22  &  0.07 & \quart{1}{5}{2}{49} \\
+\hline  3 & F=0.5, B=25 &    0.39  &  0.06 & \quart{11}{4}{12}{49} \\
+  3 & F=0.5, B=50 &    0.4  &  0.05 & \quart{12}{3}{13}{49} \\
+\hline  4 &   F=0.5,B=100   &    0.45  &  0.08 & \quart{14}{4}{16}{49} \\
+\hline  5 & F=0.25, B=25 &    0.65  &  0.05 & \quart{27}{3}{28}{49} \\
+  5 & F=0.25, B=50 &    0.66  &  0.05 & \quart{27}{3}{29}{49} \\
+\hline  6 &  F=0.25,B=100   &    0.69  &  0.05 & \quart{29}{3}{31}{49} \\
+\hline  7 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+%\end{minipage}
+
+\vspace{2mm}\noindent{\scriptsize \textbf{BDBJ}\\[0.1cm]}
+{\scriptsize  \begin{tabular}{{llrrc}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
+  1 & F=0.75, B=25 &    0.64  &  0.1 & \quart{1}{12}{6}{49} \\
+  1 & F=0.75, B=50 &    0.68  &  0.14 & \quart{0}{17}{10}{49} \\
+\hline  2 &  F=0.75, B=100   &    0.74  &  0.1 & \quart{12}{12}{18}{49} \\
+  2 & F=0.5, B=25 &    0.76  &  0.09 & \quart{15}{11}{20}{49} \\
+  2 & F=0.5, B=50 &    0.78  &  0.17 & \quart{15}{21}{23}{49} \\
+  2 &   F=0.5,B=100   &    0.8  &  0.07 & \quart{20}{9}{25}{49} \\
+\hline  3 & F=0.25, B=25 &    0.85  &  0.05 & \quart{30}{6}{31}{49} \\
+\hline  4 & F=0.25, B=50 &    0.89  &  0.09 & \quart{30}{11}{36}{49} \\
+  4 &  F=0.25, B=100  &    0.9  &  0.06 & \quart{35}{7}{37}{49} \\
+\hline  5 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+%\end{minipage}
+%\noindent\begin{minipage}{0.5\textwidth}
+%  \flushleft
+\end{minipage}~~~~~\begin{minipage}{.44\linewidth}
+\noindent
+{\scriptsize \textbf{LLVM}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{llrrc}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
+  1 & F=0.75, B=25 &    0.92  &  0.02 & \quart{0}{11}{5}{49} \\
+  1 & F=0.75, B=50 &    0.93  &  0.02 & \quart{5}{11}{11}{49} \\
+  1 &  F=0.75, B=100   &    0.93  &  0.02 & \quart{11}{11}{11}{49} \\
+\hline  2 & F=0.5, B=25 &    0.95  &  0.01 & \quart{16}{6}{22}{49} \\
+  2 & F=0.5, B=50 &    0.95  &  0.01 & \quart{16}{6}{22}{49} \\
+  2 &   F=0.5, B=100   &    0.96  &  0.01 & \quart{22}{5}{27}{49} \\
+\hline  3 & F=0.25, B=25 &    0.97  &  0.01 & \quart{33}{5}{33}{49} \\
+  3 & F=0.25, B=50 &    0.98  &  0.0 & \quart{38}{0}{38}{49} \\
+  3 &  F=0.25, B=100  &    0.98  &  0.01 & \quart{38}{6}{38}{49} \\
+\hline  4 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+%\end{minipage}
+
+\vspace{2mm}\noindent {\scriptsize \textbf{SQL}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{llrrc}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
+  1 & F=0.75, B=25 &    0.98  &  0.0 & \quart{0}{0}{0}{49} \\
+  1 & F=0.75, B=50 &    0.98  &  0.0 & \quart{0}{0}{0}{49} \\
+  1 & F=0.75, B=100 &   0.99  &  0.01 & \quart{0}{24}{24}{49} \\
+  1 & F=0.5, B=25 &    0.99  &  0.0 & \quart{24}{0}{24}{49} \\
+  1 & F=0.5, B=50 &    0.99  &  0.0 & \quart{24}{0}{24}{49} \\
+  1 & F=0.5, B=100 &    0.99  &  0.01 & \quart{24}{25}{24}{49} \\
+  1 & F=0.25, B=50 &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 & F=0.25-weight-B=25 &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 & F=0.25, B=100 &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  \hline \end{tabular}}
+%\end{minipage}
+%\noindent\begin{minipage}{0.5\textwidth}
+%  \flushleft
+
+\vspace{2mm}\noindent {\scriptsize \textbf{X264}\\[0.1cm]}
+  {\scriptsize  \begin{tabular}{{llrrc}}
+\arrayrulecolor{darkgray}
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
+  1 & F=0.75, B=25 &    0.72  &  0.04 & \quart{0}{6}{3}{49} \\
+  1 & F=0.75, B=50 &    0.74  &  0.04 & \quart{3}{6}{6}{49} \\
+\hline  2 & F=0.5, B=50 &    0.82  &  0.04 & \quart{16}{7}{19}{49} \\
+  2 &  F=0.75, B=100  &    0.82  &  0.06 & \quart{13}{10}{19}{49} \\
+  2 & F=0.5, B=25 &    0.82  &  0.03 & \quart{19}{5}{19}{49} \\
+\hline  3 &   F=0.5, B=100   &    0.88  &  0.03 & \quart{26}{5}{29}{49} \\
+\hline  4 & F=0.25, B=50 &    0.91  &  0.02 & \quart{33}{3}{34}{49} \\
+  4 & F=0.25, B=25 &    0.91  &  0.02 & \quart{34}{4}{34}{49} \\
+\hline  5 &  F=0.25, B=100 &    0.93  &  0.02 & \quart{36}{3}{38}{49} \\
+\hline  6 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+\hline \end{tabular}}
+\end{minipage}
+
+\end{center}
+\caption{Results on  Seigmund   data sets. Baseline values shown at bottom. All other values
+are ratios of baselines.
+Recall that $B$ denotes how what {\em percent} of the attributes are displaced
+and $F$ denotes how {\em far} the test cases are mutated (so at $F=0.75,B=100$, all
+attributes are displaced 75\% of the distance to the exemplar).
+For each of the  tables in this figure, better methods appear higher up. In these tables, median and IQR are the 50th and the (75-25)th percentiles. The IQR ranges are shown in the right column with black dot at the median. Horizontal lines divide the “ranks” found by Scott-Knott (shown in left column).
+}\label{fig:jur}
+\end{figure*}
+
 
 \begin{figure}[!t] 
   {\scriptsize \textbf{Ant}\\[0.1cm]}
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~~}c@{}r}}
       \arrayrulecolor{darkgray}
       \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} && \textbf{Bugs}\\
-  1 &  0.75-weight &    0.71  &  0.19 & \quart{0}{25}{10}{49} & 62\\
-  1 &         0.75 &    0.72  &  0.14 & \quart{6}{19}{12}{49} & 64\\
-\hline  2 &          0.5 &    0.86  &  0.08 & \quart{25}{11}{31}{49} & 77 \\
-  2 &   0.5-weight &    0.88  &  0.14 & \quart{20}{19}{33}{49} & 77\\
-\hline  3 & 0.5-weight-B=50\% &    0.91  &  0.08 & \quart{32}{11}{37}{49} & 80\\
-  3 & 0.75-weight-B=50\% &    0.92  &  0.09 & \quart{31}{12}{39}{49} & 82\\
-  3 &  0.25-weight &    0.92  &  0.04 & \quart{36}{5}{39}{49} & 81\\
-\hline  4 &         0.25 &    0.93  &  0.05 & \quart{37}{7}{40}{49} & 83\\
-  4 & 0.75-weight-B=25\% &    0.94  &  0.09 & \quart{36}{12}{41}{49} & 82\\
-\hline  5 & 0.25-weight-B=50\% &    0.97  &  0.03 & \quart{44}{4}{45}{49} & 86\\
-  5 & 0.5-weight-B=25\% &    0.98  &  0.06 & \quart{40}{8}{47}{49} & 86 \\
-\hline  6 & 0.25-weight-B=25\% &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 87\\
-\hline  7 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 90\\
+   1 &  F=0.75, B=100 &    0.71  &  0.19 & \quart{0}{25}{10}{49} & 62 \\
+\hline  2 &   F=0.5, B=100  &    0.88  &  0.14 & \quart{20}{19}{33}{49} & 77\\
+\hline  3 & F=0.5, B=50\% &    0.91  &  0.08 & \quart{32}{11}{37}{49} & 80\\
+  3 & F=0.75, B=50\% &    0.92  &  0.09 & \quart{31}{12}{39}{49} & 82\\
+  3 &  F=0.25, B=100  &    0.92  &  0.04 & \quart{36}{5}{39}{49} & 81\\
+  3 & F=0.75, B=25\% &    0.94  &  0.09 & \quart{36}{12}{41}{49} & 82\\
+\hline  4 & F=0.25, B=50\% &    0.97  &  0.03 & \quart{44}{4}{45}{49} & 86\\
+  4 & F=0.5, B=25\% &    0.98  &  0.06 & \quart{40}{8}{47}{49} & 86\\
+\hline  5 &F= 0.25, B=25\% &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 87\\
+\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 90\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
 
@@ -1030,20 +1152,16 @@ For SQLite, the data  contains 4,553 configurations for prediction modeling and 
 {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
-  1 &  0.75-weight &    0.75  &  0.18 & \quart{0}{29}{8}{49} & 50\\
-  1 &         0.75 &    0.79  &  0.12 & \quart{8}{20}{14}{49} & 53\\
-\hline  2 &          0.5 &    0.84  &  0.1 & \quart{18}{16}{23}{49} & 56\\
-  2 &   0.5-weight &    0.84  &  0.08 & \quart{14}{14}{23}{49} & 56\\
-  2 & 0.75-weight-B=50\% &    0.84  &  0.09 & \quart{18}{15}{23}{49} & 56 \\
-\hline  3 & 0.5-weight-B=50\% &    0.91  &  0.05 & \quart{29}{9}{34}{49} & 61\\
-\hline  4 & 0.25-weight-B=50\% &    0.96  &  0.01 & \quart{43}{1}{43}{49} & 64\\
-  4 & 0.75-weight-B=25\% &    0.96  &  0.05 & \quart{39}{9}{43}{49} & 65\\
-  4 &         0.25 &    0.97  &  0.01 & \quart{43}{1}{44}{49} & 65\\
-  4 &  0.25-weight &    0.97  &  0.05 & \quart{39}{9}{44}{49} & 65 \\
-  4 & 0.5-weight-B=25\% &    0.97  &  0.03 & \quart{43}{5}{44}{49} & 65 \\
-\hline  5 & 0.25-weight-B=25\% &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 66\\
-\hline  
-6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 67\\
+  1 &  F=0.75,  B=100 &    0.75  &  0.18 & \quart{0}{29}{8}{49} & 50\\
+\hline  2 &   F=0.5,B=100   &    0.84  &  0.08 & \quart{14}{14}{23}{49} & 56\\
+  2 & F=0.75, B=50 &    0.84  &  0.09 & \quart{18}{15}{23}{49} & 56\\
+\hline  3 & F=0.5, B=50 &    0.91  &  0.05 & \quart{29}{9}{34}{49} & 61\\
+\hline  4 & F=0.25, B=50 &    0.96  &  0.01 & \quart{43}{1}{43}{49} & 64\\
+  4 & F=0.75, B=25 &    0.96  &  0.05 & \quart{39}{9}{43}{49} & 65\\
+  4 &  F=0.25, B=100  &    0.97  &  0.05 & \quart{39}{9}{44}{49} & 65\\
+  4 & F=0.5, B=25 &    0.97  &  0.03 & \quart{43}{5}{44}{49} & 65\\
+\hline  5 & F=0.25, B=25 &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 66\\
+\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 67\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
 
@@ -1052,19 +1170,16 @@ For SQLite, the data  contains 4,553 configurations for prediction modeling and 
 \vspace{2mm}\noindent{\scriptsize \textbf{Jedit}\\[0.1cm]}
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
-\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\\hline
-  1 &         0.75 &    0.64  &  0.28 & \quart{0}{27}{14}{49} & 110\\
-\hline  2 &  0.75-weight &    0.76  &  0.21 & \quart{13}{21}{26}{49}& 131 \\
-  2 &   0.5-weight &    0.76  &  0.16 & \quart{20}{16}{26}{49} & 130\\
-  2 &          0.5 &    0.79  &  0.17 & \quart{19}{17}{29}{49} & 137\\
-\hline  3 & 0.75-weight-B=50\% &    0.85  &  0.12 & \quart{30}{12}{35}{49} & 146\\
-  3 &  0.25-weight &    0.87  &  0.07 & \quart{34}{7}{37}{49} & 152\\
-\hline  4 &         0.25 &    0.93  &  0.09 & \quart{37}{9}{43}{49} & 161\\
-  4 & 0.5-weight-B=50\% &    0.93  &  0.05 & \quart{41}{5}{43}{49} & 162\\
-\hline  5 & 0.25-weight-B=50\% &    0.97  &  0.03 & \quart{45}{3}{47}{49} & 167\\
-  5 & 0.75-weight-B=25\% &    0.97  &  0.02 & \quart{46}{2}{47}{49} & 168\\
-\hline  6 & 0.5-weight-B=25\% &    0.98  &  0.02 & \quart{47}{2}{48}{49} & 170\\
-  6 & 0.25-weight-B=25\% &    0.98  &  0.01 & \quart{48}{1}{48}{49} & 171\\
+\rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
+  1 &  F=0.75,  &    0.76  &  0.21 & \quart{0}{28}{17}{49} & 130\\
+  1 &   0.5,  &    0.76  &  0.16 & \quart{9}{22}{17}{49} & 131\\
+\hline  2 & 0.75, B=50\% &    0.85  &  0.12 & \quart{22}{17}{29}{49} & 146\\
+\hline  3 &  0.25,  &    0.87  &  0.07 & \quart{28}{9}{32}{49} & 152\\
+\hline  4 & 0.5, B=50\% &    0.93  &  0.05 & \quart{37}{7}{40}{49} & 162\\
+\hline  5 & 0.25, B=50\% &    0.97  &  0.03 & \quart{43}{4}{45}{49} & 167\\
+  5 & 0.75, B=25\% &    0.97  &  0.02 & \quart{44}{3}{45}{49} & 168\\
+\hline  6 & 0.5, B=25\% &    0.98  &  0.02 & \quart{45}{3}{47}{49} & 170\\
+  6 & 0.25, B=25\% &    0.98  &  0.01 & \quart{47}{1}{47}{49} & 171\\
 \hline  7 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 175\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
@@ -1075,18 +1190,15 @@ For SQLite, the data  contains 4,553 configurations for prediction modeling and 
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
-  1 &  0.75-weight &    0.66  &  0.2 & \quart{0}{21}{13}{49} & 97 \\
-\hline  2 & 0.75-weight-B=50\% &    0.7  &  0.1 & \quart{14}{10}{17}{49} & 103 \\
-\hline  3 &         0.75 &    0.77  &  0.3 & \quart{9}{33}{24}{49} & 113\\
-  3 & 0.75-weight-B=25\% &    0.8  &  0.09 & \quart{21}{10}{28}{49} & 117\\
-  3 &   0.5-weight &    0.81  &  0.09 & \quart{26}{9}{29}{49} & 119\\
-  3 &          0.5 &    0.84  &  0.1 & \quart{26}{10}{32}{49} & 123\\
-\hline  4 & 0.5-weight-B=50\% &    0.88  &  0.07 & \quart{34}{8}{36}{49} & 128\\
-  4 & 0.25-weight-B=25\% &    0.89  &  0.07 & \quart{36}{8}{38}{49} & 130 \\
-  4 &  0.25-weight &    0.92  &  0.04 & \quart{39}{4}{41}{49} & 133 \\
-  4 &         0.25 &    0.93  &  0.07 & \quart{36}{8}{42}{49} & 136 \\
-\hline  5 & 0.25-weight-B=50\% &    0.95  &  0.04 & \quart{42}{4}{44}{49} & 139 \\
-  5 & 0.5-weight-B=25\% &    0.96  &  0.03 & \quart{43}{3}{45}{49} &141 \\
+  1 &  0.75,  &    0.66  &  0.2 & \quart{0}{21}{13}{49} & 97\\
+\hline  2 & 0.75, B=50\% &    0.7  &  0.1 & \quart{14}{10}{17}{49} & 103\\
+\hline  3 & 0.75, B=25\% &    0.8  &  0.09 & \quart{21}{10}{28}{49} & 117\\
+  3 &   0.5,  &    0.81  &  0.09 & \quart{26}{9}{29}{49} & 119\\
+\hline  4 & 0.5, B=50\% &    0.88  &  0.07 & \quart{34}{8}{36}{49} & 128\\
+  4 & 0.25, B=25\% &    0.89  &  0.07 & \quart{36}{8}{38}{49} & 130\\
+  4 &  0.25,  &    0.92  &  0.04 & \quart{39}{4}{41}{49} & 133\\
+\hline  5 & 0.25, B=50\% &    0.95  &  0.04 & \quart{42}{4}{44}{49} & 139\\
+  5 & 0.5, B=25\% &    0.96  &  0.03 & \quart{43}{3}{45}{49} & 141\\
 \hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 146\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
@@ -1097,76 +1209,23 @@ For SQLite, the data  contains 4,553 configurations for prediction modeling and 
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
       \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
-  1 &  0.75-weight &    0.72  &  0.26 & \quart{0}{29}{18}{49} & 173\\
-  1 &         0.75 &    0.74  &  0.18 & \quart{12}{20}{20}{49} & 178\\
-\hline  2 & 0.75-weight-B=50\% &    0.79  &  0.15 & \quart{14}{17}{26}{49} & 190\\
-  2 &          0.5 &    0.81  &  0.15 & \quart{22}{17}{28}{49} & 195\\
-  2 &   0.5-weight &    0.81  &  0.14 & \quart{21}{16}{28}{49} & 195\\
-\hline  3 & 0.5-weight-B=50\% &    0.9  &  0.11 & \quart{30}{13}{38}{49} & 217\\
-  3 &         0.25 &    0.91  &  0.07 & \quart{35}{8}{39}{49} & 219\\
-  3 &  0.25-weight &    0.91  &  0.05 & \quart{36}{6}{39}{49} & 219\\
-\hline  4 & 0.75-weight-B=25\% &    0.94  &  0.05 & \quart{39}{6}{43}{49} & 226\\
-  4 & 0.25-weight-B=50\% &    0.94  &  0.06 & \quart{39}{7}{43}{49} & 226\\
-\hline  5 & 0.25-weight-B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
-  5 & 0.5-weight-B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
-\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 240 \\
+  1 &  0.75,  &    0.72  &  0.26 & \quart{0}{29}{18}{49} & 173\\
+\hline  2 & 0.75, B=50\% &    0.79  &  0.15 & \quart{14}{17}{26}{49} & 190\\
+  2 &   0.5,  &    0.81  &  0.14 & \quart{21}{16}{28}{49} & 195\\
+\hline  3 & 0.5, B=50\% &    0.9  &  0.11 & \quart{30}{13}{38}{49} & 217\\
+  3 &  0.25,  &    0.91  &  0.05 & \quart{36}{6}{39}{49} & 219\\
+\hline  4 & 0.75, B=25\% &    0.94  &  0.05 & \quart{39}{6}{43}{49} & 226\\
+  4 & 0.25, B=50\% &    0.94  &  0.06 & \quart{39}{7}{43}{49} & 226\\
+\hline  5 & 0.25, B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
+  5 & 0.5, B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
+\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 240\\
 \hline \end{tabular}}
 %\end{minipage}
-\caption{Results on  Jureczko   data sets. Baseline values shown at bottom. All other values
-are ratios of baselines.}
-\label{tab:ant}
+\caption{Results on  Jureczko   data sets. Same format as \fig{jur}.}
+\label{fig:ant}
 \end{figure}
 
 
-
-
-   \subsection{Procedures}
-   The procedure used to build and test HOW's plans was shown above in \fig{work}.
-The    Seigmund and Jureczko data sets have continuous and discrete classes (respectively).
-Hence, when building a predictor, we used (1)~Random Forest Regressors for the Seigmund data and (2)~Random Forests
-for the Jureczko data.
-
-   For both the Siegmind and Jureczko, we designed a procedure such we had at least
-   20 samples from the \fig{work} procedure for  each data set (the value of 20 was choosen as the minimum use sample size via the central limit theorem):
-   \bi
-   \item
-  For the Siegmind data set of \fig{cpm}, 
-  25 times, 
-  we randomized the order of the data, trained on the first half (using
-  Random Forest Regressor), then tested on the second half.
-  \item
-  For the Jureczko, if we just  used the training and test sets of  \fig{j}, that would only
-  give us sample per data set. Such a singleton sample could hide important details since the methods
-  used for parameter tuning (SMOTE and differential evolution) use some stochastic sub-routines.
-  Hence, for each  of the training sets of \fig{j}, we ran SMOTE+differential evolution 25 times to learn
-  parameters for Random Forests.
-  \ei
-\fig{where} defined two control parameters for HOW:
-\bi
-\item The $F$ variable controls the size of the displacement;
-\item The $B$ variable controls how many of the attributes are displaced;
-\ei
-The   25 repeats defined above were executed for various values of $F,B$ and for each data set.
-Those results, summarized below, are presented as horizontal quartile charts. For example,
-the following horizontal quartile chart   shows one result for ``some treatment'' where  the median performance was 20\% and
-the interquartile range (25th to 70th percentile) as 30\%:
- \begin{center}
- some treatment 0\%:\quart{0}{29}{18}{49}:100\%
- \end{center}
-We take all the quartile charts for one data set, sort them on their median value,
-then apply a Scott-Knott procedure to rank each one. 
-The Scott-Knott
-procedure recommended by Mittas \& Angelis in their 2013
-IEEE TSE paper~\cite{mittas13}.  This method
-sorts a list of $l$ treatments with $ls$ measurements by their median
-score. It then
-splits $l$ into sub-lists $m,n$ in order to maximize the expected value of
- differences  in the observed performances
-before and after divisions. E.g. for lists $l,m,n$ of size $ls,ms,ns$ where $l=m\cup n$:
- $E(\Delta)=\frac{ms}{ls}abs(m.\mu - l.\mu)^2 + \frac{ns}{ls}abs(n.\mu - l.\mu)^2$.
-Scott-Knott then applies some statistical hypothesis test $H$ to check
-if $m,n$ are significantly different. If so, Scott-Knott then recurses on each division.
- 
 For this study, our hypothesis test $H$ was a
 conjunction of the A12 effect size test of  a
 non-parametric bootstrap sampling; i.e. our
@@ -1180,28 +1239,54 @@ bootstrapping, see Efron \&
 Tibshirani~\cite[p220-223]{efron93}.
 For a justification of the use of effect size tests
 see Shepperd\&MacDonell~\cite{shepperd12a}; Kampenes~\cite{kampenes07}; and
-Kocaguenli et al.~\cite{kocharm13}. These researchers
+Kocaguenli et al.~\cite{Kocaguneli2013:ep}. These researchers
 warn that even if an
 hypothesis test declares two populations to be
 ``significantly'' different, then that result is
 misleading if the ``effect size'' is very small.
 Hence, to assess 
 the performance differences 
-we first must rule out small effects.
-This test was recently 
+we first must rule out small effects using A12, 
+a test   recently 
 endorsed by Arcuri and Briand
 at ICSE'11~\cite{arcuri11}.
  
   
 \subsection{Results}
-The results for each data set, for different ranges of $(F,B)$ are shown in \fig{ant} and \fig{xxx}.
+The results for each data set, for different ranges of $(F,B)$ are shown in \fig{jur} and \fig{ant}.
 Also included are a {\em baseline} figure which is taken from the cases in the test data
 and  Since we wish to demonstrate
 improving defects
 (for Jureczko data) and runtimes (for the Seigmund data), all our results are presented as ratios of the baseline (so numbers less than 1.0 indicate improvements).
 
   
+ All the results of \fig{jur} and \fig{ant} show that in $\frac{10}{11}$ of our
+ datasets, the baseline results are ranked significantly worse than the results seen
+ after planning (evidence: the staistical ranking assigned by Scott-Knott is shown in the left-hand-side columns and most baselines get larger, i.e. worse, ranks
+ that the treated data). The exception to this is SQL in  \fig{jur}. which
+ seems to
+ be resistant to our planning methods.
  
+ By comparing the top and bottom line of results from each data set, we can see how much HOW's
+ plans effect the predicted values. While the  size of the change varies from data set to data set:
+ \bi
+ \item The median change is down to 72\% and 75\%  of the original baseline values for Seigmund and Jureczko, respectively;
+ \item The best change is down to 20\% and 66\% of the original baseline values for Seigmund and Jureczko, respectively;
+ \ei
+ As to the impact of changing how far we mutate (the $F$ value) or how many attributes
+ we mutate (the $B$ value), the results are different for the data sets with discrete and continuous attributes:
+ \bi
+ \item For data sets with continuous objectives (the Jureczko data of \fig{jur}),
+ best results are obtained by taking the fewest attributes (minimize $B$) 
+ while moving close to the exemplar (maximize $F$).
+ \item For data sets with discrete objectives (the Seigmund data  of \fig{ant}),
+ best results are obtained by maximizing both $F$ and $B$.
+ \ei
+  From these differences, we conclude that the more specific the  information used for exemplar
+ generation, the better the planning. Recall that for the discrete
+ attributes, the exemplar is the mean position of all cases in the cluster.
+ However,  for continuous
+ objectives, the exemplar is much more specific and is the  single  best case in a cluster 
 
 % \section{Discussion}
 \section{Threats to validity}
@@ -1212,7 +1297,50 @@ As with any empirical study, biases can affect the final results. Therefore, any
 conclusions made from this work must be considered with the following issues in
 mind.
 
-{\em 1. Sampling bias} threatens any data mining experiment; i.e., what matters
+
+{\em 1. Evaluation bias:} The biggest threat to validity of this work is our use
+of predictors learned on the training data to assess the impact of HOW's plans
+on the test data.
+If we believe the outputs of those predictors, then we can also believe that
+\fig{jur} and \fig{ant} are showing true effects.  
+
+%XXX begin rahul
+One way to assess the validity of our predictions is to consider the space that generates
+them. \fig{xxx} shows (1)~the training cases and (2)~the test cases and (3)~the
+test cases displaced after applying HOW's plans for the {\em ant} data set.
+In this figure, all the cases are projected onto two dimensions after (a)~creating one
+data set with all of 1+2+3, finding their $x,y$ positions in the top-level {\tt cluster},
+as generated by \fig{howcode}. Note that the both the test cases and the displaced test
+cases all fall into nearly the same regions as the training data. This is to say that
+predictors learned from the {\em ant} training data have some authority in the regions
+used to generate our results\footnote{If the reader is concerned that this 2d projection
+losses important information, then they should note that two separate  studies~\cite{papa13,divya15}
+have confirmed that building defect predictors from this 2d space are just as effective
+as predictors learned using all the defect attributes of \fig{ck}.}
+
+\begin{figure}
+\includegraphics
+\end{figure}
+%XXX end
+
+That said, one thing to be said here
+is that we {\em strongly} recommend that predictors are assessed prior to planning.
+We showed above the results of one such planning exercise- we noted that half
+our defect data sets are not clear enough to support planning. On the other hand,
+the predictors from the configuration domain are extraordinarily accurate (recall
+their near perfect predictions seen in \tion{notplan}).
+
+ 
+{\em 2. Learner bias: } For building the defect predictors in this study, we elected
+to use  Random Forest  and Random Forest Regressors .
+We chose this approach,  based on its reputation for having the better  performance of 
+21 other learners for defect prediction~\cite{lessmann}.
+Data mining is a
+large and active field and any single study can only use a small
+subset of the known classification algorithms.  
+
+
+{\em 3. Sampling bias} threatens any data mining experiment; i.e., what matters
 there may not be true here. For example, the data sets used here comes from two sources
 (Seigmund et al. and Jureczko et al.) and any biases in their selection procedures
 threaten the validity of these results. 
@@ -1222,18 +1350,7 @@ try to repeat our results and, perhaps, point out a previously unknown bias
 in our analysis. Hopefully, other researchers will emulate our methods in
 order to repeat, refute, or improve our results. 
 
-{\em 2. Learner bias: } For building the defect predictors in this study, we elected
-to use  Random Forest  .
-We chose Random Forest based on its reputation for having the better  performance of 
-21 other learners for defect prediction~\cite{lessmann}.
-Data mining is a
-large and active field and any single study can only use a small
-subset of the known classification algorithms.  
 
-{\em 3. Evaluation bias:} The issue was discussed above in \tion{assess} where
-we asserted that plans can be assessed via predictors-- with the all important
-proviso that the planning should {\em not} be attempted if the predictors
-are performing poorly.
 
 %%\footnote{LL: It seems to me that $privacy$ in LACE approach could be compromised in the case of extremes if I had some knowledge of the parties. Consider a case where you know that a bunch of startups and Microsoft contributed to a private cache. Even with the random perturbation in MORPH, it will be REALLY obvious which defect data came from Windows vs. all of the others because Windows will have LOC orders of magnitude greater than anyone else, right?}
  
@@ -1256,6 +1373,23 @@ are performing poorly.
 
 \section{Conclusion}
 % \section*{Acknowledgements}
+ 
+In summary, this paper makes five contributions:
+\be
+\item The HOW  case-based planner (which has not been presented before).
+\item The experiments of this paper showing that HOW planner is useful for real-world tasks;
+e.g. reducing the
+expected values of the Jureczko software defects and the Seigmund software runtimes.
+\item Apart from HOW, we  also offers a general framework for using  predictive system to build planners;
+\item Further, we offer a  test to recognizes  when we should {\em not}  plan: specifically,
+planning is
+not recommended in domains with  poorly performing predictors;
+\item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
+\ee 
+
+\section*{Acknowledgments}
+
+The work has partially funded by a National Science Foundation CISE CCF award \#1506586.
  
  
 \bibliography{how}{}
