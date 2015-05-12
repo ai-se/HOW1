@@ -17,6 +17,7 @@
 \usepackage{program}
 \usepackage{cite}
 \usepackage{alltt}
+\usepackage{balance}
 \newcommand{\eq}[1]{Equation~\ref{eq:#1}}
 \newcommand{\bi}{\begin{itemize}}
 \newcommand{\ei}{\end{itemize}}
@@ -134,15 +135,14 @@ firstnumber=last
 %
 % 1st. author
 Rahul Krishna, Tim Menzies, Xipeng Shen\\
-        Computer Science, NcState, USA\\
-       \{i.m.ralk, tim.menzies, xipengshen\}\@gmail.com
-% 3rd. author
+        Computer Science, North Carolina State University, USA\\
+       \{i.m.ralk, tim.menzies\}\@gmail.com, xshen5@ncsu.edu
  % use '\and' if you need 'another row' of author names
 % 4th. author
 \and
  Andrian Marcus\\
        Computer Science, UtDallas, USA \\
-       amarcus\@utdallas.edu }
+       amarcus@utdallas.edu }
 
 
   \pagestyle{plain}
@@ -207,7 +207,7 @@ How to assess such {\em plans}?
 Some organizations have the resources to 
 run repeated trials to assess  different treatments.
 For example, in one remarkable recent study, Bente et al. report results
-were the same specification was developed into a product by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
+were the same specification was developed  by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
 to (say) take a code base, assign it to $N$ different teams, apply
 HOW's plans the code used by  $N/2$ teams, then check in 12 months time
 if those halves of the teams have fewer defects than the other.  
@@ -225,7 +225,7 @@ tool for planners. In domains where  data miners can build
 predictors of adequate performance, then those predictors can assess the value
 of proposed changes.
  
-The planner explored in this paper is the ``HOW'' case-based planner.
+The planner explored in this paper is the ``HOW'' case-based reasoner (CBR).
 HOW's  ``plans'' are  set of changes
 proposed  in order to better achieve some goal. 
 Specifically, for every test case $Z$, HOW proposes a  plan $\delta$ to
@@ -285,10 +285,9 @@ if our mutations to test suites
   minimize
 test suite size while maximizing the number of statements covered~\cite{me09m,andrews07,andrews10}.
 
-However, not all domains come with ready-to-use models.
-For   several problems where models are hard to obtain, or the input and output are related by complex connections that simply cannot be modeled in a reliable manner~\cite{Ludewig2003}. For example, 
-consider software defect prediction and all the intricate issues that may lead defects in a product. A odel that includes {\em all} those
-potential issues would be very large and unweliding. Further,
+However, not all domains come with ready-to-use models. For example, 
+consider software defect prediction and all the intricate issues that may lead defects in a product. A model that includes {\em all} those
+potential issues would be very large and complex. Further,
 the empirical data required to validate any/all parts
 of that model can be hard to find.
 
@@ -298,6 +297,8 @@ In fact, our experience has been that accessing and/or commissioning
 a model can be a labor-intensive process.
 For  example, in previous work~\cite{me07f} we used models
 developed by Boehm's group at the University of Southern California.
+Those models inputted project descriptors to output predictors
+of development effort, project risk, and defects.
 Some of those models took decades to develop and mature (from 1981~\cite{boehm81} to 2000~\cite{boehm00b}). 
 
 Also, even when there is an existing model, they can require
@@ -320,7 +321,7 @@ deb14,Cui2005a,zhang07:TEC}. Otherwise, we recommend tools like HOW.
 
 
 \subsection{Planning and AI}
-HOW is a {\em probablistic} planner, which is a different approach to that taken by
+HOW is a {\em probabilistic} planner, which is a different approach to that taken by
 classical AI. 
 That kind of planning is a logical procedure~\cite{Fikes1971}
 that seeks an ordering on {\em operators} to take some domain
@@ -337,7 +338,7 @@ modeling approach) of this paper makes it stand apart from, say,
 Case-based reasoning (CBR) has been extensively
 explored in the AI literature
 (where it has also bee called
- reasoning via anology or instance-based reasoning).
+ reasoning via analogy or instance-based reasoning).
 CBR seeks to emulate human recollection and adaptation
 of past experiences in order to find solutions to current
 problems. 
@@ -359,7 +360,7 @@ to the latest findings.
 
 Secondly, the output of a CBR is made on a ``case-by-case'' basis. 
 That is, CBR does not offer some trite generalization over multiple
-exmaples. Rather, the advice it gives is specialized to the particular
+examples. Rather, the advice it gives is specialized to the particular
 case being considered at the current time.  This is particularly attractive
 since much of our recent work has focused on issues
 of locality (where the best solutions for some part of the data
@@ -382,7 +383,7 @@ performances {\em increased} in up to $\frac{1}{3}$rd of test cases.
 
 Generation two of that work resulted in  IDEA~\cite{me12c}.
 IDEA and HOW use the    same recursive clustering
-method but IDEA made the mistake of  summarize those
+method but IDEA made the mistake of  summarizing those
 recursive divisions into a tree structure. Initial results with IDEA were weak, but somewhat
 positive~\cite{me12c}. We tried unsuccessfully for  months to extend and improve
 the IDEA prototype. The results were most discouraging: those tree-based summaries often suffered
@@ -530,7 +531,7 @@ In  the experiments shown below,  we explore
 \mbox{$F\in \{0.25, 0.5, 0.75\}$}.
 
 Turning now to the displacement {\em direction},
-our experiments show that it useful to  carefully reflect on exactly where HOW should  push each test case.
+our experiments show that it is useful to  carefully reflect on exactly where HOW should  push each test case.
 HOW replaces each cluster   with one {\em exemplar} that best
 characterizes the data in that cluster. It then displaces the
 test data towards that exemplar, as shown in \fig{howcode}, line 20. In summary, 
@@ -543,7 +544,7 @@ Here, $F$ is the  magnitude controller, discussed above.
 Different kinds of data require
 different policies for exemplar generation.
 For the Jureczko data, the objective score
-is a boolean variable is true if defects have been noted
+is a Boolean which is  ``true'' if defects have been noted
 for that class.  For this kind of data (with discrete objectives),
 we found nothing better than  making the exemplar of a cluster be the mean
 value of all attributes of all cases in that cluster.
@@ -558,7 +559,7 @@ of the Makefiles used in Berkely DB. The other two curves shows the predictions 
 \item The \textcolor{red}{\bf   mean}    value of all cases in the  cluster.
 \item The  case with the \textcolor{green}{\bf  best}  objective score. 
 \ei
-Note that using the best as the exemplar does better than useing the mean.
+Note that using the best as the exemplar does better than using the mean.
 The general pattern shown of \fig{pp} has been seen in all the Seigmund data sets;
 i.e. for data sets with continuous classes,
 best results come from using exemplars formed from the best instance (and not the mean). 
@@ -685,7 +686,7 @@ the   \textcolor{black}{\bf  baseline} curve; the
     Data is ``good'' if it has   recalls over 60\% and false alarms under 40\%
 (and note that, after tuning, there are more ``good'' than before).
 Data   marked with ``$\star$'' show large improvements in performance, after tuning.
-Data   marked with ``$\times$'' are not ``good'' since their test suites  have so few undefective examples (less than 5\% of the total sample) that it becomes harder to find better data towards which we can displace test data.
+Data   marked with ``$\times$'' are not ``good'' since their test suites  have so few non-defective examples (less than 5\% of the total sample) that it becomes harder to find better data towards which we can displace test data.
 }\label{fig:j}
 \end{figure*}
 
@@ -700,7 +701,7 @@ tools, as shown by Binkely et al. in 2006~\cite{Binkley2006} and more recently b
 
 As shown in \fig{work}, our proposal divides
 project data  into two disjoint sets {\em train} and {\em test}
-(so \mbox{{\em train} $\cup$ {\em test} $=\;\emptyset$}).
+(so \mbox{{\em train} $\cap ${\em test} $=\;\emptyset$}).
 Next, from the train set, we build both a {\em planner} as well
 as a {  predictor}. Our general framework does not   commit to any particular  choice
 of { planner} or { predictor} but, for the purposes of this paper, 
@@ -1260,9 +1261,9 @@ improving defects
 (for Jureczko data) and runtimes (for the Seigmund data), all our results are presented as ratios of the baseline (so numbers less than 1.0 indicate improvements).
 
   
- All the results of \fig{jur} and \fig{ant} show that in $\frac{10}{11}$ of our
- datasets, the baseline results are ranked significantly worse than the results seen
- after planning (evidence: the staistical ranking assigned by Scott-Knott is shown in the left-hand-side columns and most baselines get larger, i.e. worse, ranks
+ The   results of \fig{jur} and \fig{ant} show that in $\frac{10}{11}$ of our
+ data sets, the baseline results are ranked significantly worse than the results seen
+ after planning (evidence: the statistical ranking assigned by Scott-Knott is shown in the left-hand-side columns and most baselines get larger, i.e. worse, ranks
  that the treated data). The exception to this is SQL in  \fig{jur}. which
  seems to
  be resistant to our planning methods.
@@ -1306,20 +1307,28 @@ If we believe the outputs of those predictors, then we can also believe that
 
 %XXX begin rahul
 One way to assess the validity of our predictions is to consider the space that generates
-them. \fig{xxx} shows (1)~the training cases and (2)~the test cases and (3)~the
+them. \fig{howxy} shows (1)~the training cases and (2)~the test cases and (3)~the
 test cases displaced after applying HOW's plans for the {\em ant} data set.
-In this figure, all the cases are projected onto two dimensions after (a)~creating one
-data set with all of 1+2+3, finding their $x,y$ positions in the top-level {\tt cluster},
-as generated by \fig{howcode}. Note that the both the test cases and the displaced test
-cases all fall into nearly the same regions as the training data. This is to say that
-predictors learned from the {\em ant} training data have some authority in the regions
-used to generate our results\footnote{If the reader is concerned that this 2d projection
+In this figure, all the cases are projected onto two dimensions by   finding their $x,y$ positions in the top-level {\tt cluster},
+as generated by \fig{howcode}. Note that the  the   displaced test
+cases   fall into nearly the same regions as the training data. 
+
+This pattern of \fig{howxy} (where the displaced test cases are found in the same
+region as the training data) has been observed in all the other data sets studied in this
+paper. Hence, the
+predictors learned from thse training data have some authority in the regions
+used to generate our predictions regarding the effects of planning\footnote{If the reader is concerned that this 2d projection
 losses important information, then they should note that two separate  studies~\cite{papa13,divya15}
 have confirmed that building defect predictors from this 2d space are just as effective
-as predictors learned using all the defect attributes of \fig{ck}.}
+as predictors learned using all the defect attributes of \fig{ck}.}. 
+
 
 \begin{figure}
-\includegraphics
+\begin{center}\includegraphics[width=3in]{figs/2d.png}\end{center}
+\caption{Training cases (in gray), test cases (in red) and 
+test cases displaced by HOW (in green). Note how the green and the gray occupy
+the same regions; i.e. predictors trained on the training cases can be applied
+to the displaced test cases.}\label{fig:howxy}
 \end{figure}
 %XXX end
 
@@ -1374,24 +1383,52 @@ order to repeat, refute, or improve our results.
 \section{Conclusion}
 % \section*{Acknowledgements}
  
-In summary, this paper makes five contributions:
+This paper has explored the problem of assess changes to a project without
+extensive field studies. We have proposed using predictors learned from domain data
+to serve as the oracle that judges the effectiveness of those changes.
+
+The novel features of this paper are
 \be
-\item The HOW  case-based planner (which has not been presented before).
-\item The experiments of this paper showing that HOW planner is useful for real-world tasks;
-e.g. reducing the
-expected values of the Jureczko software defects and the Seigmund software runtimes.
-\item Apart from HOW, we  also offers a general framework for using  predictive system to build planners;
-\item Further, we offer a  test to recognizes  when we should {\em not}  plan: specifically,
+\item A general framework for using  predictive system to build planners (see \fig{work}).
+For this paper, we used Random Forests as our predictor, but other predictors could
+serve just as well.
+\item A  test to recognizes  when we should {\em not}  plan: specifically,
 planning is
-not recommended in domains with  poorly performing predictors;
-\item Last, we  offer a general verification rig for assessing the value of plans generated within this rig.
+not recommended in domains with  poorly performing predictors. In this paper, that
+test excluded certain problematic defect data sets.
+\item The HOW  case-based planner, which has not been presented before. HOW
+is a significant improvement on our two prior implementations~\cite{6600685,me12c} that both
+suffered
+from {\em optimization failure}; i.e. when their recommendations were applied,
+the resulting behavior actually got worse. We recommend HOW over that prior work
+since none of our results exhibited such optimization failures.
+\item The experiments of this paper, which showed that 
+the HOW planner is useful for real-world tasks;
+e.g. significantly reducing the
+predicted values of the Jureczko software defects and the Seigmund software runtimes.
+For those data sets, HOW
+reduce
+ the predicted values of defect counts and  runtimes to    
+ 72\%,75\%  (median) and 66\%,20\% (best case) of the initial values.
 \ee 
+As to when we would {\em not} use HOW, if  a domain has an accessible
+and certified and well-maintained
+domain model, then we would go beyond CBR and apply algorithms that can take
+full advantage of the domain knowledge in those models; e.g. GALE, NSGA-II, NSGA-III, SPEA2, IBEA, particle swarm optimization, MOEA/D, etc.~\cite{krall14,deb00a,zit02,zit04,%
+deb14,Cui2005a,zhang07:TEC}. 
+
+That said, one clear future direction would be explore
+combinations of CBR tools with other approaches. 
+One way to view HOW is a {\em local patch operator} that could be applied within 
+GALE, NSGA*, etc (so in that combination, we would be trying to use   HOW's local patches to 
+to optimize those optimizers).
+ 
 
 \section*{Acknowledgments}
 
 The work has partially funded by a National Science Foundation CISE CCF award \#1506586.
  
- 
 \bibliography{how}{}
 \bibliographystyle{IEEEtran}
+\balance
 \end{document}
