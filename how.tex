@@ -165,7 +165,7 @@ Rahul Krishna, Tim Menzies, Xipeng Shen\\
  variables in order to improve on 
  the predictions of the dependent variables. Unlike other approaches
  for learning optimizations to software, HOW does not require
- an underlying of the domain. Also, HOW's plans
+ an underlying model of the domain. Also, HOW's plans
  are designed to result in {\em minimal displacement}
  to current practice.
  
@@ -180,7 +180,8 @@ Defect prediction, configuration, prediction, planning, case-based reasoning.
   \end{IEEEkeywords}
   
 \section{Introduction}
-Suppose someone suggests a change to your project. How might you assess the effectiveness of that change?
+Suppose someone wants changes that can improve their software project. How would you propose
+sensible changes? And how would you assess the effectiveness of those changes?
 
 This is an open and pressing issue.
 Business  users   now demand   data mining tools
@@ -203,49 +204,47 @@ reduce the likelihood of those defects;
 time of their software, business users might now demand
 a {\em plan} to reduce that runtime.
 \ei
-How to assess such {\em plans}?
-Some organizations have the resources to 
-run repeated trials to assess  different treatments.
-For example, in one remarkable recent study, Bente et al. report results
-were the same specification was developed  by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
-to (say) take a code base, assign it to $N$ different teams, apply
-HOW's plans the code used by  $N/2$ teams, then check in 12 months time
-if those halves of the teams have fewer defects than the other.  
-
-Very few industrial or research groups have access
-to the kinds of resources using by Bente et al. (evidence: in the size years since the
-publication of that work, we know of only one of two similar studies). Also, given the
-diversity of modern software projects, it might be unreasonable to demand that all
-proposed changes for all projects are always evaluated by something like the Bente et al. study.
-
-This paper proposes another, less resource intensive,  method for assessing the effectiveness of proposed
-changes to a project.  
-We propose using prediction systems (built by data mining) as a verification
-tool for planners. In domains where  data miners can build
-predictors of adequate performance, then those predictors can assess the value
-of proposed changes.
- 
-The planner explored in this paper is the ``HOW'' case-based reasoner (CBR).
+To generate those plans, we propose the ``HOW'' case-based reasoner (CBR).
 HOW's  ``plans'' are  set of changes
 proposed  in order to better achieve some goal. 
 Specifically, for every test case $Z$, HOW proposes a  plan $\delta$ to
   adjust   attributes $Z_j$:
-\begin{equation}\label{eq:one}
+\[
 Z_j = Z_j + \delta_j
-\end{equation}
+\]
 For example, to simplify a  large bug-prone  method, HOW might suggest
 to a developer to reduce its size (i.e.  refactor that code by, say, splitting it across
 two simpler functions).
-
 HOW's  plans displace the test case into some region
 of the training data. This is important since we will use that training data
 to build a predictor to assess the impact of that plan.
 To put that another way, when a novel test case is presented,
 HOW says 
 \begin{quote}{\em ``I may not know too much about that, but once you change into something like
-what I've already seen, then I can suggest how to change it''.}
+what I've already seen, then I can suggest how to improve it''.}
 \end{quote}
-This paper shows experimentally  that   HOW's plans can be quite effective and 
+After generating the plans, the next question is ``how to assess them?''.  
+Some organizations have the resources to 
+run repeated trials to assess  different treatments.
+For example, in one remarkable recent study, Bente et al. report results
+were the same specification was developed  by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
+to (say) take a code base, assign it to different teams, make these teams  adopt different polices,
+then check in 12 months time
+ which teams have fewer defects than the others.  
+
+Very few industrial or research groups have access
+to the kinds of resources needed for this kind study  (evidence: in the six years since the
+publication of that work, we know of only one   similar study to Bente et al.). Also, given the
+diversity of modern software projects, it might be unreasonable to demand that all
+proposed changes for all projects are always evaluated by something like the Bente et al. study.
+
+This paper proposes another, less resource intensive,  method for assessing the effectiveness of proposed
+changes to a project.  
+We  use a prediction system (built by data mining) as a verification
+tool for planners. In domains where  data miners can build
+predictors of adequate performance, then those predictors can assess the value
+of proposed changes.
+This paper applies this proposal to show that   HOW's plans are quite effective and  can
  significantly reduce the  predicted
 value of:
 \bi
@@ -253,9 +252,8 @@ value of:
 \item The runtime of the  software systems   configured by  Seigmund et al.~\cite{sven12}.
 \ei 
 The rest of this paper presents the background to this work in Section~2; the design of HOW in Section~3;
-then our experimental results  in Section~4. Those experiments show that HOW can   reduce the expected
-value of defects in Jureczko   data sets by 72\% to 66\%  (median,best).
-Also, in the Seigmund data sets, HOW can   reduce the expected value of the runtimes by  75\% to 20\% (median,best).
+then our experimental results  in Section~4.  Our conclusion is that we can plan for the future in
+software engineering, provided the domain data supports adequate predictors.
 
 
 \section{Background}
@@ -325,7 +323,7 @@ HOW is a {\em probabilistic} planner, which is a different approach to that take
 classical AI. 
 That kind of planning is a logical procedure~\cite{Fikes1971}
 that seeks an ordering on {\em operators} to take some domain
-{\em state} from a {\em start} state to a {\em goal} state.
+{\em state} from a {\em start} state to a {\em  goal} state.
 This classical logical approach is known to suffer from
 computational bottlenecks~\cite{Bylander1994}. Hence,
 like this paper,
@@ -1130,7 +1128,7 @@ For each of the  tables in this figure, better methods appear higher up. In thes
 
 \begin{figure}[!t] 
   {\scriptsize \textbf{Ant}\\[0.1cm]}
-  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~~}c@{}r}}
+  {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~}c@{}r}}
       \arrayrulecolor{darkgray}
       \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} && \textbf{Bugs}\\
    1 &  F=0.75, B=100 &    0.71  &  0.19 & \quart{0}{25}{10}{49} & 62 \\
@@ -1304,19 +1302,24 @@ of predictors learned on the training data to assess the impact of HOW's plans
 on the test data.
 If we believe the outputs of those predictors, then we can also believe that
 \fig{jur} and \fig{ant} are showing true effects.  
-
-%XXX begin rahul
+ 
 One way to assess the validity of our predictions is to consider the space that generates
-them. \fig{howxy} shows (1)~the training cases and (2)~the test cases and (3)~the
-test cases displaced after applying HOW's plans for the {\em ant} data set.
-In this figure, all the cases are projected onto two dimensions by   finding their $x,y$ positions in the top-level {\tt cluster},
-as generated by \fig{howcode}. Note that the  the   displaced test
-cases   fall into nearly the same regions as the training data. 
+them. \fig{howxy} is from the {\em ivy} data
+set. It shows (1)~the training cases and (2)~the test cases and (3)~the
+test cases displaced after applying HOW's plans.
+To generate that figure, we placed all of 1+2+3 into the same data set then computed the first
+two  components (using PCA). Note that the  the   displaced test
+cases  (shown in green)  fall closer to the training cases (shown in gray) than
+the test cases (shown in red).  That is, if we believe
+that the gray data is  suitable for assessing
+the test cases (as indicated by the {\em ivy} results from \fig{j}), then it follows
+that we believe even more in the predictions
+generated from the displaced data).
 
 This pattern of \fig{howxy} (where the displaced test cases are found in the same
 region as the training data) has been observed in all the other data sets studied in this
 paper. Hence, the
-predictors learned from thse training data have some authority in the regions
+predictors learned from these training data have some authority in the regions
 used to generate our predictions regarding the effects of planning\footnote{If the reader is concerned that this 2d projection
 losses important information, then they should note that two separate  studies~\cite{papa13,divya15}
 have confirmed that building defect predictors from this 2d space are just as effective
@@ -1326,9 +1329,11 @@ as predictors learned using all the defect attributes of \fig{ck}.}.
 \begin{figure}
 \begin{center}\includegraphics[width=3in]{figs/2d.png}\end{center}
 \caption{Training cases (in gray), test cases (in red) and 
-test cases displaced by HOW (in green). Note how the green and the gray occupy
-the same regions; i.e. predictors trained on the training cases can be applied
-to the displaced test cases.}\label{fig:howxy}
+test cases displaced by HOW (in green). Note how the green (displaced) cases are closer to the  training
+date than the original test data
+i.e. predictors trained on the training cases and
+applied to the test cases should
+work just as well, or better, on the displaced test cases.}\label{fig:howxy}
 \end{figure}
 %XXX end
 
