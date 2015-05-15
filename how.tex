@@ -1302,7 +1302,8 @@ of predictors learned on the training data to assess the impact of HOW's plans
 on the test data.
 If we believe the outputs of those predictors, then we can also believe that
 \fig{jur} and \fig{ant} are showing true effects.  
- 
+
+%XXX begin rahul 
 One way to assess the validity of our predictions is to consider the space that generates
 them. \fig{howxy} is from the {\em ivy} data
 set. It shows (1)~the training cases and (2)~the test cases and (3)~the
@@ -1316,11 +1317,10 @@ the test cases (as indicated by the {\em ivy} results from \fig{j}), then it fol
 that we believe even more in the predictions
 generated from the displaced data).
 
-This pattern of \fig{howxy} (where the displaced test cases are found in the same
-region as the training data) has been observed in all the other data sets studied in this
-paper. Hence, the
+This pattern of \fig{howxy} (where the displaced test cases are found closer to  the training cases than the test cases) has been observed in all the other data sets studied in this
+paper. Hence,  we can assert that
 predictors learned from these training data have some authority in the regions
-used to generate our predictions regarding the effects of planning\footnote{If the reader is concerned that this 2d projection
+used to generate the plans\footnote{If the reader is concerned that this 2d projection
 losses important information, then they should note that two separate  studies~\cite{papa13,divya15}
 have confirmed that building defect predictors from this 2d space are just as effective
 as predictors learned using all the defect attributes of \fig{ck}.}. 
