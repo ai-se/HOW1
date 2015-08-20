@@ -173,7 +173,7 @@ Rahul Krishna, Tim Menzies, Xipeng Shen\\
  to reduce defects and decrease program runtime.
  For the test data of this paper, those improvements   reduce
  the expected values of defect counts and  runtimes to    
- 72\%,75\%  (median) and 66\%,20\% (best case) of the initial values.
+ 72\%,75\%  (median) and 66\%,20\% (best case) of the initial values, respectively.
   \end{abstract}
   \begin{IEEEkeywords}
 Defect prediction, configuration, prediction, planning, case-based reasoning.
@@ -227,7 +227,7 @@ After generating the plans, the next question is ``how to assess them?''.
 Some organizations have the resources to 
 run repeated trials to assess  different treatments.
 For example, in one remarkable recent study, Bente et al. report results
-were the same specification was developed  by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
+were the same for specification that was developed  by four different organizations~\cite{Anda2009}. Given those kind of resources, it would be possible
 to (say) take a code base, assign it to different teams, make these teams  adopt different polices,
 then check in 12 months time
  which teams have fewer defects than the others.  
@@ -241,8 +241,8 @@ proposed changes for all projects are always evaluated by something like the Ben
 This paper proposes another, less resource intensive,  method for assessing the effectiveness of proposed
 changes to a project.  
 We  use a prediction system (built by data mining) as a verification
-tool for planners. In domains where  data miners can build
-predictors of adequate performance, then those predictors can assess the value
+tool for planners. If for certain domains data miners can build
+predictors with adequate performance, then those predictors can assess the value
 of proposed changes.
 This paper applies this proposal to show that   HOW's plans are quite effective and  can
  significantly reduce the  predicted
@@ -284,7 +284,7 @@ if our mutations to test suites
 test suite size while maximizing the number of statements covered~\cite{me09m,andrews07,andrews10}.
 
 However, not all domains come with ready-to-use models. For example, 
-consider software defect prediction and all the intricate issues that may lead defects in a product. A model that includes {\em all} those
+consider software defect prediction and all the intricate issues that may lead to defects in a product. A model that includes {\em all} those
 potential issues would be very large and complex. Further,
 the empirical data required to validate any/all parts
 of that model can be hard to find.
@@ -314,7 +314,7 @@ logs of the input/output of that model.
 
 In summary, for domains with readily accessible models, we recommend
 the kinds of tools that are widely used in the search-based
-software engineering community such as GALE,NSGA-II, NSGA-III, SPEA2, IBEA, particle swarm optimization, MOEA/D, etc.~\cite{krall14,deb00a,zit02,zit04,%
+software engineering community such as GALE, NSGA-II, NSGA-III, SPEA2, IBEA, particle swarm optimization, MOEA/D, etc.~\cite{krall14,deb00a,zit02,zit04,%
 deb14,Cui2005a,zhang07:TEC}. Otherwise, we recommend tools like HOW.
 
 
@@ -329,13 +329,13 @@ computational bottlenecks~\cite{Bylander1994}. Hence,
 like this paper,
 many researchers take a probabilistic approach.
 HOW's commitment to minimal displacement (and the fully-automated
-modeling approach) of this paper makes it stand apart from, say,
-  the Bayesian/Markov chain approach to planning of Dean et al.~\cite{dean1995planning}.
+modeling approach of this paper) makes it stand apart from, say,
+  the Bayesian/Markov chain approach to planning by Dean et al.~\cite{dean1995planning}.
 
 \subsection{Case-based Reasoning}
 Case-based reasoning (CBR) has been extensively
 explored in the AI literature
-(where it has also bee called
+(where it has also been called
  reasoning via analogy or instance-based reasoning).
 CBR seeks to emulate human recollection and adaptation
 of past experiences in order to find solutions to current
@@ -368,7 +368,7 @@ are very different some average case solution obtained from all the data~\cite{l
 Due to the advantages of CBR, numerous papers in SE
 have applied this technique.    CBR  has been used extensively by the effort estimation community, see~\cite{keung2008analogy, 6600685, walkerden1999empirical, shepperd1997estimating, kocaguneli2010use}. 
 Researchers have found that, in some domains, they are competitive with  closed form mathematical models or other modeling methods such as regression \cite{keung2008analogy}. 
-CBR is also useful when dealing with spare data sets~\cite{1438374} of with 
+CBR is also useful when dealing with sparse data sets~\cite{1438374} or with 
 partial knowledge  at, for example,  an early stage of a project)~\cite{walkerden1999empirical}. 
 
 \subsection{Prior Work}
@@ -520,7 +520,7 @@ displaces the    best $B$\%  of that sort, while leaving the rest untouched
 In  the experiments shown below,  we explore   \mbox{$B \in \{25,50,100\}\%$}.
 
 Secondly, HOW   limits displacement
-to very small regions in the space of the training data (never more that the separation
+to very small regions in the space of the training data (never more than the separation
 of the two closest clusters).  HOW's clusterer divides  data into many   small clusters containing
 $\sqrt{N}$ of the population (using the {\tt cluster} function, \fig{howcode}, line 76).
 HOW   limits displacement to  \mbox{$0 \le F \le c$}, where
@@ -533,7 +533,7 @@ our experiments show that it is useful to  carefully reflect on exactly where HO
 HOW replaces each cluster   with one {\em exemplar} that best
 characterizes the data in that cluster. It then displaces the
 test data towards that exemplar, as shown in \fig{howcode}, line 20. In summary, 
-If  $Z_j$ is an independent variable within the
+if  $Z_j$ is an independent variable within the
 test case $Z$ and  $X$ is the exemplar found at training time,
 then we displace $Z_j$ as follows:
 \[Z_j =  Z_j + F*(X_j - Z_j)\]
@@ -681,10 +681,10 @@ the   \textcolor{black}{\bf  baseline} curve; the
     \caption{Training and test {\em data set properties} for the Jureczko data sets,
     sorted in ascending order of \% defective examples.
     On the right-hand-side, we show the {\em results from learning}.
-    Data is ``good'' if it has   recalls over 60\% and false alarms under 40\%
+    Data is ``good'' if it has recall over 60\% and false alarm under 40\%
 (and note that, after tuning, there are more ``good'' than before).
 Data   marked with ``$\star$'' show large improvements in performance, after tuning.
-Data   marked with ``$\times$'' are not ``good'' since their test suites  have so few non-defective examples (less than 5\% of the total sample) that it becomes harder to find better data towards which we can displace test data.
+Data   marked with ``$\times$'' are ``not good'' since their test suites  have so few non-defective examples (less than 5\% of the total sample) that it becomes harder to find better data towards which we can displace test data.
 }\label{fig:j}
 \end{figure*}
 
@@ -732,7 +732,7 @@ If our { predictors} fail to perform adequately on the test data,
 then we cannot trust them to comment on our plans. Accordingly,
 if that performance is unsatisfactory, we abort.
 Else, we (1)~apply the { planner} to alter the {\em test} data;
-then (2)~apply the { predictor} to the altered data {\em test'};
+then (2)~apply the { predictor} to the altered data $test'$;
 then (3)~return data on the {\em before,after} predictions.
 
 
@@ -742,18 +742,18 @@ then (3)~return data on the {\em before,after} predictions.
 The clear advantage of the approach of \fig{work} is that it can be readily and automatically
 applied to domains with historical data. That said, the obvious drawback with this approach
 is that our assessment of the plans is only as good as the predictor. To 
-mitigate for this {\em problem of poor predictors}, it is hence wise to demand certain standards for the {\em
+mitigate for this {\em problem of poor predictors}, it is wise to demand certain standards for the {\em
 satisfactory} threshold used in this \fig{work}. 
  
 
-For example, this study's data from two types of domains: the Jureczko   object-oriented data  
+For example, this study's data arise from two types of domains: the Jureczko   object-oriented data  
 and the Seigmund configuration data. 
 For the Seigmund data, the plans generated by HOW advise on how  to change the   configurations settings within a Makefile
 (in order to make resulting compiled
 code  run faster). Here, performance can be measured in terms of  difference
 between the predicted runtime $p$ of test case items and their actual runtimes $a$
 using  $s= 100*(1- \frac{abs(a - p)}{a})$.
-This paper  explores    six Seigmund configuration data sets:  Berkeley DB (Java and Windows versions), Apache, SQLite, LLVM, and
+This paper  explores    six Seigmund configuration data sets:  Berkeley DB (Java and C versions), Apache, SQLite, LLVM, and
   x264\footnote{Available from the performance prediction section of PROMISE
   http://openscience.us/repo/performance-predict.}. 
   After splitting that data into equal sized train:test groups, a Random Forest
@@ -871,7 +871,7 @@ we could not salvage the data sets in the  three bottom rows.
 In summary, while we cannot trust predictors from some of our defect data sets,
 we can plan ways to reduce defects in {\em jedit, ivy, ant, lucene} and {\em poi}.
 One important detail to be stressed here is that, when we applied    SMOTE-ing and
-parameter tunings, those techniques should be applied the training data and {\em not}
+parameter tunings, those techniques should be applied to the training data and {\em not}
 the test data;  
 i.e.
 we took care that no clues from the test set were ever used in this tuning process.
@@ -881,18 +881,19 @@ we took care that no clues from the test set were ever used in this tuning proce
 
 \section{Experiments}
 
+
 \subsection{Data}
 We applied HOW's plans to all  Seigmund data, and the five ``good''
-  Jureczko   data sets {\em jedit, ivy, ant, lucene} and {\em poi}.
+  Jureczko   data sets {\em jedit, ivy, ant, lucene,} and {\em poi}.
   The training and tests used for Jurecko were display in \fig{j}. For these data
-  sets, training was managed by a Random Forest (tuned in the SMOTED training data using differential
+  sets, training was managed by a Random Forest (with tuning the SMOTED training data using differential
   evolution). \fig{ck} shows Jureczko data attributes.
   
    \fig{cpm} shows the  Seigmund data attributes.
-   There were more diverse than the 
+   They were more diverse than the 
     Jurecko data since they
    contain the results of applying many  mutators
-  to the configuration options of the Makefiles of  BerkeleyDB (the Java  and  Windows  versions),  Apache,  SQLite,  LLVM, and x264.  
+  to the configuration options of the Makefiles of  BerkeleyDB (the Java  and  C versions),  Apache,  SQLite,  LLVM, and x264.  
 
 
  
@@ -925,7 +926,7 @@ The    Seigmund and Jureczko data sets have continuous and discrete classes (res
 Hence, when building a predictor, we used (1)~Random Forest Regressors for the Seigmund data and (2)~Random Forests
 for the Jureczko data.
 
-   For both the Siegmind and Jureczko, we designed a procedure such we had at least
+   For both the Siegmind and Jureczko, we designed a procedure such that we had at least
    20 samples from the \fig{work} procedure for  each data set (the value of 20 was choosen as the minimum use sample size via the central limit theorem):
    \bi
    \item
@@ -1013,15 +1014,15 @@ if $m,n$ are significantly different. If so, Scott-Knott  recurses on the splits
   {\scriptsize  \begin{tabular}{{llrrc}}
       \arrayrulecolor{darkgray}
       \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & F=0.75, B=25 &    0.79  &  0.06 & \quart{0}{11}{7}{49} \\
-\hline  2 & F=0.75, B=50 &    0.82  &  0.07 & \quart{7}{14}{13}{49} \\
-\hline  3 &  F=0.75, B=100  &    0.85  &  0.06 & \quart{11}{12}{19}{49} \\
-  3 & F=0.5, B=25 &    0.87  &  0.03 & \quart{19}{6}{23}{49} \\
-  3 & F=0.5, B=50 &    0.87  &  0.07 & \quart{17}{14}{23}{49} \\
-\hline  4 &   F=0.5, B=100  &    0.91  &  0.07 & \quart{21}{14}{31}{49} \\
-\hline  5 & F=0.25, B=25 &    0.92  &  0.05 & \quart{29}{10}{33}{49} \\
-  5 & F=0.25, B=50 &    0.94  &  0.04 & \quart{35}{8}{37}{49} \\
-  5 &  F=0.25,B=100   &    0.95  &  0.04 & \quart{35}{8}{39}{49} \\
+  1 & F=0.75, B=25\% &    0.79  &  0.06 & \quart{0}{11}{7}{49} \\
+\hline  2 & F=0.75, B=50\% &    0.82  &  0.07 & \quart{7}{14}{13}{49} \\
+\hline  3 &  F=0.75, B=100\% &    0.85  &  0.06 & \quart{11}{12}{19}{49} \\
+  3 & F=0.5, B=25\% &    0.87  &  0.03 & \quart{19}{6}{23}{49} \\
+  3 & F=0.5, B=50\% &    0.87  &  0.07 & \quart{17}{14}{23}{49} \\
+\hline  4 &   F=0.5, B=100\% &    0.91  &  0.07 & \quart{21}{14}{31}{49} \\
+\hline  5 & F=0.25, B=25\% &    0.92  &  0.05 & \quart{29}{10}{33}{49} \\
+  5 & F=0.25, B=50\% &    0.94  &  0.04 & \quart{35}{8}{37}{49} \\
+  5 &  F=0.25,B=100\% &    0.95  &  0.04 & \quart{35}{8}{39}{49} \\
 \hline  6 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
 \hline \end{tabular}}
 
@@ -1029,15 +1030,15 @@ if $m,n$ are significantly different. If so, Scott-Knott  recurses on the splits
 {\scriptsize  \begin{tabular}{{llrrc}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & F=0.75, B=50 &    0.2  &  0.03 & \quart{0}{1}{1}{49} \\
-  1 & F=0.75, B=25 &    0.2  &  0.05 & \quart{0}{3}{1}{49} \\
-\hline  2 &  F=0.75, B=100  &    0.22  &  0.07 & \quart{1}{5}{2}{49} \\
-\hline  3 & F=0.5, B=25 &    0.39  &  0.06 & \quart{11}{4}{12}{49} \\
-  3 & F=0.5, B=50 &    0.4  &  0.05 & \quart{12}{3}{13}{49} \\
-\hline  4 &   F=0.5,B=100   &    0.45  &  0.08 & \quart{14}{4}{16}{49} \\
-\hline  5 & F=0.25, B=25 &    0.65  &  0.05 & \quart{27}{3}{28}{49} \\
-  5 & F=0.25, B=50 &    0.66  &  0.05 & \quart{27}{3}{29}{49} \\
-\hline  6 &  F=0.25,B=100   &    0.69  &  0.05 & \quart{29}{3}{31}{49} \\
+  1 & F=0.75, B=50\% &    0.2  &  0.03 & \quart{0}{1}{1}{49} \\
+  1 & F=0.75, B=25\% &    0.2  &  0.05 & \quart{0}{3}{1}{49} \\
+\hline  2 &  F=0.75, B=100\% &    0.22  &  0.07 & \quart{1}{5}{2}{49} \\
+\hline  3 & F=0.5, B=25\% &    0.39  &  0.06 & \quart{11}{4}{12}{49} \\
+  3 & F=0.5, B=50\% &    0.4  &  0.05 & \quart{12}{3}{13}{49} \\
+\hline  4 &   F=0.5,B=100\% &    0.45  &  0.08 & \quart{14}{4}{16}{49} \\
+\hline  5 & F=0.25, B=25\% &    0.65  &  0.05 & \quart{27}{3}{28}{49} \\
+  5 & F=0.25, B=50\% &    0.66  &  0.05 & \quart{27}{3}{29}{49} \\
+\hline  6 &  F=0.25,B=100\% &    0.69  &  0.05 & \quart{29}{3}{31}{49} \\
 \hline  7 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
 \hline \end{tabular}}
 %\end{minipage}
@@ -1046,15 +1047,15 @@ if $m,n$ are significantly different. If so, Scott-Knott  recurses on the splits
 {\scriptsize  \begin{tabular}{{llrrc}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & F=0.75, B=25 &    0.64  &  0.1 & \quart{1}{12}{6}{49} \\
-  1 & F=0.75, B=50 &    0.68  &  0.14 & \quart{0}{17}{10}{49} \\
-\hline  2 &  F=0.75, B=100   &    0.74  &  0.1 & \quart{12}{12}{18}{49} \\
-  2 & F=0.5, B=25 &    0.76  &  0.09 & \quart{15}{11}{20}{49} \\
-  2 & F=0.5, B=50 &    0.78  &  0.17 & \quart{15}{21}{23}{49} \\
-  2 &   F=0.5,B=100   &    0.8  &  0.07 & \quart{20}{9}{25}{49} \\
-\hline  3 & F=0.25, B=25 &    0.85  &  0.05 & \quart{30}{6}{31}{49} \\
-\hline  4 & F=0.25, B=50 &    0.89  &  0.09 & \quart{30}{11}{36}{49} \\
-  4 &  F=0.25, B=100  &    0.9  &  0.06 & \quart{35}{7}{37}{49} \\
+  1 & F=0.75, B=25\% &    0.64  &  0.1 & \quart{1}{12}{6}{49} \\
+  1 & F=0.75, B=50\% &    0.68  &  0.14 & \quart{0}{17}{10}{49} \\
+\hline  2 &  F=0.75, B=100\% &    0.74  &  0.1 & \quart{12}{12}{18}{49} \\
+  2 & F=0.5, B=25\% &    0.76  &  0.09 & \quart{15}{11}{20}{49} \\
+  2 & F=0.5, B=50\% &    0.78  &  0.17 & \quart{15}{21}{23}{49} \\
+  2 &   F=0.5,B=100\% &    0.8  &  0.07 & \quart{20}{9}{25}{49} \\
+\hline  3 & F=0.25, B=25\% &    0.85  &  0.05 & \quart{30}{6}{31}{49} \\
+\hline  4 & F=0.25, B=50\% &    0.89  &  0.09 & \quart{30}{11}{36}{49} \\
+  4 &  F=0.25, B=100\% &    0.9  &  0.06 & \quart{35}{7}{37}{49} \\
 \hline  5 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
 \hline \end{tabular}}
 %\end{minipage}
@@ -1066,15 +1067,15 @@ if $m,n$ are significantly different. If so, Scott-Knott  recurses on the splits
   {\scriptsize  \begin{tabular}{{llrrc}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & F=0.75, B=25 &    0.92  &  0.02 & \quart{0}{11}{5}{49} \\
-  1 & F=0.75, B=50 &    0.93  &  0.02 & \quart{5}{11}{11}{49} \\
-  1 &  F=0.75, B=100   &    0.93  &  0.02 & \quart{11}{11}{11}{49} \\
+  1 & F=0.75, B=25\% &    0.92  &  0.02 & \quart{0}{11}{5}{49} \\
+  1 & F=0.75, B=50\% &    0.93  &  0.02 & \quart{5}{11}{11}{49} \\
+  1 &  F=0.75, B=100\% &    0.93  &  0.02 & \quart{11}{11}{11}{49} \\
 \hline  2 & F=0.5, B=25 &    0.95  &  0.01 & \quart{16}{6}{22}{49} \\
-  2 & F=0.5, B=50 &    0.95  &  0.01 & \quart{16}{6}{22}{49} \\
-  2 &   F=0.5, B=100   &    0.96  &  0.01 & \quart{22}{5}{27}{49} \\
-\hline  3 & F=0.25, B=25 &    0.97  &  0.01 & \quart{33}{5}{33}{49} \\
-  3 & F=0.25, B=50 &    0.98  &  0.0 & \quart{38}{0}{38}{49} \\
-  3 &  F=0.25, B=100  &    0.98  &  0.01 & \quart{38}{6}{38}{49} \\
+  2 & F=0.5, B=50\% &    0.95  &  0.01 & \quart{16}{6}{22}{49} \\
+  2 &   F=0.5, B=100\% &    0.96  &  0.01 & \quart{22}{5}{27}{49} \\
+\hline  3 & F=0.25, B=25\% &    0.97  &  0.01 & \quart{33}{5}{33}{49} \\
+  3 & F=0.25, B=50\% &    0.98  &  0.0 & \quart{38}{0}{38}{49} \\
+  3 &  F=0.25, B=100\% &    0.98  &  0.01 & \quart{38}{6}{38}{49} \\
 \hline  4 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
 \hline \end{tabular}}
 %\end{minipage}
@@ -1083,34 +1084,34 @@ if $m,n$ are significantly different. If so, Scott-Knott  recurses on the splits
   {\scriptsize  \begin{tabular}{{llrrc}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & F=0.75, B=25 &    0.98  &  0.0 & \quart{0}{0}{0}{49} \\
-  1 & F=0.75, B=50 &    0.98  &  0.0 & \quart{0}{0}{0}{49} \\
-  1 & F=0.75, B=100 &   0.99  &  0.01 & \quart{0}{24}{24}{49} \\
-  1 & F=0.5, B=25 &    0.99  &  0.0 & \quart{24}{0}{24}{49} \\
-  1 & F=0.5, B=50 &    0.99  &  0.0 & \quart{24}{0}{24}{49} \\
-  1 & F=0.5, B=100 &    0.99  &  0.01 & \quart{24}{25}{24}{49} \\
-  1 & F=0.25, B=50 &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
-  1 & F=0.25-weight-B=25 &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
-  1 & F=0.25, B=100 &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 & F=0.75, B=25\% &    0.98  &  0.0 & \quart{0}{0}{0}{49} \\
+  1 & F=0.75, B=50\% &    0.98  &  0.0 & \quart{0}{0}{0}{49} \\
+  1 & F=0.75, B=100\% &   0.99  &  0.01 & \quart{0}{24}{24}{49} \\
+  1 & F=0.5, B=25\% &    0.99  &  0.0 & \quart{24}{0}{24}{49} \\
+  1 & F=0.5, B=50\% &    0.99  &  0.0 & \quart{24}{0}{24}{49} \\
+  1 & F=0.5, B=100\% &    0.99  &  0.01 & \quart{24}{25}{24}{49} \\
+  1 & F=0.25, B=50\% &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 & F=0.25-weight-B=25\% &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
+  1 & F=0.25, B=100\% &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
   1 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
   \hline \end{tabular}}
 %\end{minipage}
 %\noindent\begin{minipage}{0.5\textwidth}
 %  \flushleft
 
-\vspace{2mm}\noindent {\scriptsize \textbf{X264}\\[0.1cm]}
+\vspace{2mm}\noindent {\scriptsize \textbf{x264}\\[0.1cm]}
   {\scriptsize  \begin{tabular}{{llrrc}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & \\
-  1 & F=0.75, B=25 &    0.72  &  0.04 & \quart{0}{6}{3}{49} \\
-  1 & F=0.75, B=50 &    0.74  &  0.04 & \quart{3}{6}{6}{49} \\
-\hline  2 & F=0.5, B=50 &    0.82  &  0.04 & \quart{16}{7}{19}{49} \\
-  2 &  F=0.75, B=100  &    0.82  &  0.06 & \quart{13}{10}{19}{49} \\
-  2 & F=0.5, B=25 &    0.82  &  0.03 & \quart{19}{5}{19}{49} \\
-\hline  3 &   F=0.5, B=100   &    0.88  &  0.03 & \quart{26}{5}{29}{49} \\
-\hline  4 & F=0.25, B=50 &    0.91  &  0.02 & \quart{33}{3}{34}{49} \\
-  4 & F=0.25, B=25 &    0.91  &  0.02 & \quart{34}{4}{34}{49} \\
-\hline  5 &  F=0.25, B=100 &    0.93  &  0.02 & \quart{36}{3}{38}{49} \\
+  1 & F=0.75, B=25\% &    0.72  &  0.04 & \quart{0}{6}{3}{49} \\
+  1 & F=0.75, B=50\% &    0.74  &  0.04 & \quart{3}{6}{6}{49} \\
+\hline  2 & F=0.5, B=50\% &    0.82  &  0.04 & \quart{16}{7}{19}{49} \\
+  2 &  F=0.75, B=100\% &    0.82  &  0.06 & \quart{13}{10}{19}{49} \\
+  2 & F=0.5, B=25\% &    0.82  &  0.03 & \quart{19}{5}{19}{49} \\
+\hline  3 &   F=0.5, B=100\% &    0.88  &  0.03 & \quart{26}{5}{29}{49} \\
+\hline  4 & F=0.25, B=50\% &    0.91  &  0.02 & \quart{33}{3}{34}{49} \\
+  4 & F=0.25, B=25\% &    0.91  &  0.02 & \quart{34}{4}{34}{49} \\
+\hline  5 &  F=0.25\%, B=100\% &    0.93  &  0.02 & \quart{36}{3}{38}{49} \\
 \hline  6 &     Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} \\
 \hline \end{tabular}}
 \end{minipage}
@@ -1118,10 +1119,10 @@ if $m,n$ are significantly different. If so, Scott-Knott  recurses on the splits
 \end{center}
 \caption{Results on  Seigmund   data sets. Baseline values shown at bottom. All other values
 are ratios of baselines.
-Recall that $B$ denotes how what {\em percent} of the attributes are displaced
-and $F$ denotes how {\em far} the test cases are mutated (so at $F=0.75,B=100$, all
+Recall that $B$ denotes what {\em percent} of the attributes are displaced
+and $F$ denotes how {\em far} the test cases are mutated (so at $F=0.75, B=100\%$, \textit{all}
 attributes are displaced 75\% of the distance to the exemplar).
-For each of the  tables in this figure, better methods appear higher up. In these tables, median and IQR are the 50th and the (75-25)th percentiles. The IQR ranges are shown in the right column with black dot at the median. Horizontal lines divide the “ranks” found by Scott-Knott (shown in left column).
+For each of the  tables in this figure, better methods appear higher up. In these tables, median and IQR are the 50\textsuperscript{th} and the (75-25)\textsuperscript{th} percentiles. The IQR ranges are shown in the right column with black dot at the median. Horizontal lines divide the “ranks” found by Scott-Knott (shown in left column).
 }\label{fig:jur}
 \end{figure*}
 
@@ -1131,16 +1132,16 @@ For each of the  tables in this figure, better methods appear higher up. In thes
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~}c@{}r}}
       \arrayrulecolor{darkgray}
       \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} && \textbf{Bugs}\\
-   1 &  F=0.75, B=100 &    0.71  &  0.19 & \quart{0}{25}{10}{49} & 62 \\
-\hline  2 &   F=0.5, B=100  &    0.88  &  0.14 & \quart{20}{19}{33}{49} & 77\\
+   1 &  F=0.75, B=100\% &    0.71  &  0.19 & \quart{0}{25}{10}{49} & 62 \\
+\hline  2 &   F=0.5, B=100\% &    0.88  &  0.14 & \quart{20}{19}{33}{49} & 77\\
 \hline  3 & F=0.5, B=50\% &    0.91  &  0.08 & \quart{32}{11}{37}{49} & 80\\
   3 & F=0.75, B=50\% &    0.92  &  0.09 & \quart{31}{12}{39}{49} & 82\\
-  3 &  F=0.25, B=100  &    0.92  &  0.04 & \quart{36}{5}{39}{49} & 81\\
+  3 &  F=0.25, B=100\% &    0.92  &  0.04 & \quart{36}{5}{39}{49} & 81\\
   3 & F=0.75, B=25\% &    0.94  &  0.09 & \quart{36}{12}{41}{49} & 82\\
 \hline  4 & F=0.25, B=50\% &    0.97  &  0.03 & \quart{44}{4}{45}{49} & 86\\
   4 & F=0.5, B=25\% &    0.98  &  0.06 & \quart{40}{8}{47}{49} & 86\\
 \hline  5 &F= 0.25, B=25\% &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 87\\
-\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 90\\
+\hline  6 &         Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 90\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
 
@@ -1151,16 +1152,16 @@ For each of the  tables in this figure, better methods appear higher up. In thes
 {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
-  1 &  F=0.75,  B=100 &    0.75  &  0.18 & \quart{0}{29}{8}{49} & 50\\
-\hline  2 &   F=0.5,B=100   &    0.84  &  0.08 & \quart{14}{14}{23}{49} & 56\\
-  2 & F=0.75, B=50 &    0.84  &  0.09 & \quart{18}{15}{23}{49} & 56\\
-\hline  3 & F=0.5, B=50 &    0.91  &  0.05 & \quart{29}{9}{34}{49} & 61\\
-\hline  4 & F=0.25, B=50 &    0.96  &  0.01 & \quart{43}{1}{43}{49} & 64\\
-  4 & F=0.75, B=25 &    0.96  &  0.05 & \quart{39}{9}{43}{49} & 65\\
-  4 &  F=0.25, B=100  &    0.97  &  0.05 & \quart{39}{9}{44}{49} & 65\\
-  4 & F=0.5, B=25 &    0.97  &  0.03 & \quart{43}{5}{44}{49} & 65\\
-\hline  5 & F=0.25, B=25 &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 66\\
-\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 67\\
+  1 &  F=0.75,  B=100\% &    0.75  &  0.18 & \quart{0}{29}{8}{49} & 50\\
+\hline  2 &   F=0.5, B=100\% &    0.84  &  0.08 & \quart{14}{14}{23}{49} & 56\\
+  2 & F=0.75, B=50\% &    0.84  &  0.09 & \quart{18}{15}{23}{49} & 56\\
+\hline  3 & F=0.5, B=50\% &    0.91  &  0.05 & \quart{29}{9}{34}{49} & 61\\
+\hline  4 & F=0.25, B=50\% &    0.96  &  0.01 & \quart{43}{1}{43}{49} & 64\\
+  4 & F=0.75, B=25\% &    0.96  &  0.05 & \quart{39}{9}{43}{49} & 65\\
+  4 &  F=0.25, B=100\% &    0.97  &  0.05 & \quart{39}{9}{44}{49} & 65\\
+  4 & F=0.5, B=25\% &    0.97  &  0.03 & \quart{43}{5}{44}{49} & 65\\
+\hline  5 & F=0.25, B=25\% &    0.99  &  0.01 & \quart{48}{1}{48}{49} & 66\\
+\hline  6 &         Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 67\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
 
@@ -1170,16 +1171,16 @@ For each of the  tables in this figure, better methods appear higher up. In thes
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
-  1 &  F=0.75,  &    0.76  &  0.21 & \quart{0}{28}{17}{49} & 130\\
-  1 &   0.5,  &    0.76  &  0.16 & \quart{9}{22}{17}{49} & 131\\
-\hline  2 & 0.75, B=50\% &    0.85  &  0.12 & \quart{22}{17}{29}{49} & 146\\
-\hline  3 &  0.25,  &    0.87  &  0.07 & \quart{28}{9}{32}{49} & 152\\
-\hline  4 & 0.5, B=50\% &    0.93  &  0.05 & \quart{37}{7}{40}{49} & 162\\
-\hline  5 & 0.25, B=50\% &    0.97  &  0.03 & \quart{43}{4}{45}{49} & 167\\
-  5 & 0.75, B=25\% &    0.97  &  0.02 & \quart{44}{3}{45}{49} & 168\\
-\hline  6 & 0.5, B=25\% &    0.98  &  0.02 & \quart{45}{3}{47}{49} & 170\\
-  6 & 0.25, B=25\% &    0.98  &  0.01 & \quart{47}{1}{47}{49} & 171\\
-\hline  7 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 175\\
+  1 &  F=0.75, B=100\%  &    0.76  &  0.21 & \quart{0}{28}{17}{49} & 130\\
+  1 &   F=0.5, B=100\%  &    0.76  &  0.16 & \quart{9}{22}{17}{49} & 131\\
+\hline  2 & F=0.75, B=50\% &    0.85  &  0.12 & \quart{22}{17}{29}{49} & 146\\
+\hline  3 &  F=0.25, B=100\% &    0.87  &  0.07 & \quart{28}{9}{32}{49} & 152\\
+\hline  4 & F=0.5, B=50\% &    0.93  &  0.05 & \quart{37}{7}{40}{49} & 162\\
+\hline  5 & F=0.25, B=50\% &    0.97  &  0.03 & \quart{43}{4}{45}{49} & 167\\
+  5 & F=0.75, B=25\% &    0.97  &  0.02 & \quart{44}{3}{45}{49} & 168\\
+\hline  6 & F=0.5, B=25\% &    0.98  &  0.02 & \quart{45}{3}{47}{49} & 170\\
+  6 & F=0.25, B=25\% &    0.98  &  0.01 & \quart{47}{1}{47}{49} & 171\\
+\hline  7 &         Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 175\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
 
@@ -1189,16 +1190,16 @@ For each of the  tables in this figure, better methods appear higher up. In thes
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
 \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
-  1 &  0.75,  &    0.66  &  0.2 & \quart{0}{21}{13}{49} & 97\\
-\hline  2 & 0.75, B=50\% &    0.7  &  0.1 & \quart{14}{10}{17}{49} & 103\\
-\hline  3 & 0.75, B=25\% &    0.8  &  0.09 & \quart{21}{10}{28}{49} & 117\\
-  3 &   0.5,  &    0.81  &  0.09 & \quart{26}{9}{29}{49} & 119\\
-\hline  4 & 0.5, B=50\% &    0.88  &  0.07 & \quart{34}{8}{36}{49} & 128\\
-  4 & 0.25, B=25\% &    0.89  &  0.07 & \quart{36}{8}{38}{49} & 130\\
-  4 &  0.25,  &    0.92  &  0.04 & \quart{39}{4}{41}{49} & 133\\
-\hline  5 & 0.25, B=50\% &    0.95  &  0.04 & \quart{42}{4}{44}{49} & 139\\
-  5 & 0.5, B=25\% &    0.96  &  0.03 & \quart{43}{3}{45}{49} & 141\\
-\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 146\\
+  1 &  F=0.75, B=100\% &    0.66  &  0.2 & \quart{0}{21}{13}{49} & 97\\
+\hline  2 & F=0.75, B=50\% &    0.7  &  0.1 & \quart{14}{10}{17}{49} & 103\\
+\hline  3 & F=0.75, B=25\% &    0.8  &  0.09 & \quart{21}{10}{28}{49} & 117\\
+  3 &   F=0.5, B=100\% &    0.81  &  0.09 & \quart{26}{9}{29}{49} & 119\\
+\hline  4 & F=0.5, B=50\% &    0.88  &  0.07 & \quart{34}{8}{36}{49} & 128\\
+  4 & F=0.25, B=25\% &    0.89  &  0.07 & \quart{36}{8}{38}{49} & 130\\
+  4 &  F=0.25, B=100\% &    0.92  &  0.04 & \quart{39}{4}{41}{49} & 133\\
+\hline  5 & F=0.25, B=50\% &    0.95  &  0.04 & \quart{42}{4}{44}{49} & 139\\
+  5 & F=0.5, B=25\% &    0.96  &  0.03 & \quart{43}{3}{45}{49} & 141\\
+\hline  6 &         Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 146\\
 \hline \end{tabular}}
 %\end{minipage}\\[0.1cm] 
 
@@ -1208,16 +1209,16 @@ For each of the  tables in this figure, better methods appear higher up. In thes
   {\scriptsize  \begin{tabular}{{l@{~~~~}l@{}r@{~~~~}r@{~~~~}c@{}r}}
       \arrayrulecolor{darkgray}
 \rowcolor[gray]{.9} \textbf{Rank} & \textbf{Treatment} & \textbf{Median} & \textbf{IQR} & & \textbf{Bugs}\\
-  1 &  0.75,  &    0.72  &  0.26 & \quart{0}{29}{18}{49} & 173\\
-\hline  2 & 0.75, B=50\% &    0.79  &  0.15 & \quart{14}{17}{26}{49} & 190\\
-  2 &   0.5,  &    0.81  &  0.14 & \quart{21}{16}{28}{49} & 195\\
-\hline  3 & 0.5, B=50\% &    0.9  &  0.11 & \quart{30}{13}{38}{49} & 217\\
-  3 &  0.25,  &    0.91  &  0.05 & \quart{36}{6}{39}{49} & 219\\
-\hline  4 & 0.75, B=25\% &    0.94  &  0.05 & \quart{39}{6}{43}{49} & 226\\
-  4 & 0.25, B=50\% &    0.94  &  0.06 & \quart{39}{7}{43}{49} & 226\\
-\hline  5 & 0.25, B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
-  5 & 0.5, B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
-\hline  6 &         Base &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 240\\
+  1 &  F=0.75, B=100\% &    0.72  &  0.26 & \quart{0}{29}{18}{49} & 173\\
+\hline  2 & F=0.75, B=50\% &    0.79  &  0.15 & \quart{14}{17}{26}{49} & 190\\
+  2 &  F=0.5, B=100\% &    0.81  &  0.14 & \quart{21}{16}{28}{49} & 195\\
+\hline  3 & F=0.5, B=50\% &    0.9  &  0.11 & \quart{30}{13}{38}{49} & 217\\
+  3 &  F=0.25, B=100\% &    0.91  &  0.05 & \quart{36}{6}{39}{49} & 219\\
+\hline  4 & F=0.75, B=25\% &    0.94  &  0.05 & \quart{39}{6}{43}{49} & 226\\
+  4 & F=0.25, B=50\% &    0.94  &  0.06 & \quart{39}{7}{43}{49} & 226\\
+\hline  5 & F=0.25, B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
+  5 & F=0.5, B=25\% &    0.96  &  0.03 & \quart{44}{3}{45}{49} & 231\\
+\hline  6 &         Baseline &    1.0  &  0.0 & \quart{49}{0}{49}{49} & 240\\
 \hline \end{tabular}}
 %\end{minipage}
 \caption{Results on  Jureczko   data sets. Same format as \fig{jur}.}
@@ -1253,16 +1254,15 @@ at ICSE'11~\cite{arcuri11}.
   
 \subsection{Results}
 The results for each data set, for different ranges of $(F,B)$ are shown in \fig{jur} and \fig{ant}.
-Also included are a {\em baseline} figure which is taken from the cases in the test data
-and  Since we wish to demonstrate
+Also included is a {\em baseline} figure which is taken from the cases in the test data
+and since we wish to demonstrate
 improving defects
 (for Jureczko data) and runtimes (for the Seigmund data), all our results are presented as ratios of the baseline (so numbers less than 1.0 indicate improvements).
 
   
  The   results of \fig{jur} and \fig{ant} show that in $\frac{10}{11}$ of our
  data sets, the baseline results are ranked significantly worse than the results seen
- after planning (evidence: the statistical ranking assigned by Scott-Knott is shown in the left-hand-side columns and most baselines get larger, i.e. worse, ranks
- that the treated data). The exception to this is SQL in  \fig{jur}. which
+ after planning (evidence: the statistical ranking assigned by Scott-Knott is shown in the left-hand-side columns and most baselines get larger, i.e. worse, ranks consistently higher that than the treated data). The exception to this is SQL in  \fig{jur}. which
  seems to
  be resistant to our planning methods.
  
@@ -1275,10 +1275,10 @@ improving defects
  As to the impact of changing how far we mutate (the $F$ value) or how many attributes
  we mutate (the $B$ value), the results are different for the data sets with discrete and continuous attributes:
  \bi
- \item For data sets with continuous objectives (the Jureczko data of \fig{jur}),
+ \item For data sets with continuous objectives (the Seigmund  data of \fig{jur}),
  best results are obtained by taking the fewest attributes (minimize $B$) 
  while moving close to the exemplar (maximize $F$).
- \item For data sets with discrete objectives (the Seigmund data  of \fig{ant}),
+ \item For data sets with discrete objectives (the Jureczko data  of \fig{ant}),
  best results are obtained by maximizing both $F$ and $B$.
  \ei
   From these differences, we conclude that the more specific the  information used for exemplar
@@ -1306,7 +1306,7 @@ If we believe the outputs of those predictors, then we can also believe that
 %XXX begin rahul 
 One way to assess the validity of our predictions is to consider the space that generates
 them. \fig{howxy} is from the {\em ivy} data
-set. It shows (1)~the training cases and (2)~the test cases and (3)~the
+set. It shows: (1)~the training cases, (2)~the test cases, and (3)~the
 test cases displaced after applying HOW's plans.
 To generate that figure, we placed all of 1+2+3 into the same data set then computed the first
 two  components (using PCA). Note that the  the   displaced test
@@ -1388,7 +1388,7 @@ order to repeat, refute, or improve our results.
 \section{Conclusion}
 % \section*{Acknowledgements}
  
-This paper has explored the problem of assess changes to a project without
+This paper has explored the problem of assessing changes to a project without
 extensive field studies. We have proposed using predictors learned from domain data
 to serve as the oracle that judges the effectiveness of those changes.
 
